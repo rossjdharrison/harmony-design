@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MixerPanel Test - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0d0d0d;
+      color: #ffffff;
+      padding: 20px;
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #1a1a1a;
+      border-radius: 8px;
+    }
+
+    .test-section h2 {
+      margin-bottom: 16px;
+      color: #00ff88;
+      font-size: 18px;
+    }
+
+    .test-section p {
+      margin-bottom: 12px;
+      color: #cccccc;
+      font-size: 14px;
+    }
+
+    .mixer-container {
+      height: 400px;
+      background: #0d0d0d;
+      border: 1px solid #333333;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #333333;
+      color: #ffffff;
+      border: 1px solid #444444;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #444444;
+    }
+
+    button:active {
+      background: #555555;
+    }
+
+    .event-log {
+      background: #0d0d0d;
+      border: 1px solid #333333;
+      border-radius: 4px;
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .event-log .event {
+      margin-bottom: 4px;
+      padding: 4px;
+      border-left: 2px solid #00ff88;
+      padding-left: 8px;
+    }
+
+    .event-log .event .type {
+      color: #00ff88;
+      font-weight: bold;
+    }
+
+    .event-log .event .payload {
+      color: #888888;
+      margin-left: 8px;
+    }
+
+    .status {
+      padding: 8px 12px;
+      background: #1a1a1a;
+      border: 1px solid #333333;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #00ff88;
+    }
+  </style>
+</head>
+<body>
+  <h1>MixerPanel Component Test</h1>
+  
+  <div class="test-section">
+    <h2>Default Configuration (8 Channels)</h2>
+    <p>Default mixer panel with 8 channel strips</p>
+    <div class="mixer-container">
+      <mixer-panel id="mixer1"></mixer-panel>
+    </div>
+    <div class="event-log" id="log1"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Custom Channel Count (4 Channels)</h2>
+    <p>Mixer panel with 4 channels</p>
+    <div class="mixer-container">
+      <mixer-panel id="mixer2" channels="4"></mixer-panel>
+    </div>
+    <div class="controls">
+      <button onclick="setChannels(2)">2 Channels</button>
+      <button onclick="setChannels(4)">4 Channels</button>
+      <button onclick="setChannels(8)">8 Channels</button>
+      <button onclick="setChannels(16)">16 Channels</button>
+    </div>
+    <div class="event-log" id="log2"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Custom Channel Labels</h2>
+    <p>Mixer panel with custom labels for each channel</p>
+    <div class="mixer-container">
+      <mixer-panel 
+        id="mixer3" 
+        channels="6"
+        channel-labels="Kick, Snare, Hi-Hat, Bass, Guitar, Vocals">
+      </mixer-panel>
+    </div>
+    <div class="event-log" id="log3"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Programmatic Control</h2>
+    <p>Control channel states programmatically via API</p>
+    <div class="mixer-container">
+      <mixer-panel id="mixer4" channels="4"></mixer-panel>
+    </div>
+    <div class="controls">
+      <button onclick="setChannelVolume(0, 1.0)">Ch1 Max Volume</button>
+      <button onclick="setChannelVolume(0, 0.5)">Ch1 Half Volume</button>
+      <button onclick="muteChannel(1)">Mute Ch2</button>
+      <button onclick="soloChannel(2)">Solo Ch3</button>
+      <button onclick="getAllStates()">Get All States</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="event-log" id="log4"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Empty State</h2>
+    <p>Mixer panel with no channels configured</p>
+    <div class="mixer-container">
+      <mixer-panel id="mixer5" channels="0"></mixer-panel>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Test (32 Channels)</h2>
+    <p>Large mixer panel to test scrolling and performance</p>
+    <div class="mixer-container">
+      <mixer-panel id="mixer6" channels="32"></mixer-panel>
+    </div>
+    <button onclick="measurePerformance()">Measure Render Performance</button>
+    <div class="status" id="perf-status"></div>
+  </div>
+
+  <!-- Import dependencies -->
+  <script type="module">
+    // Import EventBus first
+    import { EventBus } from '../../../core/event-bus.js';
+    window.EventBus = EventBus;
+
+    // Import required components
+    import '../../../components/primitives/harmony-button/harmony-button.js';
+    import '../../../components/primitives/harmony-toggle/harmony-toggle.js';
+    import '../../../components/molecules/fader-control/fader-control.js';
+    import '../../../components/molecules/knob-control/knob-control.js';
+    import '../../../components/molecules/level-meter/level-meter.js';
+    import '../../../components/organisms/channel-strip/channel-strip.js';
+    import './mixer-panel.js';
+
+    // Setup event logging
+    function setupEventLog(mixerId, logId) {
+      const mixer = document.getElementById(mixerId);
+      const log = document.getElementById(logId);
+
+      EventBus.subscribe('mixer-panel:initialized', (event) => {
+        if (event.source === mixer) {
+          addLog(log, 'mixer-panel:initialized', event.payload);
+        }
+      });
+
+      EventBus.subscribe('mixer-panel:channel-changed', (event) => {
+        addLog(log, 'mixer-panel:channel-changed', event.payload);
+      });
+    }
+
+    function addLog(logElement, type, payload) {
+      const entry = document.createElement('div');
+      entry.className = 'event';
+      entry.innerHTML = `
+        <span class="type">${type}</span>
+        <span class="payload">${JSON.stringify(payload)}</span>
+      `;
+      logElement.insertBefore(entry, logElement.firstChild);
+      
+      // Keep only last 10 entries
+      while (logElement.children.length > 10) {
+        logElement.removeChild(logElement.lastChild);
+      }
+    }
+
+    // Setup all event logs
+    setupEventLog('mixer1', 'log1');
+    setupEventLog('mixer2', 'log2');
+    setupEventLog('mixer3', 'log3');
+    setupEventLog('mixer4', 'log4');
+
+    // Global functions for testing
+    window.setChannels = function(count) {
+      const mixer = document.getElementById('mixer2');
+      mixer.setAttribute('channels', count);
+    };
+
+    window.setChannelVolume = function(channel, volume) {
+      const mixer = document.getElementById('mixer4');
+      mixer.setChannelState(channel, { volume });
+    };
+
+    window.muteChannel = function(channel) {
+      const mixer = document.getElementById('mixer4');
+      const state = mixer.getChannelState(channel);
+      mixer.setChannelState(channel, { muted: !state.muted });
+    };
+
+    window.soloChannel = function(channel) {
+      const mixer = document.getElementById('mixer4');
+      const state = mixer.getChannelState(channel);
+      mixer.setChannelState(channel, { soloed: !state.soloed });
+    };
+
+    window.getAllStates = function() {
+      const mixer = document.getElementById('mixer4');
+      const states = mixer.getAllChannelStates();
+      const status = document.getElementById('status');
+      status.textContent = JSON.stringify(states, null, 2);
+    };
+
+    window.measurePerformance = function() {
+      const mixer = document.getElementById('mixer6');
+      const status = document.getElementById('perf-status');
+      
+      const startTime = performance.now();
+      mixer.setAttribute('channels', '32');
+      
+      requestAnimationFrame(() => {
+        const endTime = performance.now();
+        const renderTime = endTime - startTime;
+        
+        status.textContent = `Render time: ${renderTime.toFixed(2)}ms (Target: <16ms for 60fps)`;
+        status.style.color = renderTime < 16 ? '#00ff88' : '#ff4444';
+      });
+    };
+
+    console.log('MixerPanel test page loaded');
+  </script>
+</body>
+</html>
