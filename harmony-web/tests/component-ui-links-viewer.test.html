@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component UI Links Viewer - Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 24px;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      margin-bottom: 32px;
+      padding: 24px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .controls {
+      margin-bottom: 16px;
+      padding: 16px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin-right: 8px;
+      border: 1px solid #1976d2;
+      background: #1976d2;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    .event-log {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-log-item {
+      margin-bottom: 4px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Component UI Links Viewer - Test Page</h1>
+
+  <div class="test-section">
+    <h2>Test 1: Component Links View</h2>
+    <div class="controls">
+      <button id="load-button-links">Load Button Links</button>
+      <button id="load-icon-links">Load Icon Links</button>
+      <button id="clear-links">Clear</button>
+    </div>
+    <component-ui-links-viewer id="viewer1" component-id="button-primary"></component-ui-links-viewer>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: UI Location View</h2>
+    <div class="controls">
+      <button id="load-app-shell">Load App Shell Components</button>
+      <button id="load-playback-view">Load Playback View Components</button>
+    </div>
+    <component-ui-links-viewer id="viewer2" ui-location="app-shell"></component-ui-links-viewer>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Event Handling</h2>
+    <component-ui-links-viewer id="viewer3"></component-ui-links-viewer>
+    <div class="event-log" id="event-log">
+      <div>Event log (click on links above to see events):</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { ComponentUILinksViewer } from '../src/components/component-ui-links-viewer.js';
+
+    // Sample data
+    const buttonLinks = [
+      {
+        componentId: 'button-primary',
+        uiLocation: 'app-shell',
+        filePath: 'src/ui/app-shell.html',
+        lineNumber: 42,
+        usageContext: 'template'
+      },
+      {
+        componentId: 'button-primary',
+        uiLocation: 'playback-view',
+        filePath: 'src/ui/playback-view.html',
+        lineNumber: 18,
+        usageContext: 'template'
+      },
+      {
+        componentId: 'button-primary',
+        uiLocation: 'settings-panel',
+        filePath: 'src/ui/settings-panel.js',
+        lineNumber: 95,
+        usageContext: 'dynamic-import'
+      }
+    ];
+
+    const iconLinks = [
+      {
+        componentId: 'icon-play',
+        uiLocation: 'playback-controls',
+        filePath: 'src/ui/playback-controls.html',
+        lineNumber: 12,
+        usageContext: 'web-component-tag'
+      }
+    ];
+
+    const appShellComponents = [
+      {
+        componentId: 'button-primary',
+        uiLocation: 'app-shell',
+        filePath: 'src/ui/app-shell.html',
+        lineNumber: 42,
+        usageContext: 'template'
+      },
+      {
+        componentId: 'nav-menu',
+        uiLocation: 'app-shell',
+        filePath: 'src/ui/app-shell.html',
+        lineNumber: 15,
+        usageContext: 'template'
+      }
+    ];
+
+    const playbackViewComponents = [
+      {
+        componentId: 'button-primary',
+        uiLocation: 'playback-view',
+        filePath: 'src/ui/playback-view.html',
+        lineNumber: 18,
+        usageContext: 'template'
+      },
+      {
+        componentId: 'waveform-display',
+        uiLocation: 'playback-view',
+        filePath: 'src/ui/playback-view.html',
+        lineNumber: 25,
+        usageContext: 'web-component-tag'
+      }
+    ];
+
+    // Test 1 controls
+    document.getElementById('load-button-links').addEventListener('click', () => {
+      document.getElementById('viewer1').setLinks(buttonLinks);
+    });
+
+    document.getElementById('load-icon-links').addEventListener('click', () => {
+      document.getElementById('viewer1').setLinks(iconLinks);
+    });
+
+    document.getElementById('clear-links').addEventListener('click', () => {
+      document.getElementById('viewer1').setLinks([]);
+    });
+
+    // Test 2 controls
+    document.getElementById('load-app-shell').addEventListener('click', () => {
+      document.getElementById('viewer2').setLinks(appShellComponents);
+    });
+
+    document.getElementById('load-playback-view').addEventListener('click', () => {
+      document.getElementById('viewer2').setLinks(playbackViewComponents);
+    });
+
+    // Test 3 - Event logging
+    const viewer3 = document.getElementById('viewer3');
+    viewer3.setLinks(buttonLinks);
+
+    const eventLog = document.getElementById('event-log');
+    
+    viewer3.addEventListener('link-selected', (e) => {
+      const logItem = document.createElement('div');
+      logItem.className = 'event-log-item';
+      logItem.textContent = `[${new Date().toLocaleTimeString()}] Link selected: ${JSON.stringify(e.detail.link)}`;
+      eventLog.appendChild(logItem);
+      eventLog.scrollTop = eventLog.scrollHeight;
+    });
+
+    console.log('Component UI Links Viewer test page loaded');
+    console.log('All tests ready - interact with controls to test functionality');
+  </script>
+</body>
+</html>
