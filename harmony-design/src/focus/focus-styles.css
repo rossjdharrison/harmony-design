@@ -1,0 +1,83 @@
+/**
+ * Focus visibility styles for keyboard navigation
+ * Applied when keyboard-navigation class is active on body
+ * @see DESIGN_SYSTEM.md#focus-management
+ */
+
+/* Default: hide focus outlines for mouse users */
+:focus {
+  outline: none;
+}
+
+/* Show focus outlines only for keyboard users */
+body.keyboard-navigation :focus {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 2px;
+}
+
+/* High contrast focus for better visibility */
+body.keyboard-navigation :focus-visible {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px var(--color-primary-100, rgba(0, 102, 204, 0.1));
+}
+
+/* Focus within for container highlighting */
+body.keyboard-navigation :focus-within {
+  /* Container can apply custom styles when child is focused */
+}
+
+/* Skip to content link (hidden until focused) */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-on-surface, #000000);
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 10000;
+  transition: top 0.2s ease;
+}
+
+body.keyboard-navigation .skip-to-content:focus {
+  top: 0;
+}
+
+/* Focus trap visual indicator (optional, for debugging) */
+[data-focus-trap] {
+  /* Add visual indicator if needed */
+}
+
+/* Disabled elements should never show focus */
+:disabled,
+[aria-disabled="true"] {
+  outline: none !important;
+}
+
+/* Custom focus for specific components */
+body.keyboard-navigation button:focus-visible {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 2px;
+}
+
+body.keyboard-navigation a:focus-visible {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+body.keyboard-navigation input:focus-visible,
+body.keyboard-navigation textarea:focus-visible,
+body.keyboard-navigation select:focus-visible {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 0;
+  border-color: var(--color-primary-500, #0066cc);
+}
+
+/* Focus for custom elements / web components */
+body.keyboard-navigation [tabindex]:focus-visible {
+  outline: 2px solid var(--color-primary-500, #0066cc);
+  outline-offset: 2px;
+}
