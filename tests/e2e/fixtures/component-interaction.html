@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Interaction Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #state-display {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Component Interaction Test</h1>
+    
+    <harmony-button id="test-button">Click Me</harmony-button>
+    
+    <div id="state-display">
+        State: <span id="state-value">initial</span>
+    </div>
+    
+    <script type="module">
+        // Simple button component for testing
+        class HarmonyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                this.render();
+                this.shadowRoot.querySelector('button').addEventListener('click', () => {
+                    this.handleClick();
+                });
+            }
+            
+            render() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        button {
+                            padding: 0.75rem 1.5rem;
+                            background: #0066cc;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        }
+                        button:hover {
+                            background: #0052a3;
+                        }
+                        button:focus {
+                            outline: 2px solid #0066cc;
+                            outline-offset: 2px;
+                        }
+                    </style>
+                    <button><slot></slot></button>
+                `;
+            }
+            
+            handleClick() {
+                // Publish event via EventBus pattern
+                const event = new CustomEvent('eventbus:message', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        type: 'button:clicked',
+                        source: 'harmony-button',
+                        payload: { id: this.id }
+                    }
+                });
+                window.dispatchEvent(event);
+            }
+        }
+        
+        customElements.define('harmony-button', HarmonyButton);
+        
+        // Listen for button events and update state
+        window.addEventListener('eventbus:message', (e) => {
+            if (e.detail.type === 'button:clicked') {
+                document.getElementById('state-value').textContent = 'clicked';
+            }
+        });
+    </script>
+</body>
+</html>

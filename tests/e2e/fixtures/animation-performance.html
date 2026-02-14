@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation Performance Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 2rem;
+        }
+        .animated-box {
+            width: 100px;
+            height: 100px;
+            background: #0066cc;
+            border-radius: 8px;
+            transition: transform 0.3s ease-out;
+        }
+        .animated-box.animate {
+            transform: translateX(300px) rotate(360deg);
+        }
+    </style>
+</head>
+<body>
+    <h1>Animation Performance Test</h1>
+    
+    <button id="animation-trigger">Trigger Animation</button>
+    
+    <div style="margin-top: 2rem;">
+        <div class="animated-box" id="animated-element"></div>
+    </div>
+    
+    <script>
+        const trigger = document.getElementById('animation-trigger');
+        const box = document.getElementById('animated-element');
+        
+        trigger.addEventListener('click', () => {
+            box.classList.toggle('animate');
+            
+            // Measure frame performance
+            let frameCount = 0;
+            let lastTime = performance.now();
+            
+            function measureFrame(time) {
+                const delta = time - lastTime;
+                lastTime = time;
+                frameCount++;
+                
+                // Record frame time
+                performance.measure(`frame-${frameCount}`, {
+                    start: time - delta,
+                    duration: delta
+                });
+                
+                if (frameCount < 60) {
+                    requestAnimationFrame(measureFrame);
+                }
+            }
+            
+            requestAnimationFrame(measureFrame);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Navigation Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 2rem;
+        }
+        .nav-container {
+            display: flex;
+            gap: 1rem;
+            flex-direction: column;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Keyboard Navigation Test</h1>
+    
+    <div class="nav-container">
+        <harmony-button id="btn-1">Button 1</harmony-button>
+        <harmony-button id="btn-2">Button 2</harmony-button>
+        <harmony-button id="btn-3">Button 3</harmony-button>
+        <harmony-button id="btn-4">Button 4</harmony-button>
+    </div>
+    
+    <script type="module">
+        class HarmonyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                this.render();
+                const button = this.shadowRoot.querySelector('button');
+                
+                button.addEventListener('click', () => this.activate());
+                button.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.activate();
+                    }
+                });
+            }
+            
+            render() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        button {
+                            width: 100%;
+                            padding: 0.75rem 1.5rem;
+                            background: #0066cc;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                            cursor: pointer;
+                            transition: background 0.2s;
+                        }
+                        button:hover {
+                            background: #0052a3;
+                        }
+                        button:focus {
+                            outline: 3px solid #0066cc;
+                            outline-offset: 3px;
+                        }
+                        button:active {
+                            background: #003d7a;
+                        }
+                    </style>
+                    <button><slot></slot></button>
+                `;
+            }
+            
+            activate() {
+                const event = new CustomEvent('eventbus:message', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        type: 'button:activated',
+                        source: 'harmony-button',
+                        payload: { id: this.id }
+                    }
+                });
+                window.dispatchEvent(event);
+            }
+        }
+        
+        customElements.define('harmony-button', HarmonyButton);
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .error-message {
+            color: #d32f2f;
+            font-size: 0.875rem;
+            display: none;
+        }
+        .error-message.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Form Submission Test</h1>
+    
+    <form id="test-form">
+        <harmony-input name="name" label="Name" required></harmony-input>
+        <harmony-input name="email" label="Email" type="email" required></harmony-input>
+        <div class="error-message" id="form-error">Please fill in all required fields</div>
+        <harmony-button type="submit">Submit</harmony-button>
+    </form>
+    
+    <script type="module">
+        class HarmonyInput extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                this.render();
+            }
+            
+            render() {
+                const label = this.getAttribute('label') || '';
+                const type = this.getAttribute('type') || 'text';
+                const required = this.hasAttribute('required');
+                
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        .input-wrapper {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.25rem;
+                        }
+                        label {
+                            font-weight: 500;
+                            font-size: 0.875rem;
+                        }
+                        input {
+                            padding: 0.5rem;
+                            border: 1px solid #ccc;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                        }
+                        input:focus {
+                            outline: 2px solid #0066cc;
+                            outline-offset: 1px;
+                        }
+                    </style>
+                    <div class="input-wrapper">
+                        <label>${label}${required ? ' *' : ''}</label>
+                        <input type="${type}" ${required ? 'required' : ''} />
+                    </div>
+                `;
+            }
+            
+            get value() {
+                return this.shadowRoot.querySelector('input').value;
+            }
+            
+            send_keys(text) {
+                this.shadowRoot.querySelector('input').value = text;
+            }
+        }
+        
+        class HarmonyButton extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+            }
+            
+            connectedCallback() {
+                this.render();
+                this.shadowRoot.querySelector('button').addEventListener('click', (e) => {
+                    if (this.getAttribute('type') === 'submit') {
+                        e.preventDefault();
+                        this.handleSubmit();
+                    }
+                });
+            }
+            
+            render() {
+                this.shadowRoot.innerHTML = `
+                    <style>
+                        button {
+                            padding: 0.75rem 1.5rem;
+                            background: #0066cc;
+                            color: white;
+                            border: none;
+                            border-radius: 4px;
+                            font-size: 1rem;
+                            cursor: pointer;
+                        }
+                    </style>
+                    <button type="${this.getAttribute('type') || 'button'}"><slot></slot></button>
+                `;
+            }
+            
+            handleSubmit() {
+                const form = this.closest('form');
+                const inputs = form.querySelectorAll('harmony-input');
+                const data = {};
+                let valid = true;
+                
+                inputs.forEach(input => {
+                    const value = input.value;
+                    const name = input.getAttribute('name');
+                    const required = input.hasAttribute('required');
+                    
+                    if (required && !value) {
+                        valid = false;
+                    }
+                    data[name] = value;
+                });
+                
+                const errorMsg = document.getElementById('form-error');
+                
+                if (!valid) {
+                    errorMsg.classList.add('visible');
+                    return;
+                }
+                
+                errorMsg.classList.remove('visible');
+                
+                const event = new CustomEvent('eventbus:message', {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        type: 'form:submitted',
+                        source: 'harmony-form',
+                        payload: data
+                    }
+                });
+                window.dispatchEvent(event);
+            }
+        }
+        
+        customElements.define('harmony-input', HarmonyInput);
+        customElements.define('harmony-button', HarmonyButton);
+    </script>
+</body>
+</html>
