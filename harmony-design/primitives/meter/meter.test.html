@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Meter - Manual Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      padding: 2rem;
+      margin: 0;
+    }
+    
+    .test-section {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      background: #1c1c1e;
+      border-radius: 8px;
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: #0a84ff;
+    }
+    
+    .meter-group {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-end;
+      margin: 1rem 0;
+      flex-wrap: wrap;
+    }
+    
+    .meter-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .meter-label {
+      font-size: 0.875rem;
+      color: #8e8e93;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      background: #0a84ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    button:hover {
+      background: #0070e0;
+    }
+    
+    button:active {
+      background: #005cc5;
+    }
+    
+    .info-panel {
+      background: #2c2c2e;
+      padding: 1rem;
+      border-radius: 6px;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+    
+    .horizontal-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .status {
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+    }
+    
+    .status.normal {
+      background: rgba(52, 199, 89, 0.2);
+    }
+    
+    .status.warning {
+      background: rgba(255, 204, 0, 0.2);
+    }
+    
+    .status.overflow {
+      background: rgba(255, 59, 48, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <h1>🎚️ Harmony Meter - Manual Test Suite</h1>
+  <p>Testing all states: default, hover, focus, active, disabled</p>
+
+  <!-- Test 1: Vertical Orientation -->
+  <div class="test-section">
+    <h2>Test 1: Vertical Orientation (Default)</h2>
+    <div class="meter-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-v1" orientation="vertical" value="-12"></harmony-meter>
+        <span class="meter-label">-12 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-v2" orientation="vertical" value="-24"></harmony-meter>
+        <span class="meter-label">-24 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-v3" orientation="vertical" value="-6"></harmony-meter>
+        <span class="meter-label">-6 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-v4" orientation="vertical" value="-3"></harmony-meter>
+        <span class="meter-label">-3 dB (Warning)</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-v5" orientation="vertical" value="-60"></harmony-meter>
+        <span class="meter-label">-60 dB (Min)</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="animateVertical()">Animate Levels</button>
+      <button onclick="resetPeaks('v')">Reset Peaks</button>
+    </div>
+  </div>
+
+  <!-- Test 2: Horizontal Orientation -->
+  <div class="test-section">
+    <h2>Test 2: Horizontal Orientation</h2>
+    <div class="horizontal-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-h1" orientation="horizontal" value="-18"></harmony-meter>
+        <span class="meter-label">-18 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-h2" orientation="horizontal" value="-6"></harmony-meter>
+        <span class="meter-label">-6 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-h3" orientation="horizontal" value="-3"></harmony-meter>
+        <span class="meter-label">-3 dB (Warning)</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="animateHorizontal()">Animate Levels</button>
+      <button onclick="resetPeaks('h')">Reset Peaks</button>
+    </div>
+  </div>
+
+  <!-- Test 3: Disabled State -->
+  <div class="test-section">
+    <h2>Test 3: Disabled State</h2>
+    <div class="meter-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-d1" orientation="vertical" value="-12" disabled></harmony-meter>
+        <span class="meter-label">Disabled</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-d2" orientation="horizontal" value="-12" disabled></harmony-meter>
+        <span class="meter-label">Disabled</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 4: Custom Range -->
+  <div class="test-section">
+    <h2>Test 4: Custom Range (-48 to +6 dB)</h2>
+    <div class="meter-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-c1" orientation="vertical" min-db="-48" max-db="6" value="-12"></harmony-meter>
+        <span class="meter-label">-12 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-c2" orientation="vertical" min-db="-48" max-db="6" value="0"></harmony-meter>
+        <span class="meter-label">0 dB</span>
+      </div>
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-c3" orientation="vertical" min-db="-48" max-db="6" value="3"></harmony-meter>
+        <span class="meter-label">+3 dB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 5: Real-time Animation (Performance Test) -->
+  <div class="test-section">
+    <h2>Test 5: Real-time Animation (60fps Performance)</h2>
+    <div class="meter-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-anim" orientation="vertical" value="-60"></harmony-meter>
+        <span class="meter-label" id="anim-value">-60 dB</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="startAnimation()">Start Animation</button>
+      <button onclick="stopAnimation()">Stop Animation</button>
+    </div>
+    <div id="perf-info" class="info-panel">
+      FPS: -- | Frame Time: -- ms
+    </div>
+    <div id="status-indicator" class="status normal">
+      Status: Normal
+    </div>
+  </div>
+
+  <!-- Test 6: Event Handling -->
+  <div class="test-section">
+    <h2>Test 6: Event Handling (Overflow Detection)</h2>
+    <div class="meter-group">
+      <div class="meter-wrapper">
+        <harmony-meter id="meter-event" orientation="vertical" value="-12"></harmony-meter>
+        <span class="meter-label">Test Meter</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="testOverflow()">Trigger Overflow</button>
+    </div>
+    <div id="event-log" class="info-panel">
+      Event log (empty)
+    </div>
+  </div>
+
+  <script type="module">
+    import { HarmonyMeter } from './meter.js';
+
+    // Animation state
+    let animationRunning = false;
+    let animationFrameId = null;
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+    let fpsUpdateTime = performance.now();
+
+    // Test 1: Animate vertical meters
+    window.animateVertical = function() {
+      const meters = [
+        document.getElementById('meter-v1'),
+        document.getElementById('meter-v2'),
+        document.getElementById('meter-v3'),
+        document.getElementById('meter-v4'),
+        document.getElementById('meter-v5')
+      ];
+      
+      let phase = 0;
+      const animate = () => {
+        phase += 0.05;
+        meters.forEach((meter, i) => {
+          const offset = i * Math.PI / 2;
+          const value = -30 + Math.sin(phase + offset) * 25;
+          meter.setValue(value);
+        });
+        
+        if (phase < Math.PI * 4) {
+          requestAnimationFrame(animate);
+        }
+      };
+      animate();
+    };
+
+    // Test 2: Animate horizontal meters
+    window.animateHorizontal = function() {
+      const meters = [
+        document.getElementById('meter-h1'),
+        document.getElementById('meter-h2'),
+        document.getElementById('meter-h3')
+      ];
+      
+      let phase = 0;
+      const animate = () => {
+        phase += 0.05;
+        meters.forEach((meter, i) => {
+          const offset = i * Math.PI / 3;
+          const value = -20 + Math.sin(phase + offset) * 15;
+          meter.setValue(value);
+        });
+        
+        if (phase < Math.PI * 4) {
+          requestAnimationFrame(animate);
+        }
+      };
+      animate();
+    };
+
+    // Reset peaks
+    window.resetPeaks = function(type) {
+      const prefix = type === 'v' ? 'meter-v' : 'meter-h';
+      const count = type === 'v' ? 5 : 3;
+      
+      for (let i = 1; i <= count; i++) {
+        const meter = document.getElementById(`${prefix}${i}`);
+        if (meter) meter.resetPeak();
+      }
+    };
+
+    // Test 5: Real-time animation with performance monitoring
+    window.startAnimation = function() {
+      if (animationRunning) return;
+      
+      animationRunning = true;
+      const meter = document.getElementById('meter-anim');
+      const valueLabel = document.getElementById('anim-value');
+      const perfInfo = document.getElementById('perf-info');
+      const statusIndicator = document.getElementById('status-indicator');
+      
+      lastFrameTime = performance.now();
+      fpsUpdateTime = performance.now();
+      frameCount = 0;
+      
+      const animate = () => {
+        if (!animationRunning) return;
+        
+        const now = performance.now();
+        const frameTime = now - lastFrameTime;
+        lastFrameTime = now;
+        
+        // Simulate audio input with random variation
+        const baseLevel = -20;
+        const variation = Math.random() * 20 - 10;
+        const value = baseLevel + variation + Math.sin(now / 500) * 10;
+        
+        meter.setValue(value);
+        valueLabel.textContent = `${value.toFixed(1)} dB`;
+        
+        // Update FPS counter
+        frameCount++;
+        if (now - fpsUpdateTime >= 1000) {
+          const fps = frameCount;
+          frameCount = 0;
+          fpsUpdateTime = now;
+          
+          perfInfo.textContent = `FPS: ${fps} | Frame Time: ${frameTime.toFixed(2)} ms`;
+          
+          // Update status
+          if (fps < 50) {
+            statusIndicator.className = 'status overflow';
+            statusIndicator.textContent = 'Status: Performance Issue';
+          } else if (fps < 58) {
+            statusIndicator.className = 'status warning';
+            statusIndicator.textContent = 'Status: Warning';
+          } else {
+            statusIndicator.className = 'status normal';
+            statusIndicator.textContent = 'Status: Normal (60fps)';
+          }
+        }
+        
+        animationFrameId = requestAnimationFrame(animate);
+      };
+      
+      animate();
+    };
+
+    window.stopAnimation = function() {
+      animationRunning = false;
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+    };
+
+    // Test 6: Event handling
+    window.testOverflow = function() {
+      const meter = document.getElementById('meter-event');
+      const eventLog = document.getElementById('event-log');
+      
+      let value = -12;
+      const animate = () => {
+        value += 0.5;
+        meter.setValue(value);
+        
+        if (value < 0) {
+          requestAnimationFrame(animate);
+        }
+      };
+      animate();
+    };
+
+    // Listen for overflow events
+    document.getElementById('meter-event').addEventListener('meter-overflow', (e) => {
+      const eventLog = document.getElementById('event-log');
+      const timestamp = new Date().toLocaleTimeString();
+      eventLog.textContent = `[${timestamp}] Overflow detected: ${e.detail.value.toFixed(1)} dB (Peak: ${e.detail.peak.toFixed(1)} dB)`;
+    });
+
+    console.log('✅ Harmony Meter test suite loaded');
+    console.log('📊 Open Chrome DevTools Performance panel to verify 60fps');
+  </script>
+</body>
+</html>
