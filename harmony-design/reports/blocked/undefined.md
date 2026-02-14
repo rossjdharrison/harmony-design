@@ -1,67 +1,71 @@
 # Blocked Task Report: undefined
 
 **Date:** 2024
-**Status:** BLOCKED - Cannot Proceed
-**Severity:** Critical
+**Reporter:** Autonomous Executor
+**Status:** BLOCKED
 
-## Reason for Block
+## Reason for Blocking
 
-The task cannot be completed due to missing essential information:
+The task cannot be completed due to missing critical information:
 
 1. **Task ID:** undefined
 2. **Task Description:** "Details not available"
-3. **No clear requirements or acceptance criteria**
+3. **Project Context:** "No structure available"
 
-## Context
-
-The system shows recent commits with "feat(undefined): Task implementation" messages, suggesting previous attempts may have encountered similar issues or were placeholder commits.
+Without a clear task description, acceptance criteria, or context, it is impossible to:
+- Determine what files need to be created or modified
+- Understand the scope and requirements
+- Verify completion criteria
+- Update documentation appropriately
+- Ensure the implementation aligns with system architecture
 
 ## Attempted Solutions
 
-1. ✗ Reviewed PROJECT CONTEXT - No structure available
-2. ✗ Checked recent changes - All show undefined task implementations
-3. ✗ Analyzed global policies - No default behavior specified for undefined tasks
-
-## Impact
-
-- Cannot implement features without requirements
-- Cannot update documentation (Policy 19) without knowing what to document
-- Cannot verify compliance with policies without task scope
-- Risk of introducing technical debt if proceeding with assumptions
+1. ✗ Reviewed recent commit history - all commits show "feat(undefined): Task implementation" with no actionable details
+2. ✗ Checked for project context - none available
+3. ✗ Attempted to infer requirements from policies - insufficient information
 
 ## Recommended Enabling Work
 
-To unblock this task, one of the following is required:
+To unblock this task, the following information is required:
 
-### Option A: Task Definition (Preferred)
-Provide a new task with:
-- Clear task ID
-- Specific description of what needs to be implemented
-- Acceptance criteria
-- Any relevant design specifications
+### Critical Information Needed
 
-### Option B: System Maintenance Task
-If no specific feature work is needed, consider:
-- Audit existing codebase for policy compliance
-- Update DESIGN_SYSTEM.md with current system state
-- Run quality gates on existing code
-- Clean up placeholder commits
+1. **Task ID**: A proper task identifier (e.g., `HDS-123`, `COMP-456`)
+2. **Task Description**: Clear description including:
+   - What component/feature/fix is being requested
+   - Acceptance criteria
+   - Expected behavior
+   - Any design specifications or references
 
-### Option C: Discovery Task
-Create a discovery task to:
-- Document current system architecture
-- Identify gaps in implementation
-- Prioritize next features based on design system needs
+3. **Context Information**:
+   - Which bounded context does this affect?
+   - Is this a new component, bug fix, or enhancement?
+   - Are there related tasks or dependencies?
 
-## Recommended Next Action
+### Example of Sufficient Task Definition
 
-**AWAIT FURTHER INSTRUCTIONS** with properly defined task requirements.
+```
+Task ID: HDS-042
+Description: Implement Button primitive component
+- Create web component with shadow DOM
+- Support variants: primary, secondary, ghost
+- Support sizes: small, medium, large
+- Support states: default, hover, focus, active, disabled
+- Publish click events to EventBus
+- Must pass Chrome testing for all states
+```
 
-## Notes
+## Next Steps
 
-All global policies reviewed and understood. Ready to proceed once task requirements are provided.
+**AWAITING:** Task definition with sufficient detail to proceed
+
+Once proper task information is provided, implementation can proceed following all global policies including:
+- Documentation updates to DESIGN_SYSTEM.md
+- Chrome testing verification
+- Performance budget compliance
+- Git commit and push requirements
 
 ---
 
-**Reporter:** Autonomous Executor
-**Awaiting:** Task definition or alternative instructions
+**Note:** This report satisfies Policy 18 requirement. Task remains blocked until further instructions are provided.
