@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design System Dashboard - Harmony</title>
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/global.css">
+</head>
+<body>
+  <!-- App Shell -->
+  <header class="app-header">
+    <div class="container">
+      <h1 class="app-title">Harmony Design System</h1>
+      <nav class="app-nav">
+        <a href="index.html">Home</a>
+        <a href="dashboard.html" class="active">Dashboard</a>
+        <a href="components.html">Components</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- Design System Dashboard -->
+    <design-system-dashboard></design-system-dashboard>
+  </main>
+
+  <!-- EventBus for debugging (Ctrl+Shift+E) -->
+  <event-bus-component></event-bus-component>
+
+  <!-- Load EventBus first -->
+  <script src="../core/event-bus.js"></script>
+  
+  <!-- Load components -->
+  <script src="../components/molecules/event-bus-component.js"></script>
+  <script src="../components/organisms/design-system-dashboard.js"></script>
+
+  <script>
+    // Initialize EventBus keyboard shortcut
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+        const eventBusComponent = document.querySelector('event-bus-component');
+        if (eventBusComponent) {
+          eventBusComponent.style.display = 
+            eventBusComponent.style.display === 'none' ? 'block' : 'none';
+        }
+      }
+    });
+
+    // Publish some test events for demonstration
+    setTimeout(() => {
+      if (window.EventBus) {
+        window.EventBus.publish('SystemInitialized', { version: '1.0.0' }, 'dashboard');
+        
+        // Simulate periodic events
+        setInterval(() => {
+          window.EventBus.publish('HealthCheck', { status: 'ok' }, 'system');
+        }, 5000);
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
