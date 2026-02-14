@@ -1,167 +1,206 @@
 # Harmony Design System
 
-A design system for the Harmony digital audio workstation, built with web components and a graph-based architecture.
+A comprehensive design system for building musical interfaces with performance, accessibility, and consistency.
 
 ## Overview
 
-The Harmony Design System provides reusable UI components, design patterns, and development tools for building the Harmony DAW interface. It emphasizes performance, accessibility, and maintainability through strict policies and automated validation.
+Harmony is a design system that bridges design and implementation for music creation tools. It provides reusable components, patterns, and tools to maintain consistency across the application.
 
 ## Core Concepts
 
-### Component Lifecycle State Machine
+### Component States
 
-Components progress through defined states from initial design to completion:
+Components progress through defined states during their lifecycle:
 
-```
-draft → design_complete → in_progress → code_review → testing → complete
-```
+- **draft**: Initial state, design in progress
+- **design_complete**: Design specification finalized
+- **implemented**: Code implementation complete
+- **validated**: Testing and validation complete
 
-Each transition requires specific prerequisites to be met, enforced by the transition validator.
+Each component's state is tracked in `harmony-design/components/{component-id}.state.json`.
 
-### State Machine Validation
+### State Machine
 
-**Location**: `state-machine/transition-validator.js`
+The state machine defines valid transitions between component states and their prerequisites.
 
-The transition validator checks prerequisites before allowing state changes, ensuring quality gates are met at each stage.
+**Definition:** `harmony-design/state-machine/definition.json`
 
-#### Validation Flow
+**Transition Rules:** `harmony-design/state-machine/transition-rules.json`
 
-1. **Check Required Fields**: Ensures all mandatory data is present
-2. **Check Required Links**: Verifies component relationships (domain, intent, UI)
-3. **Run Custom Checks**: Executes state-specific validation logic
-4. **Report Results**: Returns validation result with errors and warnings
+Transitions require specific prerequisites:
+- **draft → design_complete**: Design specification file (`.pen`) must exist
+- **design_complete → implemented**: Implementation file (`.js`) must exist
+- **implemented → validated**: Testing and validation must be complete
 
-#### Key Transitions
+See: [State Machine Definition](./state-machine/definition.json)
 
-**draft → design_complete**
-- Requires: component name, type, design specification
-- Validates: Design spec file exists
+### Component Links
 
-**in_progress → code_review**
-- Requires: implementation file, domain links, intent links
-- Validates: Component documents what domain types it renders and what actions are available
+Components maintain relationships to other system elements:
 
-**testing → complete**
-- Requires: all tests passed, Chrome testing, state verification, performance validation
-- Validates: Compliance with Policies #10, #11, #12 (see below)
+- **Domain Links**: What domain types render this component
+- **Intent Links**: What actions/intents are available
+- **UI Links**: Where component is used in application
 
-### Component Relationships
+Links are stored in component state files and enable impact analysis.
 
-Components maintain typed relationships to other system elements:
+## MCP Tools
 
-- **Domain Links**: What domain types the component renders (e.g., Button renders PlayIntent)
-- **Intent Links**: What actions are available (e.g., Button can trigger Play, Stop)
-- **UI Links**: Where the component is used in the interface (e.g., Button used in PlayerControls)
+### update_component_state
 
-**Tools**: 
-- `get_component_usage` - Find where components are used
-- See `state-machine/transition-validator.js` for link validation
+MCP tool for updating component state with automatic validation.
 
-### Quality Gates
+**Location:** `harmony-design/mcp/tools/update_component_state.py`
 
-Before transitioning to `complete`, components must pass:
+**Usage:**
 
-1. **Chrome Testing** (Policy #10): Tested in Chrome browser
-2. **State Verification** (Policy #11): All states tested (default, hover, focus, active, disabled, error, loading, empty)
-3. **Performance Validation** (Policy #12): 60fps for animations, verified with Chrome DevTools Performance panel
+```python
+from harmony_design.mcp.tools import update_component_state
 
-## Critical Policies
-
-### Performance Budgets
-- **Render**: Maximum 16ms per frame (60fps)
-- **Memory**: Maximum 50MB WASM heap
-- **Load**: Maximum 200ms initial load time
-
-### Testing Requirements
-- **Policy #10**: All UI components tested in Chrome before completion
-- **Policy #11**: All component states verified (default, hover, focus, active, disabled, error, loading, empty)
-- **Policy #12**: Animations tested for 60fps performance
-
-### Architecture Boundaries
-- **Rust → WASM**: Bounded contexts, graph engine, audio processing
-- **Vanilla JS/HTML/CSS**: UI rendering, DOM manipulation
-- **No frameworks**: React, Leptos, Vue prohibited without architecture review
-- **No npm runtime dependencies**: Build tools only
-
-### Documentation
-- **Policy #19**: Documentation update mandatory for task completion
-- **Policy #21**: Single unified documentation in this file
-- **Format**: B1-level English, logical sections, concise, links to code files
-
-## Implementation Notes
-
-### Using the Transition Validator
-
-```javascript
-import { validateTransition } from './state-machine/transition-validator.js';
-
-const context = {
-  component_name: 'Button',
-  implementation_file: 'button.js',
-  chrome_tested: true,
-  states_verified: true,
-  performance_validated: true,
-  tests_passed: true,
-  domain_links: ['PlayIntent'],
-  intent_links: ['Play', 'Stop'],
-  ui_links: ['PlayerControls']
-};
-
-const result = validateTransition('testing', 'complete', context);
-if (!result.valid) {
-  console.error('Cannot complete component:', result.errors);
-}
+result = update_component_state(
+    component_id="button-primary",
+    new_state="design_complete"
+)
 ```
 
-### Adding New Validation Rules
+**Validation:**
 
-Edit `TRANSITION_PREREQUISITES` in `state-machine/transition-validator.js`:
+The tool automatically checks:
+1. Component exists
+2. Transition is valid per state machine
+3. All prerequisites are satisfied
+4. Required files exist
+5. Required properties are set
 
-```javascript
-'state_from_to_state_to': {
-  requiredFields: ['field1', 'field2'],
-  requiredLinks: ['link_type'],
-  checks: [
+**Force Mode:**
+
+Use `force=True` to bypass validation (use with caution):
+
+```python
+result = update_component_state(
+    component_id="button-primary",
+    new_state="implemented",
+    force=True
+)
+```
+
+See: [MCP Tools Documentation](./mcp/README.md)
+
+## Component State Format
+
+Each component has a state file: `harmony-design/components/{component-id}.state.json`
+
+```json
+{
+  "component_id": "button-primary",
+  "state": "draft",
+  "links": {
+    "domain": [],
+    "intent": [],
+    "ui": []
+  },
+  "state_history": [
     {
-      name: 'check_name',
-      message: 'Error message if check fails',
-      validate: (context) => /* return boolean */
+      "from": "draft",
+      "to": "design_complete",
+      "timestamp": "2024-01-15T10:30:00Z"
     }
   ]
 }
 ```
 
-### Testing Components
+## Working with the System
 
-1. Open component in Chrome
-2. Test all states: default, hover, focus, active, disabled
-3. For complex components: error, loading, empty states
-4. Open DevTools Performance panel
-5. Record interaction, verify 60fps
-6. Update component context: `chrome_tested: true`, `states_verified: true`, `performance_validated: true`
+### Creating a New Component
 
-## File Structure
+1. Create component state file in `harmony-design/components/`
+2. Initial state is `draft`
+3. Create design specification (`.pen` file)
+4. Update state to `design_complete` using MCP tool
+5. Implement component (`.js` file)
+6. Update state to `implemented`
+7. Test and validate
+8. Update state to `validated`
 
+### Updating Component State
+
+Always use the MCP tool to ensure validation:
+
+```python
+result = update_component_state("my-component", "design_complete")
+
+if not result["success"]:
+    print("Validation errors:")
+    for error in result["validation_errors"]:
+        print(f"  - {error}")
 ```
-harmony-design/
-├── DESIGN_SYSTEM.md (this file)
-├── state-machine/
-│   ├── transition-validator.js
-│   ├── transition-validator.test.js
-│   ├── test-runner.html
-│   └── README.md
-└── reports/
-    └── blocked/ (for blocked task reports)
+
+### Checking Prerequisites
+
+Before attempting a state transition, ensure:
+
+1. Required files exist
+2. Required properties are set in state file
+3. Necessary links are established
+
+The MCP tool will report specific missing prerequisites.
+
+## Testing
+
+### MCP Tool Tests
+
+Run MCP tool tests:
+
+```bash
+pytest harmony-design/mcp/tools/test_update_component_state.py -v
 ```
 
-## Recent Changes
+Tests cover:
+- State machine loading
+- Transition validation
+- Prerequisite checking
+- State updates
+- Force mode
+- Error handling
 
-- Added transition validation system with prerequisite checking
-- Enforces Policies #10, #11, #12 for component completion
-- Validates component relationships (domain, intent, UI links)
-- Provides test suite and browser-based test runner
+## Implementation Notes
+
+### State Machine Validation
+
+Validation logic in `ComponentStateUpdater` class checks:
+
+1. **Transition Existence**: Is the transition defined in state machine?
+2. **File Prerequisites**: Do required files exist?
+3. **Property Prerequisites**: Are required properties set?
+4. **Link Prerequisites**: Are required links established?
+
+### Prerequisite Types
+
+- `file_exists`: Check if specific file exists (supports `{component_id}` placeholder)
+- `property_set`: Check if property is set in component state
+- `linked_resources`: Check if specific link type has entries
+
+### State History
+
+Each state transition is recorded with:
+- Previous state
+- New state
+- Timestamp (ISO 8601 UTC)
+
+This provides audit trail for component lifecycle.
+
+## Architecture Compliance
+
+This implementation follows Harmony's architecture policies:
+
+- **Python for tooling**: MCP tools are Python (dev/build tools only)
+- **No runtime dependencies**: Tools are separate from runtime code
+- **Validation before action**: State changes validated before applied
+- **Explicit error reporting**: Clear validation error messages
+- **Audit trail**: State history tracked for all transitions
 
 ## See Also
 
-- `state-machine/transition-validator.js` - Validation implementation
-- `state-machine/README.md` - Detailed validation documentation
+- [MCP Tools](./mcp/README.md)
+- [State Machine Definition](./state-machine/definition.json)
+- [Transition Rules](./state-machine/transition-rules.json)

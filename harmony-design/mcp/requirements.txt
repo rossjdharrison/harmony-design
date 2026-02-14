@@ -1,0 +1,7 @@
+# MCP Tools Requirements
+# Install with: pip install -r requirements.txt
+
+# Testing
+pytest>=7.0.0
+
+# No other dependencies - tools use Python standard library only
