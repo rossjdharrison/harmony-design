@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Page content goes here -->
+  </div>
+
+  <!-- EventBus Monitor - Available on every page (Ctrl+Shift+E) -->
+  <harmony-event-bus></harmony-event-bus>
+
+  <!-- Core EventBus -->
+  <script type="module" src="/harmony-core/event-bus.js"></script>
+  
+  <!-- EventBus Component -->
+  <script type="module" src="/harmony-ui/components/event-bus-component.js"></script>
+</body>
+</html>
