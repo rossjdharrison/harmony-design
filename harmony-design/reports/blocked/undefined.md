@@ -1,47 +1,52 @@
 # Blocked Task Report: undefined
 
-**Date:** 2024
-**Status:** BLOCKED - Cannot Proceed
+**Date**: 2024
+**Status**: BLOCKED - Cannot Proceed
 
-## Reason for Block
+## Reason for Blocking
 
-Task cannot be completed due to missing task specification:
-- Task ID: undefined
-- Task Description: "Details not available"
-- No actionable requirements provided
+This task cannot be completed due to missing critical information:
+
+1. **Task ID**: Listed as "undefined"
+2. **Task Description**: "Details not available"
+3. **No specific requirements**: Cannot determine what needs to be implemented
+4. **No acceptance criteria**: Cannot verify completion
 
 ## Attempted Solutions
 
-1. ✗ Reviewed recent commits (af75540, a690e4c, 4ec1c95, 28efd25, 98f839a) - all show "feat(undefined): Task implementation" with no specific details
+1. ✗ Reviewed recent commit history - all commits show generic "feat(undefined): Task implementation" messages
 2. ✗ Checked PROJECT CONTEXT - shows "No structure available"
-3. ✗ No task-specific requirements beyond generic implementation guidelines
+3. ✗ Looked for task-specific requirements - none provided beyond general policies
 
 ## Impact
 
-Cannot satisfy mandatory policies:
-- **Policy #19 (Documentation Non-Optional)**: Cannot document what was implemented without knowing the task
-- **Policy #4 (Quality Gates)**: Cannot define quality criteria without task specification
-- **Policy #10-13 (UI Testing)**: Cannot determine if UI testing is required
-- **Policy #1 (Implement task completely)**: Cannot implement unknown requirements
+- Cannot create any files without knowing what to implement
+- Cannot update DESIGN_SYSTEM.md meaningfully (Policy 19 requires documentation updates)
+- Cannot satisfy "Implement the task completely" requirement
+- Risk of introducing incorrect code or technical debt (Policy 4)
 
 ## Recommended Enabling Work
 
-To unblock this task, provide:
+To unblock this task, one of the following is needed:
 
-1. **Task ID**: A specific identifier for tracking
-2. **Task Description**: Clear description of what needs to be implemented
-3. **Acceptance Criteria**: How to verify completion
-4. **Task Type**: Is this a:
-   - UI component implementation?
-   - Bounded context feature?
-   - Schema change?
-   - Documentation update?
-   - Bug fix?
+1. **Provide Task Details**: 
+   - Clear task ID
+   - Specific description of what needs to be implemented
+   - Acceptance criteria
+
+2. **Provide Context**:
+   - Which component/module needs work?
+   - What feature is being added/modified?
+   - Are there design specs (.pen files) to reference?
+
+3. **Alternative**: 
+   - If this is a test/placeholder task, please provide a real task
+   - If recent commits contain the actual work, clarify what additional work is needed
 
 ## Next Steps
 
-Awaiting task specification before proceeding with implementation.
+Awaiting clarification on task requirements before proceeding.
 
 ---
 
-**Agent Status:** Standing by for valid task assignment
+**Note**: This report follows Policy 18 (Blocked Task Reporting Protocol). No code changes have been made to avoid introducing technical debt or incorrect implementations.
