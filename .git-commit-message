@@ -1,0 +1,33 @@
+feat(task-del-edge-type-definitions-composes): Edge type definitions for design system graph
+
+Implements five edge types for modeling relationships in the design system:
+- composes_of: Component composition relationships
+- inherits_pattern: Pattern inheritance relationships  
+- implements_design: Design implementation relationships
+- uses_token: Token usage relationships
+- used_by: Reverse dependency tracking
+
+Features:
+- Rust schema definitions in harmony-schemas crate
+- Serialization support via serde
+- Edge reversal for bidirectional relationships
+- Edge classification (dependency vs composition)
+- Comprehensive unit and integration tests
+- Full documentation in DESIGN_SYSTEM.md and dedicated doc file
+
+Files created:
+- harmony-schemas/src/graph/edge_types.rs (core definitions)
+- harmony-schemas/src/graph/mod.rs (module exports)
+- harmony-schemas/src/lib.rs (crate root)
+- harmony-schemas/Cargo.toml (crate configuration)
+- harmony-schemas/tests/integration_test.rs (integration tests)
+- harmony-design/docs/graph-edge-types.md (detailed documentation)
+
+Documentation updated:
+- harmony-design/DESIGN_SYSTEM.md (added graph structure section)
+
+Satisfies policies:
+- Schema-first approach (Rust definitions)
+- Documentation non-optional (DESIGN_SYSTEM.md updated)
+- No technical debt (full test coverage)
+- Bounded context separation (Rust for core logic)

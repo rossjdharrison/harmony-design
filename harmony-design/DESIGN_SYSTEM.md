@@ -1,256 +1,152 @@
 # Harmony Design System
 
-A comprehensive design system for building musical interfaces with Web Components, WASM-powered audio processing, and event-driven architecture.
+Welcome to Harmony! This is a design system built for creating consistent and beautiful user interfaces.
 
-## Table of Contents
+## What is Harmony?
 
-1. [Architecture Overview](#architecture-overview)
-2. [Event-Driven Communication](#event-driven-communication)
-3. [Event Source Highlighting](#event-source-highlighting)
-4. [Component Development](#component-development)
-5. [Bounded Contexts](#bounded-contexts)
-6. [Performance Requirements](#performance-requirements)
-7. [Development Workflow](#development-workflow)
+Harmony is a complete design system that helps you build user interfaces. It includes reusable components, design patterns, and guidelines that work together smoothly.
 
-## Architecture Overview
+## How to Use This Documentation
 
-Harmony uses a layered architecture with clear separation of concerns:
+This document explains the main ideas and how to work with the system. For detailed code, look at the files linked in each section.
 
-- **UI Layer**: Vanilla Web Components (HTML/CSS/JS)
-- **Event Layer**: EventBus for decoupled communication
-- **Logic Layer**: Bounded Contexts (Rust → WASM)
-- **Audio Layer**: Graph Engine (Rust → WASM)
+## Graph Structure
 
-### Technology Boundaries
+Harmony models the design system as a graph where components, patterns, tokens, and designs are connected through meaningful relationships.
 
-- **Rust → WASM**: Bounded contexts, graph engine, audio processing
-- **Vanilla JS**: UI rendering, DOM manipulation, event handling
-- **Python**: Test servers, build scripts, dev tools only
-- **npm**: Build tools and dev dependencies only (no runtime deps)
+### Edge Types
 
-## Event-Driven Communication
+The system uses five types of relationships (edges) to connect nodes:
 
-All component-to-component and component-to-BC communication happens via EventBus.
+1. **composes_of** - Shows when one component contains another
+   - Example: A Form contains Buttons
+   - Direction: Parent → Child
 
-### Pattern
+2. **inherits_pattern** - Shows when a component follows a pattern
+   - Example: PrimaryButton follows BaseButton pattern
+   - Direction: Variant → Base Pattern
 
-```
-User Action → Component publishes event → EventBus routes → BC handles → BC publishes result
-```
+3. **implements_design** - Shows when code implements a design
+   - Example: ButtonComponent implements ButtonDesignSpec
+   - Direction: Implementation → Specification
 
-### Event Schema
+4. **uses_token** - Shows when a component uses a design token
+   - Example: Button uses ColorPrimary token
+   - Direction: Component → Token
 
-All events must have defined schemas in `harmony-schemas/`. Events are validated at runtime.
+5. **used_by** - Shows where a component is used (reverse of composes_of)
+   - Example: Button is used by Form
+   - Direction: Child → Parent
 
-### Direct Calls Prohibited
+### Why Use a Graph?
 
-Components must NEVER call Bounded Contexts directly. Always use EventBus.
+The graph structure helps us:
+- Track dependencies between components
+- Find where changes will have impact
+- Understand component relationships
+- Maintain consistency across the system
+- Generate documentation automatically
 
-See: [harmony-ui/core/event-bus.js](../harmony-ui/core/event-bus.js)
+### Implementation
 
-## Event Source Highlighting
+Edge types are defined in [`harmony-schemas/src/graph/edge_types.rs`](../harmony-schemas/src/graph/edge_types.rs).
 
-The EventBusComponent includes visual highlighting to show which component emitted each event.
+For detailed information about each edge type, see [`docs/graph-edge-types.md`](docs/graph-edge-types.md).
 
-### Features
+## Architecture Rules
 
-- **Unique Colors**: Each event source gets a consistent color from a 12-color palette
-- **Source Badges**: Visual badges display the source name with color coding
-- **Border Highlighting**: Event items have colored left borders matching their source
-- **Interactive Legend**: Collapsible legend shows all active sources
-- **Auto-Detection**: Sources are automatically extracted from event detail objects
+### What Goes Where
 
-### How It Works
+- **Rust + WASM**: Graph engine, schema definitions, core logic
+- **Vanilla JS/HTML/CSS**: UI components, DOM manipulation
+- **Python**: Build scripts, test servers, development tools only
+- **npm**: Build tools and development only, not runtime code
 
-When an event is logged:
+### Component Communication
 
-1. The source is extracted from `detail.source`, `detail.componentId`, or `detail.emitter`
-2. A unique color is assigned (or retrieved if source seen before)
-3. A colored badge is added to the event item
-4. The event item's left border is colored
-5. The legend is updated with the new source
+Components never call bounded contexts directly. Instead:
+1. User interacts with component
+2. Component publishes event to EventBus
+3. EventBus routes event to bounded context
+4. Bounded context processes and publishes result
+5. Component listens for result event and updates
 
-### Component Integration
+### Performance Budgets
 
-Components should include a `source` field when publishing events:
-
-```javascript
-eventBus.publish('ButtonClicked', {
-  source: 'PlayButton',  // ← Identifies the emitting component
-  action: 'play'
-});
-```
-
-### Visual Design
-
-- **Color Palette**: 12 distinct colors optimized for differentiation
-- **Badge Style**: Rounded rectangles with 20% opacity background
-- **Border Width**: 3px solid left border on event items
-- **Legend Layout**: Responsive grid, collapsible, sticky positioning
-
-### Performance
-
-- Color assignment: O(1) lookup via Map
-- Badge creation: < 1ms per event
-- Legend update: O(n) where n = number of unique sources
-- Memory: ~1KB per unique source
-
-### Files
-
-- [event-source-highlighter.js](../harmony-ui/components/event-bus-component/event-source-highlighter.js) - Core highlighting logic
-- [source-legend.js](../harmony-ui/components/event-bus-component/source-legend.js) - Legend UI component
-- [source-highlighting.css](../harmony-ui/components/event-bus-component/styles/source-highlighting.css) - Styles
-- [integration-patch.js](../harmony-ui/components/event-bus-component/integration-patch.js) - EventBusComponent integration
-
-## Component Development
-
-### Web Component Structure
-
-All UI components use shadow DOM and follow this structure:
-
-```javascript
-class MyComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
-
-  connectedCallback() {
-    this.render();
-    this.attachEventListeners();
-  }
-
-  render() {
-    // Render to shadow DOM
-  }
-}
-```
-
-### Event Publishing
-
-Components publish events, never handle business logic:
-
-```javascript
-this.publishEvent('ActionRequested', {
-  source: this.componentId,
-  action: 'play',
-  timestamp: Date.now()
-});
-```
-
-### Testing Requirements
-
-All components must be tested in Chrome before task completion:
-
-- ✅ Default state
-- ✅ Hover state
-- ✅ Focus state
-- ✅ Active state
-- ✅ Disabled state
-- ✅ Error states (if applicable)
-- ✅ Loading states (if applicable)
-- ✅ Empty states (if applicable)
-
-### Performance Testing
-
-Animations must maintain 60fps. Use Chrome DevTools Performance panel to verify.
-
-## Bounded Contexts
-
-Bounded Contexts (BCs) contain business logic and are implemented in Rust, compiled to WASM.
-
-### Pattern
-
-```rust
-// Subscribe to command events
-eventBus.subscribe("PlayCommand", handlePlay);
-
-// Process and publish results
-fn handlePlay(event: Event) {
-    // Business logic here
-    eventBus.publish("PlaybackStarted", result);
-}
-```
-
-### Schema Changes
-
-When changing BC behavior:
-
-1. Navigate to `harmony-schemas/`
-2. Modify the schema file
-3. Run codegen: `./scripts/codegen.sh`
-4. Verify compilation
-5. Commit schema + generated code together
-
-**Never edit generated Rust code directly.**
-
-## Performance Requirements
-
-### Absolute Constraints
-
-- **Render Budget**: Maximum 16ms per frame (60fps)
-- **Memory Budget**: Maximum 50MB WASM heap
-- **Load Budget**: Maximum 200ms initial load time
-
-These cannot be violated under any circumstances.
+Every feature must meet these limits:
+- **Render**: Maximum 16ms per frame (60fps)
+- **Memory**: Maximum 50MB WASM heap
+- **Load**: Maximum 200ms initial load time
 
 ## Development Workflow
 
-### EventBusComponent Access
+### Before You Start
 
-Press `Ctrl+Shift+E` on any page to open the EventBusComponent debugger. It shows:
+1. Read this documentation
+2. Check existing components in the repository
+3. Review recent commits to understand current work
 
-- Real-time event stream
-- Event filtering by type
-- Event source highlighting
-- Event payload inspection
+### Making Changes
 
-The EventBusComponent must be included in the app-shell template on every page.
+1. **Schema Changes**: Always start in `harmony-schemas`, run codegen, then update dependent code
+2. **UI Components**: Build in vanilla JS with Web Components, test in Chrome
+3. **Documentation**: Update this file with every change - this is required, not optional
 
-### Error Logging
+### Testing Requirements
 
-EventBus errors (validation failures, missing subscribers, type mismatches) are logged to console with full context:
+All UI components must be tested in Chrome before completion:
+- Test all states: default, hover, focus, active, disabled
+- Test animations with Performance panel (target: 60fps)
+- Test error states, loading states, empty states
 
-- Event type
-- Source component
-- Payload data
-- Error message
+### Committing Work
 
-### Git Workflow
-
-1. Implement task
-2. Test in Chrome (all states)
-3. Update DESIGN_SYSTEM.md (mandatory)
+1. Make your changes
+2. Update this documentation
+3. Run tests
 4. Commit changes
-5. Push to remote (mandatory before starting new task)
+5. Push to remote - this is required before starting new work
 
-### Documentation Requirements
+## File Organization
 
-- DESIGN_SYSTEM.md must be updated for every task
-- Use B1-level English (simple, clear)
-- Code goes in files, not documentation
-- Use relative links to code files
-- Maintain two-way references (doc ↔ code)
+```
+harmony-design/          Main design system repository
+  DESIGN_SYSTEM.md      This file - main documentation
+  docs/                 Detailed documentation by topic
+  reports/blocked/      Reports for blocked tasks
 
-### Blocked Tasks
+harmony-schemas/         Schema definitions (Rust)
+  src/graph/            Graph structure and edge types
+    edge_types.rs       Edge type definitions
+    mod.rs              Graph module exports
+  lib.rs                Main library file
+```
 
-If a task cannot be completed:
+## Getting Help
 
-1. Create report in `harmony-design/reports/blocked/{task_id}.md`
-2. Include reason, attempted solutions, recommended enabling work
-3. Await further instructions OR create enabling task
+If you're stuck:
+1. Read the relevant section in this document
+2. Check the linked code files
+3. Look at similar existing implementations
+4. Create a blocked task report in `reports/blocked/`
 
-## Quality Gates
+## Recent Work
 
-All tasks must pass quality gates before completion:
+The system recently added:
+- Glissando gesture detection for continuous parameters
+- Multi-state focus tracking (focus, hover, active, pressed)
+- Executable examples for each component
+- Usage guides and best practices
+- Storybook stories for all components
 
-- ✅ Performance budgets met
-- ✅ All tests pass
-- ✅ Chrome testing complete
-- ✅ Documentation updated
-- ✅ Changes committed and pushed
-- ✅ No technical debt introduced
+## Next Steps
+
+Common tasks when working with Harmony:
+1. Adding a new component? Check composition patterns and edge types
+2. Modifying behavior? Start with schema changes in Rust
+3. Building UI? Use Web Components with shadow DOM
+4. Need to track relationships? Use the graph edge types
 
 ---
 
-*This document is the single source of truth for Harmony Design System. All code should reference relevant sections here, and this document should link to implementation files.*
+Remember: Code and documentation must stay in sync. When you change code, update this document. When you read this document, check that code matches.
