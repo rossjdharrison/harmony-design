@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Design System - All Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+    }
+    
+    .test-output {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    
+    .success {
+      color: #22c55e;
+    }
+    
+    .error {
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Harmony Design System - Test Suite</h1>
+  <p>Open the browser console to see detailed test results.</p>
+  
+  <div class="test-output" id="output">
+    Running tests...
+  </div>
+
+  <script type="module">
+    import { runComponentIntentLinkTests } from './graph/component-intent-link.test.js';
+    import { runComponentIntentQueryTests } from './graph/component-intent-queries.test.js';
+    import { runComponentIntentCommandTests } from './graph/component-intent-commands.test.js';
+
+    const output = document.getElementById('output');
+    
+    // Capture console output
+    const originalLog = console.log;
+    const originalAssert = console.assert;
+    
+    let testsPassed = 0;
+    let testsFailed = 0;
+    
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      const message = args.join(' ');
+      const div = document.createElement('div');
+      
+      if (message.includes('✓')) {
+        div.className = 'success';
+        testsPassed++;
+      } else if (message.includes('Testing')) {
+        div.style.fontWeight = 'bold';
+        div.style.marginTop = '0.5rem';
+      }
+      
+      div.textContent = message;
+      output.appendChild(div);
+    };
+    
+    console.assert = function(condition, ...args) {
+      if (!condition) {
+        testsFailed++;
+        const div = document.createElement('div');
+        div.className = 'error';
+        div.textContent = '✗ Assertion failed: ' + args.join(' ');
+        output.appendChild(div);
+      }
+      originalAssert.apply(console, [condition, ...args]);
+    };
+
+    // Run all tests
+    try {
+      output.innerHTML = '';
+      
+      console.log('=== Starting Test Suite ===\n');
+      
+      runComponentIntentLinkTests();
+      runComponentIntentQueryTests();
+      runComponentIntentCommandTests();
+      
+      console.log('\n=== Test Suite Complete ===');
+      console.log(`Tests Passed: ${testsPassed}`);
+      console.log(`Tests Failed: ${testsFailed}`);
+      
+      if (testsFailed === 0) {
+        const successDiv = document.createElement('div');
+        successDiv.className = 'success';
+        successDiv.style.fontWeight = 'bold';
+        successDiv.style.marginTop = '1rem';
+        successDiv.textContent = '✓ All tests passed!';
+        output.appendChild(successDiv);
+      } else {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.style.fontWeight = 'bold';
+        errorDiv.style.marginTop = '1rem';
+        errorDiv.textContent = `✗ ${testsFailed} test(s) failed`;
+        output.appendChild(errorDiv);
+      }
+      
+    } catch (error) {
+      console.error('Test suite error:', error);
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error';
+      errorDiv.textContent = 'Test suite error: ' + error.message;
+      output.appendChild(errorDiv);
+    }
+  </script>
+</body>
+</html>
