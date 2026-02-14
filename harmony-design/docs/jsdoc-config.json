@@ -1,0 +1,21 @@
+{
+  "source": {
+    "include": ["../harmony-web/src"],
+    "includePattern": ".+\\.js$",
+    "excludePattern": "(node_modules/|docs/|test/)"
+  },
+  "opts": {
+    "destination": "./api-docs",
+    "recurse": true,
+    "readme": "../DESIGN_SYSTEM.md"
+  },
+  "plugins": ["plugins/markdown"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": false
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  }
+}

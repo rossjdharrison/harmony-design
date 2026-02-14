@@ -1,244 +1,271 @@
 /**
- * @fileoverview Central event bus for component communication
- * @see harmony-design/DESIGN_SYSTEM.md#event-bus
+ * @fileoverview EventBus implementation for the Harmony Design System.
+ * Provides publish-subscribe pattern for component communication.
+ * See DESIGN_SYSTEM.md#event-bus for architecture details.
  */
-
-import { validateEvent, EventValidationError } from './event-bus-validator.js';
 
 /**
- * Global event bus for component-to-BC communication
- * Implements publish-subscribe pattern with runtime validation
+ * @typedef {Object} HarmonyEvent
+ * @property {string} type - Event type identifier
+ * @property {string} source - Component or context that published the event
+ * @property {Object} payload - Event data
+ * @property {number} timestamp - Event creation timestamp
+ * @property {string} id - Unique event identifier
+ */
+
+/**
+ * @typedef {Object} EventSubscription
+ * @property {string} id - Unique subscription identifier
+ * @property {string} eventType - Event type this subscription listens to
+ * @property {Function} handler - Callback function
+ * @property {Object} [options] - Subscription options
+ */
+
+/**
+ * Central event bus for Harmony Design System.
+ * Manages event publication, subscription, and routing between components and bounded contexts.
+ * 
+ * @class EventBus
+ * @example
+ * // Subscribe to an event
+ * const subId = EventBus.subscribe('AudioPlayRequested', (event) => {
+ *   console.log('Play requested:', event.payload);
+ * });
+ * 
+ * // Publish an event
+ * EventBus.publish('AudioPlayRequested', { trackId: '123' });
+ * 
+ * // Unsubscribe
+ * EventBus.unsubscribe(subId);
  */
 class EventBus {
+  /**
+   * Creates an EventBus instance.
+   * @constructor
+   */
   constructor() {
-    /** @type {Map<string, Set<Function>>} */
-    this.subscribers = new Map();
+    /** @private @type {Map<string, Set<EventSubscription>>} */
+    this.subscriptions = new Map();
     
-    /** @type {Array<Object>} Event history for debugging */
+    /** @private @type {Array<HarmonyEvent>} */
     this.eventHistory = [];
     
-    /** @type {number} Maximum history size */
+    /** @private @type {number} */
     this.maxHistorySize = 100;
     
-    /** @type {boolean} Whether to log events to console */
+    /** @private @type {boolean} */
     this.debugMode = false;
   }
 
   /**
-   * Subscribe to an event type
-   * @param {string} eventType - Event type to subscribe to
-   * @param {Function} callback - Callback function (event) => void
-   * @returns {Function} Unsubscribe function
+   * Publishes an event to all subscribers.
+   * 
+   * @param {string} eventType - Type of event to publish
+   * @param {Object} payload - Event data
+   * @param {string} [source='unknown'] - Source component or context
+   * @returns {string} Event ID
+   * @throws {Error} If eventType is not a string or payload is not an object
+   * 
+   * @example
+   * EventBus.publish('ButtonClicked', { buttonId: 'play-btn' }, 'PlayButton');
    */
-  subscribe(eventType, callback) {
-    if (!eventType || typeof eventType !== 'string') {
-      console.error('[EventBus] Subscribe failed: eventType must be a non-empty string', {
-        eventType,
-        callback: callback?.name || 'anonymous'
-      });
-      return () => {};
-    }
-
-    if (typeof callback !== 'function') {
-      console.error('[EventBus] Subscribe failed: callback must be a function', {
-        eventType,
-        callback
-      });
-      return () => {};
-    }
-
-    if (!this.subscribers.has(eventType)) {
-      this.subscribers.set(eventType, new Set());
-    }
-
-    this.subscribers.get(eventType).add(callback);
-
-    if (this.debugMode) {
-      console.log(`[EventBus] Subscribed to '${eventType}'`, {
-        callback: callback.name || 'anonymous',
-        totalSubscribers: this.subscribers.get(eventType).size
-      });
-    }
-
-    // Return unsubscribe function
-    return () => {
-      const subs = this.subscribers.get(eventType);
-      if (subs) {
-        subs.delete(callback);
-        if (subs.size === 0) {
-          this.subscribers.delete(eventType);
-        }
-      }
-    };
-  }
-
-  /**
-   * Emit an event with runtime validation
-   * @param {string} eventType - Event type
-   * @param {Object} event - Event object
-   * @param {string} [event.source] - Event source component
-   * @param {Object} [event.payload] - Event payload
-   * @throws {EventValidationError} If validation fails
-   */
-  emit(eventType, event = {}) {
-    const timestamp = Date.now();
-    
-    // Basic parameter validation
-    if (!eventType || typeof eventType !== 'string') {
-      const error = new EventValidationError(
-        'Event type must be a non-empty string',
-        {
-          eventType,
-          source: event.source,
-          payload: event.payload,
-          expected: 'string',
-          value: eventType
-        }
-      );
-      
-      console.error('[EventBus] Emit failed:', error.getDetailedMessage());
+  publish(eventType, payload, source = 'unknown') {
+    if (typeof eventType !== 'string') {
+      const error = new Error('Event type must be a string');
+      console.error('[EventBus] Validation failure:', error.message, { eventType, payload, source });
       throw error;
     }
 
-    if (event === null || typeof event !== 'object') {
-      const error = new EventValidationError(
-        'Event must be an object',
-        {
-          eventType,
-          expected: 'object',
-          value: event
-        }
-      );
-      
-      console.error('[EventBus] Emit failed:', error.getDetailedMessage());
+    if (typeof payload !== 'object' || payload === null) {
+      const error = new Error('Payload must be an object');
+      console.error('[EventBus] Validation failure:', error.message, { eventType, payload, source });
       throw error;
     }
 
-    // Runtime schema validation
-    try {
-      validateEvent(eventType, event);
-    } catch (err) {
-      if (err instanceof EventValidationError) {
-        console.error('[EventBus] Validation failed:', err.getDetailedMessage());
-        throw err;
-      }
-      // Re-throw unexpected errors
-      throw err;
-    }
-
-    // Check for subscribers
-    const subs = this.subscribers.get(eventType);
-    if (!subs || subs.size === 0) {
-      console.warn('[EventBus] No subscribers for event type:', {
-        eventType,
-        source: event.source,
-        availableTypes: Array.from(this.subscribers.keys())
-      });
-    }
-
-    // Add to history
-    const historyEntry = {
-      eventType,
-      source: event.source,
-      payload: event.payload,
-      timestamp,
-      subscriberCount: subs ? subs.size : 0
+    const event = {
+      type: eventType,
+      source,
+      payload,
+      timestamp: Date.now(),
+      id: `evt_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     };
+
+    this._addToHistory(event);
+
+    const subscribers = this.subscriptions.get(eventType);
     
-    this.eventHistory.push(historyEntry);
-    if (this.eventHistory.length > this.maxHistorySize) {
-      this.eventHistory.shift();
-    }
+    if (!subscribers || subscribers.size === 0) {
+      console.warn(`[EventBus] No subscribers for event type: ${eventType}`, { source, payload });
+    } else {
+      if (this.debugMode) {
+        console.log(`[EventBus] Publishing ${eventType}:`, event);
+      }
 
-    // Debug logging
-    if (this.debugMode) {
-      console.log(`[EventBus] Emitting '${eventType}'`, {
-        source: event.source,
-        payload: event.payload,
-        subscribers: subs ? subs.size : 0
-      });
-    }
-
-    // Notify subscribers
-    if (subs) {
-      const fullEvent = {
-        type: eventType,
-        source: event.source,
-        payload: event.payload,
-        timestamp
-      };
-
-      subs.forEach(callback => {
+      subscribers.forEach(subscription => {
         try {
-          callback(fullEvent);
-        } catch (err) {
-          console.error('[EventBus] Subscriber callback error:', {
+          subscription.handler(event);
+        } catch (error) {
+          console.error('[EventBus] Handler error:', {
             eventType,
-            source: event.source,
-            callback: callback.name || 'anonymous',
-            error: err.message,
-            stack: err.stack
+            source,
+            payload,
+            subscriptionId: subscription.id,
+            error: error.message
           });
         }
       });
     }
+
+    return event.id;
   }
 
   /**
-   * Get event history
+   * Subscribes to an event type.
+   * 
+   * @param {string} eventType - Type of event to subscribe to
+   * @param {Function} handler - Callback function to handle events
+   * @param {Object} [options={}] - Subscription options
+   * @param {boolean} [options.once=false] - Auto-unsubscribe after first event
+   * @returns {string} Subscription ID for later unsubscription
+   * @throws {Error} If eventType is not a string or handler is not a function
+   * 
+   * @example
+   * const subId = EventBus.subscribe('AudioPlayRequested', (event) => {
+   *   console.log('Handling play request:', event.payload);
+   * }, { once: false });
+   */
+  subscribe(eventType, handler, options = {}) {
+    if (typeof eventType !== 'string') {
+      throw new Error('Event type must be a string');
+    }
+
+    if (typeof handler !== 'function') {
+      throw new Error('Handler must be a function');
+    }
+
+    const subscriptionId = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const subscription = {
+      id: subscriptionId,
+      eventType,
+      handler: options.once ? (event) => {
+        handler(event);
+        this.unsubscribe(subscriptionId);
+      } : handler,
+      options
+    };
+
+    if (!this.subscriptions.has(eventType)) {
+      this.subscriptions.set(eventType, new Set());
+    }
+
+    this.subscriptions.get(eventType).add(subscription);
+
+    if (this.debugMode) {
+      console.log(`[EventBus] Subscribed to ${eventType}:`, subscriptionId);
+    }
+
+    return subscriptionId;
+  }
+
+  /**
+   * Unsubscribes from an event.
+   * 
+   * @param {string} subscriptionId - ID returned from subscribe()
+   * @returns {boolean} True if unsubscribed successfully, false if not found
+   * 
+   * @example
+   * const subId = EventBus.subscribe('SomeEvent', handler);
+   * EventBus.unsubscribe(subId);
+   */
+  unsubscribe(subscriptionId) {
+    for (const [eventType, subscribers] of this.subscriptions.entries()) {
+      for (const subscription of subscribers) {
+        if (subscription.id === subscriptionId) {
+          subscribers.delete(subscription);
+          if (subscribers.size === 0) {
+            this.subscriptions.delete(eventType);
+          }
+          if (this.debugMode) {
+            console.log(`[EventBus] Unsubscribed:`, subscriptionId);
+          }
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Gets event history.
+   * 
    * @param {number} [limit] - Maximum number of events to return
-   * @returns {Array<Object>} Event history
+   * @returns {Array<HarmonyEvent>} Array of recent events
+   * 
+   * @example
+   * const recentEvents = EventBus.getHistory(10);
    */
   getHistory(limit) {
-    if (limit && limit > 0) {
+    if (limit) {
       return this.eventHistory.slice(-limit);
     }
     return [...this.eventHistory];
   }
 
   /**
-   * Clear event history
+   * Clears event history.
+   * 
+   * @example
+   * EventBus.clearHistory();
    */
   clearHistory() {
     this.eventHistory = [];
   }
 
   /**
-   * Enable or disable debug mode
-   * @param {boolean} enabled - Whether debug mode is enabled
+   * Enables or disables debug mode.
+   * 
+   * @param {boolean} enabled - Whether to enable debug mode
+   * 
+   * @example
+   * EventBus.setDebugMode(true);
    */
   setDebugMode(enabled) {
-    this.debugMode = !!enabled;
-    console.log(`[EventBus] Debug mode ${this.debugMode ? 'enabled' : 'disabled'}`);
+    this.debugMode = enabled;
+    console.log(`[EventBus] Debug mode ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   /**
-   * Get all subscriber counts by event type
-   * @returns {Object} Map of event type to subscriber count
+   * Gets all active subscriptions.
+   * 
+   * @returns {Object} Map of event types to subscriber counts
+   * 
+   * @example
+   * const subs = EventBus.getSubscriptions();
+   * console.log('Active subscriptions:', subs);
    */
-  getSubscriberCounts() {
-    const counts = {};
-    this.subscribers.forEach((subs, eventType) => {
-      counts[eventType] = subs.size;
-    });
-    return counts;
+  getSubscriptions() {
+    const result = {};
+    for (const [eventType, subscribers] of this.subscriptions.entries()) {
+      result[eventType] = subscribers.size;
+    }
+    return result;
   }
 
   /**
-   * Check if an event type has subscribers
-   * @param {string} eventType - Event type to check
-   * @returns {boolean} True if event type has subscribers
+   * Adds event to history with size limit.
+   * @private
+   * @param {HarmonyEvent} event - Event to add
    */
-  hasSubscribers(eventType) {
-    const subs = this.subscribers.get(eventType);
-    return subs && subs.size > 0;
+  _addToHistory(event) {
+    this.eventHistory.push(event);
+    if (this.eventHistory.length > this.maxHistorySize) {
+      this.eventHistory.shift();
+    }
   }
 }
 
-// Global singleton instance
-export const eventBus = new EventBus();
+// Singleton instance
+const eventBusInstance = new EventBus();
 
-// Expose to window for debugging
-if (typeof window !== 'undefined') {
-  window.__harmonyEventBus = eventBus;
-}
+export default eventBusInstance;
