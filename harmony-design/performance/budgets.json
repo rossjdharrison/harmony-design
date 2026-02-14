@@ -1,0 +1,42 @@
+{
+  "budgets": {
+    "render": {
+      "maxFrameTime": 16,
+      "unit": "ms",
+      "description": "Maximum time per frame for 60fps"
+    },
+    "memory": {
+      "maxWasmHeap": 50,
+      "unit": "MB",
+      "description": "Maximum WASM heap size"
+    },
+    "load": {
+      "maxInitialLoad": 200,
+      "unit": "ms",
+      "description": "Maximum initial load time"
+    },
+    "components": {
+      "maxRenderTime": 8,
+      "unit": "ms",
+      "description": "Maximum render time for individual components"
+    },
+    "animations": {
+      "targetFps": 60,
+      "maxDroppedFrames": 5,
+      "unit": "frames",
+      "description": "Animation performance targets"
+    },
+    "bundle": {
+      "maxJsSize": 100,
+      "maxCssSize": 50,
+      "maxWasmSize": 500,
+      "unit": "KB",
+      "description": "Maximum bundle sizes"
+    }
+  },
+  "thresholds": {
+    "warning": 0.8,
+    "error": 1.0,
+    "description": "Multipliers for budget warnings and errors"
+  }
+}
