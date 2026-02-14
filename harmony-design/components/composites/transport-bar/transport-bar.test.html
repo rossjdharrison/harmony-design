@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TransportBar Test - Harmony Design System</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #1a1a1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #e0e0e0;
+    }
+
+    .test-section {
+      margin-bottom: 48px;
+    }
+
+    .test-section h2 {
+      margin-bottom: 16px;
+      color: #4caf50;
+      font-size: 18px;
+    }
+
+    .test-section p {
+      margin-bottom: 16px;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .test-container {
+      background: #242424;
+      padding: 24px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .event-log {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .event-log-entry {
+      margin-bottom: 4px;
+      padding: 4px;
+      border-left: 2px solid #4caf50;
+      padding-left: 8px;
+    }
+
+    .event-log-entry.record {
+      border-left-color: #f44336;
+    }
+
+    .controls {
+      margin-top: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #3a3a3a;
+      border: 1px solid #4a4a4a;
+      border-radius: 4px;
+      color: #e0e0e0;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #4a4a4a;
+    }
+
+    .state-display {
+      margin-top: 16px;
+      padding: 12px;
+      background: #1a1a1a;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎛️ TransportBar Component Tests</h1>
+
+  <div class="test-section">
+    <h2>Default State</h2>
+    <p>TransportBar with default settings. Test all buttons and keyboard shortcuts (Space for play/pause, R for record).</p>
+    <div class="test-container">
+      <harmony-transport-bar id="default"></harmony-transport-bar>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Custom Position & BPM</h2>
+    <p>TransportBar with custom position and BPM values.</p>
+    <div class="test-container">
+      <harmony-transport-bar 
+        id="custom"
+        position="01:23:456"
+        bpm="140">
+      </harmony-transport-bar>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Programmatic Control</h2>
+    <p>Control the transport bar via JavaScript API.</p>
+    <div class="test-container">
+      <harmony-transport-bar id="programmatic"></harmony-transport-bar>
+      
+      <div class="controls">
+        <button onclick="simulatePlay()">Simulate Play</button>
+        <button onclick="simulatePause()">Simulate Pause</button>
+        <button onclick="simulateStop()">Simulate Stop</button>
+        <button onclick="toggleRecord()">Toggle Record</button>
+        <button onclick="updatePosition()">Update Position</button>
+        <button onclick="updateBPM()">Update BPM</button>
+      </div>
+
+      <div class="state-display" id="state">
+        Playing: false | Recording: false | Position: 00:00:000 | BPM: 120
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Monitoring</h2>
+    <p>All transport events are logged below. Events should bubble and be composed for EventBus integration.</p>
+    <div class="test-container">
+      <harmony-transport-bar id="events"></harmony-transport-bar>
+      <div class="event-log" id="eventLog">
+        <div style="color: #666;">Waiting for events...</div>
+      </div>
+      <div class="controls">
+        <button onclick="clearLog()">Clear Log</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Test</h2>
+    <p>Multiple transport bars for performance testing. Should maintain 60fps.</p>
+    <div class="test-container">
+      <harmony-transport-bar position="00:00:000" bpm="120"></harmony-transport-bar>
+      <br>
+      <harmony-transport-bar position="00:15:250" bpm="140"></harmony-transport-bar>
+      <br>
+      <harmony-transport-bar position="01:30:500" bpm="90"></harmony-transport-bar>
+    </div>
+  </div>
+
+  <script type="module">
+    import './transport-bar.js';
+
+    // Event monitoring
+    const eventLog = document.getElementById('eventLog');
+    const eventsTransport = document.getElementById('events');
+    
+    function logEvent(eventName, detail) {
+      const entry = document.createElement('div');
+      entry.className = `event-log-entry ${eventName.includes('record') ? 'record' : ''}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${eventName}: ${JSON.stringify(detail)}`;
+      
+      if (eventLog.firstChild.textContent === 'Waiting for events...') {
+        eventLog.innerHTML = '';
+      }
+      
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 20 entries
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    eventsTransport.addEventListener('transport-play', (e) => {
+      logEvent('transport-play', e.detail);
+    });
+
+    eventsTransport.addEventListener('transport-pause', (e) => {
+      logEvent('transport-pause', e.detail);
+    });
+
+    eventsTransport.addEventListener('transport-stop', (e) => {
+      logEvent('transport-stop', e.detail);
+    });
+
+    eventsTransport.addEventListener('transport-record', (e) => {
+      logEvent('transport-record', e.detail);
+    });
+
+    window.clearLog = () => {
+      eventLog.innerHTML = '<div style="color: #666;">Waiting for events...</div>';
+    };
+
+    // Programmatic control
+    const programmaticTransport = document.getElementById('programmatic');
+    const stateDisplay = document.getElementById('state');
+    let isPlaying = false;
+    let isRecording = false;
+    let currentPosition = 0;
+    let currentBPM = 120;
+
+    function updateStateDisplay() {
+      const minutes = Math.floor(currentPosition / 60000);
+      const seconds = Math.floor((currentPosition % 60000) / 1000);
+      const ms = currentPosition % 1000;
+      const posStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
+      
+      stateDisplay.textContent = `Playing: ${isPlaying} | Recording: ${isRecording} | Position: ${posStr} | BPM: ${currentBPM}`;
+    }
+
+    window.simulatePlay = () => {
+      isPlaying = true;
+      programmaticTransport.setPlaying(true);
+      updateStateDisplay();
+    };
+
+    window.simulatePause = () => {
+      isPlaying = false;
+      programmaticTransport.setPlaying(false);
+      updateStateDisplay();
+    };
+
+    window.simulateStop = () => {
+      isPlaying = false;
+      currentPosition = 0;
+      programmaticTransport.setPlaying(false);
+      programmaticTransport.setPosition('00:00:000');
+      updateStateDisplay();
+    };
+
+    window.toggleRecord = () => {
+      isRecording = !isRecording;
+      programmaticTransport.setRecording(isRecording);
+      updateStateDisplay();
+    };
+
+    window.updatePosition = () => {
+      currentPosition += 5000; // Add 5 seconds
+      const minutes = Math.floor(currentPosition / 60000);
+      const seconds = Math.floor((currentPosition % 60000) / 1000);
+      const ms = currentPosition % 1000;
+      const posStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(ms).padStart(3, '0')}`;
+      programmaticTransport.setPosition(posStr);
+      updateStateDisplay();
+    };
+
+    window.updateBPM = () => {
+      currentBPM = 80 + Math.floor(Math.random() * 100); // Random BPM 80-180
+      programmaticTransport.setBPM(currentBPM);
+      updateStateDisplay();
+    };
+
+    updateStateDisplay();
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastTime = performance.now();
+    
+    function monitorPerformance() {
+      frameCount++;
+      const currentTime = performance.now();
+      
+      if (currentTime - lastTime >= 1000) {
+        const fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+        console.log(`FPS: ${fps}`);
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+      
+      requestAnimationFrame(monitorPerformance);
+    }
+    
+    monitorPerformance();
+  </script>
+</body>
+</html>
