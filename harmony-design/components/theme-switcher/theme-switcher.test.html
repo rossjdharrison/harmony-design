@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Theme Switcher - Manual Test</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+      background: var(--color-background, #ffffff);
+      color: var(--color-text-primary, #1f2937);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .test-section {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      border: 1px solid var(--color-border, #d1d5db);
+      border-radius: 8px;
+      background: var(--color-surface-primary, #ffffff);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: var(--color-text-primary, #1f2937);
+    }
+
+    .test-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: var(--color-surface-secondary, #f9fafb);
+      border-radius: 6px;
+    }
+
+    .test-label {
+      min-width: 150px;
+      font-weight: 500;
+    }
+
+    .event-log {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #1f2937;
+      color: #f9fafb;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border-left: 3px solid #3b82f6;
+      padding-left: 0.5rem;
+    }
+
+    .clear-log {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .clear-log:hover {
+      background: #2563eb;
+    }
+
+    .theme-info {
+      padding: 1rem;
+      background: var(--color-surface-tertiary, #e5e7eb);
+      border-radius: 6px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Theme Switcher Component - Manual Test</h1>
+  <p>Test all states: default, hover, focus, active, disabled. Verify 60fps animations.</p>
+
+  <div class="test-section">
+    <h2>Toggle Variant (Default)</h2>
+    <div class="test-row">
+      <span class="test-label">Default State:</span>
+      <theme-switcher id="toggle-default"></theme-switcher>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Disabled State:</span>
+      <theme-switcher disabled></theme-switcher>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Focus Test:</span>
+      <theme-switcher id="toggle-focus"></theme-switcher>
+      <button onclick="document.getElementById('toggle-focus').shadowRoot.querySelector('.toggle-button').focus()">
+        Focus Button
+      </button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Dropdown Variant</h2>
+    <div class="test-row">
+      <span class="test-label">Default State:</span>
+      <theme-switcher variant="dropdown" id="dropdown-default"></theme-switcher>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Disabled State:</span>
+      <theme-switcher variant="dropdown" disabled></theme-switcher>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Programmatic Control</h2>
+    <div class="test-row">
+      <span class="test-label">Controlled:</span>
+      <theme-switcher id="controlled"></theme-switcher>
+      <button onclick="setThemeLight()">Set Light</button>
+      <button onclick="setThemeDark()">Set Dark</button>
+      <button onclick="getTheme()">Get Theme</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Current Theme Info</h2>
+    <div class="theme-info">
+      <strong>Current Theme:</strong> <span id="current-theme">light</span><br>
+      <strong>Background:</strong> <span id="bg-color">-</span><br>
+      <strong>Text Color:</strong> <span id="text-color">-</span>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div class="event-log" id="event-log">
+      <div>Waiting for events...</div>
+    </div>
+    <button class="clear-log" onclick="clearLog()">Clear Log</button>
+  </div>
+
+  <script type="module">
+    // Import the component
+    import './theme-switcher.js';
+
+    // Simple EventBus mock for testing
+    window.EventBus = {
+      subscribers: {},
+      publish(event) {
+        logEvent('EventBus.publish', event);
+        const subs = this.subscribers[event.type] || [];
+        subs.forEach(callback => callback(event));
+      },
+      subscribe(eventType, callback) {
+        if (!this.subscribers[eventType]) {
+          this.subscribers[eventType] = [];
+        }
+        this.subscribers[eventType].push(callback);
+        return () => {
+          this.subscribers[eventType] = this.subscribers[eventType].filter(cb => cb !== callback);
+        };
+      }
+    };
+
+    // Log events
+    function logEvent(source, data) {
+      const log = document.getElementById('event-log');
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${source}: ${JSON.stringify(data, null, 2)}`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // Listen to theme change events
+    document.addEventListener('theme-change-requested', (e) => {
+      logEvent('theme-change-requested', e.detail);
+      updateThemeInfo(e.detail.theme);
+    });
+
+    // Subscribe to EventBus events
+    window.EventBus.subscribe('ThemeChangeRequested', (event) => {
+      logEvent('ThemeChangeRequested (EventBus)', event);
+    });
+
+    // Update theme info display
+    function updateThemeInfo(theme) {
+      document.getElementById('current-theme').textContent = theme;
+      const bgColor = getComputedStyle(document.body).backgroundColor;
+      const textColor = getComputedStyle(document.body).color;
+      document.getElementById('bg-color').textContent = bgColor;
+      document.getElementById('text-color').textContent = textColor;
+    }
+
+    // Programmatic control functions
+    window.setThemeLight = function() {
+      const controlled = document.getElementById('controlled');
+      controlled.setTheme('light');
+      logEvent('Programmatic', { action: 'setTheme', value: 'light' });
+    };
+
+    window.setThemeDark = function() {
+      const controlled = document.getElementById('controlled');
+      controlled.setTheme('dark');
+      logEvent('Programmatic', { action: 'setTheme', value: 'dark' });
+    };
+
+    window.getTheme = function() {
+      const controlled = document.getElementById('controlled');
+      const theme = controlled.getTheme();
+      logEvent('Programmatic', { action: 'getTheme', value: theme });
+      alert(`Current theme: ${theme}`);
+    };
+
+    window.clearLog = function() {
+      const log = document.getElementById('event-log');
+      log.innerHTML = '<div>Log cleared. Waiting for events...</div>';
+    };
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastTime = performance.now();
+    
+    function measurePerformance() {
+      frameCount++;
+      const currentTime = performance.now();
+      
+      if (currentTime - lastTime >= 1000) {
+        const fps = Math.round(frameCount * 1000 / (currentTime - lastTime));
+        console.log(`FPS: ${fps}`);
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+      
+      requestAnimationFrame(measurePerformance);
+    }
+    
+    measurePerformance();
+
+    // Initial theme info
+    updateThemeInfo('light');
+  </script>
+</body>
+</html>
