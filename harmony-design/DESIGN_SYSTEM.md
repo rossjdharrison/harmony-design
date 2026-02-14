@@ -1,146 +1,126 @@
 # Harmony Design System
 
-Welcome! This document describes the Harmony Design System - how it works, how to use it, and how to contribute.
-
-## What is Harmony?
-
-Harmony is a design system for building audio and creative applications. It provides reusable components, patterns, and tools that work together smoothly.
+Welcome to the Harmony Design System documentation. This document describes how our design system works, how to use it, and how to contribute to it.
 
 ## Current Status
 
-The system is in early development. The foundation has been set up, but specific components and features are being added step by step.
+⚠️ **System Initialization Phase**
 
-### Recent Activity
+The Harmony Design System is currently being set up. This documentation will grow as components and patterns are implemented.
 
-- Initial repository structure created
-- Several feature implementations in progress
-- Core policies and constraints established
+## Recent Issues
 
-## How to Work With This System
+### Task Tracking System
 
-### For Developers
-
-When building components or features:
-
-1. **Check the policies** - Read the absolute constraints and mandatory rules
-2. **Follow the patterns** - Use EventBus for communication, Web Components for UI
-3. **Test in Chrome** - All UI components must be tested before completion
-4. **Update this document** - Documentation is mandatory for every task
-
-### For Designers
-
-Design specifications should be provided as `.pen` files. When designs change, components must be retested.
+There is currently an issue with task metadata propagation. Recent commits show "undefined" task IDs, indicating a problem with the task management system. See `reports/blocked/undefined.md` for details.
 
 ## Architecture Overview
 
-### Technology Choices
+The Harmony Design System follows these core principles:
 
-**Rust + WASM** is used for:
+### Technology Boundaries
+
+**Rust + WebAssembly** handles:
 - Bounded contexts (business logic)
-- Graph engine (audio processing)
-- Performance-critical operations
+- Graph engine
+- Audio processing
 
-**Vanilla HTML/CSS/JavaScript** is used for:
+**Vanilla HTML/CSS/JavaScript** handles:
 - UI rendering
 - DOM manipulation
-- Component implementation
+- Web Components
 
-**Python** is used ONLY for:
-- Test servers
+**Python** is used only for:
+- Test servers (pytest)
 - Build scripts
 - Development tools
-
-### Component Communication
-
-Components use an **EventBus pattern**:
-
-1. UI components publish events (never call business logic directly)
-2. EventBus routes events to subscribers
-3. Bounded contexts handle commands and publish results
-
-Example: Button click → Event published → EventBus routes → Logic handles → Result event → UI updates
+- Prototypes
 
 ### Performance Budgets
 
-All code must meet these limits:
+All implementations must meet these requirements:
+- **Render Budget**: Maximum 16ms per frame (60fps)
+- **Memory Budget**: Maximum 50MB WASM heap
+- **Load Budget**: Maximum 200ms initial load time
 
-- **16ms per frame** - For smooth 60fps rendering
-- **50MB WASM heap** - Maximum memory usage
-- **200ms initial load** - Maximum startup time
+### Communication Pattern
 
-## Component Structure
+Components and bounded contexts communicate via EventBus:
 
-Components are organized by complexity:
+1. **UI Components** → Publish events (never call BCs directly)
+2. **EventBus** → Routes events to subscribers
+3. **Bounded Contexts** → Subscribe to commands, publish results
 
-- **Primitives** - Basic building blocks (buttons, inputs)
-- **Molecules** - Simple combinations (search box, card)
-- **Organisms** - Complex components (navigation, player controls)
-- **Templates** - Page layouts
-
-## Testing Requirements
-
-Every UI component must be tested in Chrome for these states:
-
-- Default
-- Hover
-- Focus
-- Active
-- Disabled
-- Error (if applicable)
-- Loading (if applicable)
-- Empty (if applicable)
-
-Animations must maintain 60fps (verified with Chrome DevTools Performance panel).
-
-## Documentation Rules
-
-This is the **single source of truth** for the design system. Code files should have minimal comments that reference sections in this document.
-
-When you change code, update this document. When you read this document, check that code matches.
-
-## Getting Help
-
-- **Blocked on a task?** Create a report in `harmony-design/reports/blocked/{task_id}.md`
-- **Need to understand a component?** Check this document first, then look at code files
-- **Found a bug?** Check if it violates performance budgets or mandatory rules
-
-## What's Next
-
-The system needs foundational work before features can be built:
-
-1. EventBus infrastructure
-2. App shell template
-3. Component library structure
-4. Testing workflows
-
-Check `harmony-design/reports/blocked/` for current blockers and enabling work recommendations.
-
-## File Structure
-
+Example flow:
 ```
-harmony-design/
-├── DESIGN_SYSTEM.md          # This file
-├── reports/
-│   └── blocked/              # Blocked task reports
-└── (more structure to be added)
+User clicks Play button 
+→ Component publishes "Play" event 
+→ EventBus routes to Audio BC 
+→ Audio BC processes 
+→ Audio BC publishes "PlaybackStarted" event
 ```
 
-## Contributing
+## Component Development
 
-Before starting any task:
+### Testing Requirements
 
-1. Read the absolute constraints and mandatory rules
-2. Check existing patterns in the codebase
-3. Verify you have all needed information
-4. Create a blocked task report if you cannot proceed
+All UI components must be tested in Chrome before completion:
 
-After completing any task:
+**Required state verification**:
+- Default, hover, focus, active, disabled states
+- Error states, loading states, empty states (for complex components)
+- Animation performance (60fps target)
 
-1. Update this documentation
-2. Test in Chrome (for UI components)
-3. Verify all policies are satisfied
-4. Commit and push changes
+**Performance testing**:
+- Use Chrome DevTools Performance panel
+- Verify render budget compliance
+
+### Component Structure
+
+All components use:
+- Web Components (Custom Elements)
+- Shadow DOM for encapsulation
+- Vanilla JavaScript (no frameworks)
+- JSDoc documentation
+
+## Schema-Driven Development
+
+When changing Rust behavior:
+
+1. Navigate to `harmony-schemas`
+2. Modify the schema
+3. Run codegen
+4. Verify compilation
+5. Commit schema + generated code together
+
+**Never edit generated Rust code directly.**
+
+## Documentation Standards
+
+This file (`DESIGN_SYSTEM.md`) is written in B1-level English for accessibility. It:
+- Uses logical sections per concern
+- Stays concise but friendly
+- Links to code files relatively
+- Contains minimal code (code lives in files)
+
+Code files contain minimal comments that point back to relevant sections here.
+
+## EventBus Debugging
+
+The EventBusComponent is available on every page via `Ctrl+Shift+E`. All EventBus errors are logged to console with context including:
+- Event type
+- Source
+- Payload
+- Error message
+
+## Reports
+
+Task blocking reports are stored in `reports/blocked/{task_id}.md`.
+
+## Getting Started
+
+(This section will be expanded as the system grows)
 
 ---
 
-*This document evolves with the system. Last updated: Initial version*
+*This documentation is maintained as part of every task completion. See Policy #19.*
