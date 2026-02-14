@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarmonyToggle - Control Component Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #0066cc;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 0.5rem;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .test-item {
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      background: #fafafa;
+    }
+
+    .test-item label {
+      display: block;
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .event-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .event-log-entry {
+      margin: 0.25rem 0;
+      padding: 0.25rem;
+      border-left: 3px solid #0066cc;
+      padding-left: 0.5rem;
+    }
+
+    .event-log-entry.pressed {
+      border-left-color: #00cc66;
+    }
+
+    .event-log-entry.unpressed {
+      border-left-color: #cc6600;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #0066cc;
+      color: white;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+
+    button:hover {
+      background: #0052a3;
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .performance-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-card {
+      padding: 1rem;
+      background: #f0f0f0;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #0066cc;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>HarmonyToggle - Control Component Test</h1>
+  <p>Testing toggle control component with various configurations and states.</p>
+
+  <!-- Basic States -->
+  <div class="test-section">
+    <h2>Basic States</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Default (Unpressed)</label>
+        <harmony-toggle id="toggle-default" label="Toggle"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Pressed</label>
+        <harmony-toggle id="toggle-pressed" label="Active" pressed="true"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Disabled</label>
+        <harmony-toggle id="toggle-disabled" label="Disabled" disabled></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Disabled + Pressed</label>
+        <harmony-toggle id="toggle-disabled-pressed" label="Disabled" pressed="true" disabled></harmony-toggle>
+      </div>
+    </div>
+  </div>
+
+  <!-- Variants -->
+  <div class="test-section">
+    <h2>Variants</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Primary</label>
+        <harmony-toggle id="toggle-primary" label="Primary" variant="primary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Secondary</label>
+        <harmony-toggle id="toggle-secondary" label="Secondary" variant="secondary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Danger</label>
+        <harmony-toggle id="toggle-danger" label="Danger" variant="danger"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Ghost</label>
+        <harmony-toggle id="toggle-ghost" label="Ghost" variant="ghost"></harmony-toggle>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sizes -->
+  <div class="test-section">
+    <h2>Sizes</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Small</label>
+        <harmony-toggle id="toggle-small" label="Small" size="small"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Medium</label>
+        <harmony-toggle id="toggle-medium" label="Medium" size="medium"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Large</label>
+        <harmony-toggle id="toggle-large" label="Large" size="large"></harmony-toggle>
+      </div>
+    </div>
+  </div>
+
+  <!-- Use Cases -->
+  <div class="test-section">
+    <h2>Common Use Cases</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Mute</label>
+        <harmony-toggle id="toggle-mute" label="Mute" variant="secondary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Solo</label>
+        <harmony-toggle id="toggle-solo" label="Solo" variant="primary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Record Arm</label>
+        <harmony-toggle id="toggle-record" label="Rec" variant="danger"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Monitor</label>
+        <harmony-toggle id="toggle-monitor" label="Mon" variant="secondary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Loop</label>
+        <harmony-toggle id="toggle-loop" label="Loop" variant="primary"></harmony-toggle>
+      </div>
+      <div class="test-item">
+        <label>Metronome</label>
+        <harmony-toggle id="toggle-metronome" label="Click" variant="secondary"></harmony-toggle>
+      </div>
+    </div>
+  </div>
+
+  <!-- Programmatic Control -->
+  <div class="test-section">
+    <h2>Programmatic Control</h2>
+    <harmony-toggle id="toggle-programmatic" label="Controlled" variant="primary"></harmony-toggle>
+    <div class="controls">
+      <button id="btn-set-pressed">Set Pressed</button>
+      <button id="btn-set-unpressed">Set Unpressed</button>
+      <button id="btn-toggle">Toggle</button>
+      <button id="btn-disable">Disable</button>
+      <button id="btn-enable">Enable</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <!-- Event Monitoring -->
+  <div class="test-section">
+    <h2>Event Monitoring</h2>
+    <p>Click any toggle to see events in the log below:</p>
+    <div class="controls">
+      <button id="btn-clear-log">Clear Log</button>
+    </div>
+    <div class="event-log" id="event-log"></div>
+  </div>
+
+  <!-- Performance Testing -->
+  <div class="test-section">
+    <h2>Performance Testing</h2>
+    <div class="controls">
+      <button id="btn-stress-test">Run Stress Test (100 toggles)</button>
+      <button id="btn-animation-test">Test Animation Performance</button>
+    </div>
+    <div class="performance-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-render-time">-</div>
+        <div class="stat-label">Avg Render Time (ms)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-event-time">-</div>
+        <div class="stat-label">Avg Event Time (ms)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-memory">-</div>
+        <div class="stat-label">Memory Usage (KB)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load dependencies -->
+  <script type="module">
+    // Import button primitive (required dependency)
+    import '../../../primitives/button/button.js';
+    
+    // Import harmony-toggle
+    import './harmony-toggle.js';
+
+    // Event logging
+    const eventLog = document.getElementById('event-log');
+    let eventCount = 0;
+
+    function logEvent(message, type = '') {
+      eventCount++;
+      const entry = document.createElement('div');
+      entry.className = `event-log-entry ${type}`;
+      entry.textContent = `[${eventCount}] ${new Date().toLocaleTimeString()}: ${message}`;
+      eventLog.appendChild(entry);
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    // Listen to all toggle changes
+    document.addEventListener('harmony-toggle-changed', (event) => {
+      const { pressed, label, componentId } = event.detail;
+      logEvent(
+        `Toggle "${label}" (${componentId || 'unnamed'}) changed to: ${pressed ? 'PRESSED' : 'UNPRESSED'}`,
+        pressed ? 'pressed' : 'unpressed'
+      );
+    });
+
+    // Clear log
+    document.getElementById('btn-clear-log').addEventListener('click', () => {
+      eventLog.innerHTML = '';
+      eventCount = 0;
+      logEvent('Log cleared');
+    });
+
+    // Programmatic control
+    const programmaticToggle = document.getElementById('toggle-programmatic');
+    const status = document.getElementById('status');
+
+    function updateStatus() {
+      status.textContent = `Current state: ${programmaticToggle.getPressed() ? 'PRESSED' : 'UNPRESSED'}`;
+    }
+
+    document.getElementById('btn-set-pressed').addEventListener('click', () => {
+      programmaticToggle.setPressed(true);
+      updateStatus();
+    });
+
+    document.getElementById('btn-set-unpressed').addEventListener('click', () => {
+      programmaticToggle.setPressed(false);
+      updateStatus();
+    });
+
+    document.getElementById('btn-toggle').addEventListener('click', () => {
+      programmaticToggle.toggle();
+      updateStatus();
+    });
+
+    document.getElementById('btn-disable').addEventListener('click', () => {
+      programmaticToggle.setAttribute('disabled', '');
+      updateStatus();
+    });
+
+    document.getElementById('btn-enable').addEventListener('click', () => {
+      programmaticToggle.removeAttribute('disabled');
+      updateStatus();
+    });
+
+    updateStatus();
+
+    // Performance testing
+    document.getElementById('btn-stress-test').addEventListener('click', async () => {
+      const container = document.createElement('div');
+      container.style.cssText = 'position: fixed; top: -9999px; left: -9999px;';
+      document.body.appendChild(container);
+
+      const startTime = performance.now();
+      const toggles = [];
+
+      // Create 100 toggles
+      for (let i = 0; i < 100; i++) {
+        const toggle = document.createElement('harmony-toggle');
+        toggle.setAttribute('label', `Toggle ${i}`);
+        container.appendChild(toggle);
+        toggles.push(toggle);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Toggle all 100 times
+      const eventStartTime = performance.now();
+      for (let i = 0; i < 100; i++) {
+        toggles.forEach(t => t.toggle());
+      }
+      const eventEndTime = performance.now();
+
+      const endTime = performance.now();
+
+      document.getElementById('stat-render-time').textContent = 
+        ((endTime - startTime) / 100).toFixed(2);
+      document.getElementById('stat-event-time').textContent = 
+        ((eventEndTime - eventStartTime) / 10000).toFixed(3);
+
+      // Memory usage
+      if (performance.memory) {
+        document.getElementById('stat-memory').textContent = 
+          (performance.memory.usedJSHeapSize / 1024).toFixed(0);
+      } else {
+        document.getElementById('stat-memory').textContent = 'N/A';
+      }
+
+      container.remove();
+      logEvent(`Stress test complete: 100 toggles, 10000 state changes in ${(endTime - startTime).toFixed(2)}ms`);
+    });
+
+    document.getElementById('btn-animation-test').addEventListener('click', () => {
+      const toggle = document.getElementById('toggle-default');
+      let frameCount = 0;
+      let startTime = performance.now();
+
+      function animate() {
+        toggle.toggle();
+        frameCount++;
+
+        if (frameCount < 60) {
+          requestAnimationFrame(animate);
+        } else {
+          const endTime = performance.now();
+          const avgFrameTime = (endTime - startTime) / 60;
+          logEvent(`Animation test: 60 toggles in ${(endTime - startTime).toFixed(2)}ms (${avgFrameTime.toFixed(2)}ms/frame)`);
+          
+          if (avgFrameTime > 16) {
+            logEvent(`⚠️ WARNING: Average frame time ${avgFrameTime.toFixed(2)}ms exceeds 16ms budget!`, 'unpressed');
+          } else {
+            logEvent(`✓ Performance OK: Within 16ms budget`, 'pressed');
+          }
+        }
+      }
+
+      animate();
+    });
+
+    logEvent('HarmonyToggle test page loaded');
+  </script>
+</body>
+</html>
