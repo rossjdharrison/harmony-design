@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Query Components Tool - Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #fafafa;
+    }
+    h1 {
+      margin: 0 0 20px 0;
+      color: #333;
+    }
+    .info {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Query Components Tool - Demo</h1>
+  
+  <div class="info">
+    <strong>Demo Mode:</strong> This demo uses mock data. In production, this tool queries the actual graph database via TypeNavigator.
+  </div>
+
+  <query-components-ui id="query-ui"></query-components-ui>
+
+  <script type="module">
+    import { QueryComponentsUI } from './query-components-ui.js';
+    import { QueryComponentsTool } from './query-components.js';
+
+    // Mock TypeNavigator for demo
+    class MockTypeNavigator {
+      constructor() {
+        this.mockData = [
+          {
+            id: 'btn-primary',
+            properties: {
+              name: 'Primary Button',
+              level: 'primitive',
+              state: 'implemented'
+            }
+          },
+          {
+            id: 'btn-secondary',
+            properties: {
+              name: 'Secondary Button',
+              level: 'primitive',
+              state: 'implemented'
+            }
+          },
+          {
+            id: 'card-basic',
+            properties: {
+              name: 'Basic Card',
+              level: 'molecule',
+              state: 'design_complete'
+            }
+          },
+          {
+            id: 'form-login',
+            properties: {
+              name: 'Login Form',
+              level: 'organism',
+              state: 'implementation_in_progress'
+            }
+          },
+          {
+            id: 'page-dashboard',
+            properties: {
+              name: 'Dashboard Template',
+              level: 'template',
+              state: 'draft'
+            }
+          }
+        ];
+
+        this.mockTokens = {
+          'btn-primary': ['color-primary', 'spacing-md', 'border-radius-sm'],
+          'btn-secondary': ['color-secondary', 'spacing-md', 'border-radius-sm'],
+          'card-basic': ['color-surface', 'spacing-lg', 'shadow-md', 'border-radius-md'],
+          'form-login': ['color-surface', 'spacing-xl', 'color-primary'],
+          'page-dashboard': ['color-background', 'spacing-xxl']
+        };
+      }
+
+      queryByType(type) {
+        if (type === 'DesignSpecNode') {
+          return this.mockData;
+        }
+        return [];
+      }
+
+      queryEdges({ sourceId, edgeType }) {
+        if (edgeType === 'uses_token') {
+          const tokens = this.mockTokens[sourceId] || [];
+          return tokens.map(tokenId => ({ targetId: tokenId }));
+        }
+        return [];
+      }
+    }
+
+    // Mock EventBus for demo
+    class MockEventBus {
+      constructor() {
+        this.subscribers = new Map();
+      }
+
+      subscribe(eventType, handler) {
+        if (!this.subscribers.has(eventType)) {
+          this.subscribers.set(eventType, []);
+        }
+        this.subscribers.get(eventType).push(handler);
+      }
+
+      publish(event) {
+        const handlers = this.subscribers.get(event.type) || [];
+        handlers.forEach(handler => handler(event));
+      }
+    }
+
+    // Initialize demo
+    const typeNavigator = new MockTypeNavigator();
+    const eventBus = new MockEventBus();
+    const queryTool = new QueryComponentsTool(typeNavigator, eventBus);
+    const ui = document.getElementById('query-ui');
+
+    // Listen for QueryComponentsComplete events
+    eventBus.subscribe('QueryComponentsComplete', (event) => {
+      ui.updateResults(event.payload.results);
+    });
+
+    // Connect UI events to tool
+    ui.addEventListener('query-components', (e) => {
+      eventBus.publish({
+        type: 'QueryComponents',
+        payload: {
+          requestId: Date.now().toString(),
+          filter: e.detail.filter
+        },
+        source: 'QueryComponentsUI'
+      });
+    });
+
+    ui.addEventListener('query-components-stats', () => {
+      const stats = queryTool.getStatistics();
+      ui.updateStats(stats);
+    });
+
+    // Initial load - show all components
+    const allResults = queryTool.query({});
+    ui.updateResults(allResults);
+  </script>
+</body>
+</html>
