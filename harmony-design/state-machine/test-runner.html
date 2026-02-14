@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transition Validator Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    .header {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .test-output {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .success { color: #4ec9b0; }
+    .error { color: #f48771; }
+    .warning { color: #dcdcaa; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Transition Validator Tests</h1>
+    <p>Testing prerequisite checking for state machine transitions</p>
+  </div>
+  
+  <div class="test-output" id="output">
+    Running tests...\n
+  </div>
+
+  <script type="module">
+    import { runTransitionValidatorTests } from './transition-validator.test.js';
+
+    // Capture console output
+    const output = document.getElementById('output');
+    const originalLog = console.log;
+    const originalAssert = console.assert;
+    const originalGroup = console.group;
+    const originalGroupEnd = console.groupEnd;
+
+    let indent = 0;
+
+    console.log = function(...args) {
+      const message = args.join(' ');
+      output.textContent += '  '.repeat(indent) + message + '\n';
+      originalLog.apply(console, args);
+    };
+
+    console.assert = function(condition, ...args) {
+      if (!condition) {
+        const message = args.join(' ');
+        output.innerHTML += '  '.repeat(indent) + '<span class="error">✗ ASSERTION FAILED: ' + message + '</span>\n';
+      } else {
+        const message = args.join(' ');
+        output.innerHTML += '  '.repeat(indent) + '<span class="success">✓ ' + message + '</span>\n';
+      }
+      originalAssert.apply(console, [condition, ...args]);
+    };
+
+    console.group = function(...args) {
+      const message = args.join(' ');
+      output.textContent += '  '.repeat(indent) + '\n' + message + '\n';
+      indent++;
+      originalGroup.apply(console, args);
+    };
+
+    console.groupEnd = function() {
+      indent--;
+      output.textContent += '\n';
+      originalGroupEnd.apply(console);
+    };
+
+    // Run tests
+    try {
+      runTransitionValidatorTests();
+      output.innerHTML += '\n<span class="success">All tests completed successfully!</span>\n';
+    } catch (error) {
+      output.innerHTML += '\n<span class="error">Test execution failed: ' + error.message + '</span>\n';
+      console.error(error);
+    }
+  </script>
+</body>
+</html>
