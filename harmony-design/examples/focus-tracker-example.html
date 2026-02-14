@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Tracker Example - Harmony Design System</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .description {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .demo-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .demo-section h2 {
+      margin-top: 0;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .button-demo {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 10px 10px 10px 0;
+    }
+
+    .button-demo:hover {
+      background: #0056b3;
+    }
+
+    .button-demo:focus {
+      outline: 2px solid #007bff;
+      outline-offset: 2px;
+    }
+
+    .button-demo:active {
+      transform: translateY(1px);
+    }
+
+    .button-demo:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .state-display {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .state-item {
+      margin: 5px 0;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    .state-item.active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .state-item.inactive {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .controls {
+      margin-top: 15px;
+    }
+
+    .control-button {
+      padding: 8px 16px;
+      margin-right: 10px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .control-button:hover {
+      background: #f8f9fa;
+    }
+
+    .custom-styled {
+      padding: 16px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: 2px solid transparent;
+      transition: all 0.3s;
+    }
+
+    .custom-styled.focused {
+      border-color: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.4);
+    }
+
+    .custom-styled.hovered {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .custom-styled.active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.4);
+    }
+
+    .custom-styled.disabled {
+      background: #ccc;
+      opacity: 0.6;
+    }
+
+    .class-output {
+      margin-top: 10px;
+      padding: 10px;
+      background: #e9ecef;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>Focus Tracker Example</h1>
+  <p class="description">
+    Demonstrates multi-state focus tracking (focus, hover, active, disabled) for interactive elements.
+  </p>
+
+  <div class="demo-section">
+    <h2>Basic State Tracking</h2>
+    <button class="button-demo" id="basic-button">
+      Interact with this button
+    </button>
+    <div class="state-display" id="basic-state">
+      <div class="state-item" data-state="focused">Focused: false</div>
+      <div class="state-item" data-state="hovered">Hovered: false</div>
+      <div class="state-item" data-state="active">Active: false</div>
+      <div class="state-item" data-state="disabled">Disabled: false</div>
+    </div>
+    <div class="controls">
+      <button class="control-button" id="toggle-disabled">Toggle Disabled</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Custom Styling with State Classes</h2>
+    <button class="button-demo custom-styled" id="styled-button">
+      Custom styled button
+    </button>
+    <div class="class-output" id="class-output">
+      Classes: (none)
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Multiple Elements</h2>
+    <button class="button-demo" data-multi="1">Button 1</button>
+    <button class="button-demo" data-multi="2">Button 2</button>
+    <button class="button-demo" data-multi="3">Button 3</button>
+    <div class="state-display" id="multi-state">
+      Hover or focus any button to see which is interactive
+    </div>
+  </div>
+
+  <script type="module">
+    import { FocusTracker } from '../core/focus-tracker.js';
+
+    // Basic state tracking demo
+    const basicButton = document.getElementById('basic-button');
+    const basicState = document.getElementById('basic-state');
+    
+    const basicTracker = new FocusTracker({
+      element: basicButton,
+      onStateChange: (state) => {
+        Object.keys(state).forEach(key => {
+          const item = basicState.querySelector(`[data-state="${key}"]`);
+          item.textContent = `${key.charAt(0).toUpperCase() + key.slice(1)}: ${state[key]}`;
+          item.className = `state-item ${state[key] ? 'active' : 'inactive'}`;
+        });
+      }
+    });
+
+    document.getElementById('toggle-disabled').addEventListener('click', () => {
+      basicTracker.setDisabled(!basicTracker.getState().disabled);
+    });
+
+    // Custom styling demo
+    const styledButton = document.getElementById('styled-button');
+    const classOutput = document.getElementById('class-output');
+    
+    const styledTracker = new FocusTracker({
+      element: styledButton,
+      onStateChange: (state) => {
+        const classes = styledTracker.getClassNames();
+        styledButton.className = 'button-demo custom-styled ' + classes.join(' ');
+        classOutput.textContent = `Classes: ${classes.join(', ') || '(none)'}`;
+      }
+    });
+
+    // Multiple elements demo
+    const multiState = document.getElementById('multi-state');
+    const multiButtons = document.querySelectorAll('[data-multi]');
+    const multiTrackers = [];
+
+    multiButtons.forEach(button => {
+      const tracker = new FocusTracker({
+        element: button,
+        onStateChange: (state) => {
+          const buttonNum = button.getAttribute('data-multi');
+          const interactiveButtons = multiTrackers
+            .map((t, i) => t.isInteractive() ? i + 1 : null)
+            .filter(n => n !== null);
+          
+          if (interactiveButtons.length > 0) {
+            multiState.textContent = `Interactive: Button ${interactiveButtons.join(', ')}`;
+          } else {
+            multiState.textContent = 'No buttons are interactive';
+          }
+        }
+      });
+      multiTrackers.push(tracker);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      basicTracker.destroy();
+      styledTracker.destroy();
+      multiTrackers.forEach(t => t.destroy());
+    });
+
+    console.log('Focus Tracker examples loaded');
+    console.log('Try interacting with the buttons using mouse and keyboard');
+  </script>
+</body>
+</html>
