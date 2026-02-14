@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Waveform Component Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+    
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+    
+    h1 {
+      margin-top: 0;
+      color: #00ff00;
+    }
+    
+    h2 {
+      color: #00ccff;
+      margin-top: 0;
+    }
+    
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 8px 16px;
+      background: #444;
+      border: 1px solid #666;
+      color: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background: #555;
+    }
+    
+    button:active {
+      background: #333;
+    }
+    
+    .waveform-wrapper {
+      margin: 20px 0;
+      padding: 10px;
+      background: #000;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    
+    .info {
+      margin-top: 10px;
+      padding: 10px;
+      background: #333;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    
+    .status.ready {
+      background: #00ff00;
+      color: #000;
+    }
+    
+    .status.overflow {
+      background: #ff0000;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌊 Waveform Component Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>1. Oscilloscope Mode - Sine Wave</h2>
+    <div class="waveform-wrapper">
+      <harmony-waveform 
+        id="waveform1"
+        mode="oscilloscope"
+        color="#00ff00"
+        width="600"
+        height="150"
+        line-width="2">
+      </harmony-waveform>
+    </div>
+    <div class="controls">
+      <button onclick="startSineWave('waveform1')">Start Sine Wave</button>
+      <button onclick="stopWaveform('waveform1')">Stop</button>
+      <button onclick="clearWaveform('waveform1')">Clear</button>
+    </div>
+    <div class="info" id="info1">Status: Idle</div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Spectrum Mode - Random Data</h2>
+    <div class="waveform-wrapper">
+      <harmony-waveform 
+        id="waveform2"
+        mode="spectrum"
+        color="#ff00ff"
+        width="600"
+        height="150"
+        fill>
+      </harmony-waveform>
+    </div>
+    <div class="controls">
+      <button onclick="startRandomSpectrum('waveform2')">Start Random Spectrum</button>
+      <button onclick="stopWaveform('waveform2')">Stop</button>
+      <button onclick="clearWaveform('waveform2')">Clear</button>
+    </div>
+    <div class="info" id="info2">Status: Idle</div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Oscilloscope - Complex Waveform</h2>
+    <div class="waveform-wrapper">
+      <harmony-waveform 
+        id="waveform3"
+        mode="oscilloscope"
+        color="#00ccff"
+        width="600"
+        height="150"
+        line-width="3"
+        fill>
+      </harmony-waveform>
+    </div>
+    <div class="controls">
+      <button onclick="startComplexWave('waveform3')">Start Complex Wave</button>
+      <button onclick="stopWaveform('waveform3')">Stop</button>
+      <button onclick="clearWaveform('waveform3')">Clear</button>
+    </div>
+    <div class="info" id="info3">Status: Idle</div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Overflow Test</h2>
+    <div class="waveform-wrapper">
+      <harmony-waveform 
+        id="waveform4"
+        mode="oscilloscope"
+        color="#ffff00"
+        width="600"
+        height="150">
+      </harmony-waveform>
+    </div>
+    <div class="controls">
+      <button onclick="testOverflow('waveform4')">Trigger Overflow</button>
+      <button onclick="stopWaveform('waveform4')">Stop</button>
+      <button onclick="clearWaveform('waveform4')">Clear</button>
+    </div>
+    <div class="info" id="info4">Status: Idle</div>
+  </div>
+
+  <div class="test-section">
+    <h2>5. Multiple Sizes</h2>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+      <div class="waveform-wrapper">
+        <harmony-waveform 
+          id="waveform5a"
+          mode="oscilloscope"
+          color="#ff6600"
+          width="200"
+          height="80">
+        </harmony-waveform>
+      </div>
+      <div class="waveform-wrapper">
+        <harmony-waveform 
+          id="waveform5b"
+          mode="spectrum"
+          color="#00ff99"
+          width="300"
+          height="120"
+          fill>
+        </harmony-waveform>
+      </div>
+      <div class="waveform-wrapper">
+        <harmony-waveform 
+          id="waveform5c"
+          mode="oscilloscope"
+          color="#ff0099"
+          width="400"
+          height="100"
+          line-width="1">
+        </harmony-waveform>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="startAllSmall()">Start All</button>
+      <button onclick="stopAllSmall()">Stop All</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { HarmonyWaveform } from './waveform.component.js';
+    
+    // Track active intervals
+    const intervals = new Map();
+    
+    // Event listeners
+    document.addEventListener('waveform-ready', (e) => {
+      const id = e.target.id;
+      console.log(`Waveform ${id} ready`, e.detail);
+      updateInfo(id, 'Status: Ready', 'ready');
+    });
+    
+    document.addEventListener('waveform-overflow', (e) => {
+      const id = e.target.id;
+      console.warn(`Waveform ${id} overflow detected`, e.detail);
+      updateInfo(id, 'Status: OVERFLOW DETECTED!', 'overflow');
+    });
+    
+    function updateInfo(id, message, statusClass = '') {
+      const infoId = id.replace('waveform', 'info');
+      const infoEl = document.getElementById(infoId);
+      if (infoEl) {
+        infoEl.innerHTML = message + (statusClass ? ` <span class="status ${statusClass}">${statusClass}</span>` : '');
+      }
+    }
+    
+    // Sine wave generator
+    window.startSineWave = (id) => {
+      const waveform = document.getElementById(id);
+      stopWaveform(id);
+      
+      let phase = 0;
+      const frequency = 2;
+      const sampleRate = 60;
+      
+      intervals.set(id, setInterval(() => {
+        const samples = 128;
+        const data = new Float32Array(samples);
+        
+        for (let i = 0; i < samples; i++) {
+          data[i] = Math.sin(2 * Math.PI * frequency * (phase + i / samples));
+        }
+        
+        waveform.updateData(data);
+        phase += 1 / sampleRate;
+        updateInfo(id, `Status: Playing (phase: ${phase.toFixed(2)})`);
+      }, 1000 / sampleRate);
+    };
+    
+    // Random spectrum generator
+    window.startRandomSpectrum = (id) => {
+      const waveform = document.getElementById(id);
+      stopWaveform(id);
+      
+      intervals.set(id, setInterval(() => {
+        const samples = 64;
+        const data = new Float32Array(samples);
+        
+        for (let i = 0; i < samples; i++) {
+          data[i] = Math.random() * (1 - i / samples);
+        }
+        
+        waveform.updateData(data);
+        updateInfo(id, `Status: Playing (random spectrum)`);
+      }, 50);
+    };
+    
+    // Complex waveform generator
+    window.startComplexWave = (id) => {
+      const waveform = document.getElementById(id);
+      stopWaveform(id);
+      
+      let phase = 0;
+      
+      intervals.set(id, setInterval(() => {
+        const samples = 256;
+        const data = new Float32Array(samples);
+        
+        for (let i = 0; i < samples; i++) {
+          const t = (phase + i / samples) * 2 * Math.PI;
+          data[i] = 0.5 * Math.sin(t) + 0.3 * Math.sin(3 * t) + 0.2 * Math.sin(5 * t);
+        }
+        
+        waveform.updateData(data);
+        phase += 0.05;
+        updateInfo(id, `Status: Playing (complex wave)`);
+      }, 16);
+    };
+    
+    // Overflow test
+    window.testOverflow = (id) => {
+      const waveform = document.getElementById(id);
+      stopWaveform(id);
+      
+      let count = 0;
+      intervals.set(id, setInterval(() => {
+        const samples = 128;
+        const data = new Float32Array(samples);
+        
+        for (let i = 0; i < samples; i++) {
+          // Occasionally exceed bounds
+          const amplitude = (count % 10 === 0) ? 1.5 : 0.8;
+          data[i] = amplitude * Math.sin(2 * Math.PI * (count + i) / samples);
+        }
+        
+        waveform.updateData(data);
+        count++;
+        updateInfo(id, `Status: Testing overflow (frame: ${count})`);
+      }, 100);
+    };
+    
+    // Stop waveform
+    window.stopWaveform = (id) => {
+      const interval = intervals.get(id);
+      if (interval) {
+        clearInterval(interval);
+        intervals.delete(id);
+      }
+      const waveform = document.getElementById(id);
+      waveform.stopLiveMode();
+      updateInfo(id, 'Status: Stopped');
+    };
+    
+    // Clear waveform
+    window.clearWaveform = (id) => {
+      stopWaveform(id);
+      const waveform = document.getElementById(id);
+      waveform.clear();
+      updateInfo(id, 'Status: Cleared');
+    };
+    
+    // Multiple waveforms
+    window.startAllSmall = () => {
+      startSineWave('waveform5a');
+      startRandomSpectrum('waveform5b');
+      startComplexWave('waveform5c');
+    };
+    
+    window.stopAllSmall = () => {
+      stopWaveform('waveform5a');
+      stopWaveform('waveform5b');
+      stopWaveform('waveform5c');
+    };
+  </script>
+  
+  <script type="module" src="./waveform.component.js"></script>
+</body>
+</html>
