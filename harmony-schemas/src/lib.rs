@@ -1,7 +1,7 @@
-//! Harmony Design System - Schema Definitions
+//! Harmony Design System Schemas
 //! 
-//! See: harmony-design/DESIGN_SYSTEM.md
+//! Core type definitions and validation logic for the design system.
 
-pub mod component_ui_link;
+pub mod component_lifecycle;
 
-pub use component_ui_link::{ComponentUILink, UIUsageContext};
+pub use component_lifecycle::{ComponentState, StateTransition, TransitionResult};
