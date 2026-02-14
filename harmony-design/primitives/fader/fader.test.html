@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fader Component Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #2a2a2a;
+      border-radius: 8px;
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #4a9eff;
+    }
+
+    .fader-group {
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    .fader-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .value-display {
+      font-family: monospace;
+      background: #1a1a1a;
+      padding: 8px 12px;
+      border-radius: 4px;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .controls {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #3a8eef;
+    }
+
+    .event-log {
+      background: #1a1a1a;
+      padding: 10px;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .event-log div {
+      padding: 4px 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .horizontal-demo {
+      width: 100%;
+      max-width: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fader Component Test Suite</h1>
+
+  <div class="test-section">
+    <h2>1. Basic Vertical Faders</h2>
+    <div class="fader-group">
+      <div class="fader-demo">
+        <harmony-fader id="fader1" value="0.5" label="Volume"></harmony-fader>
+        <div class="value-display" id="value1">0.50</div>
+        <label>Volume</label>
+      </div>
+
+      <div class="fader-demo">
+        <harmony-fader id="fader2" value="0.75" label="Gain"></harmony-fader>
+        <div class="value-display" id="value2">0.75</div>
+        <label>Gain</label>
+      </div>
+
+      <div class="fader-demo">
+        <harmony-fader id="fader3" value="0.25" label="Mix"></harmony-fader>
+        <div class="value-display" id="value3">0.25</div>
+        <label>Mix</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Horizontal Faders</h2>
+    <div class="fader-group">
+      <div class="fader-demo horizontal-demo">
+        <harmony-fader id="fader4" value="0.6" orientation="horizontal" label="Pan"></harmony-fader>
+        <div class="value-display" id="value4">0.60</div>
+        <label>Pan</label>
+      </div>
+
+      <div class="fader-demo horizontal-demo">
+        <harmony-fader id="fader5" value="0.3" orientation="horizontal" label="Balance"></harmony-fader>
+        <div class="value-display" id="value5">0.30</div>
+        <label>Balance</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Custom Range Faders</h2>
+    <div class="fader-group">
+      <div class="fader-demo">
+        <harmony-fader id="fader6" value="50" min="0" max="100" step="1" label="Percentage"></harmony-fader>
+        <div class="value-display" id="value6">50</div>
+        <label>0-100 (step 1)</label>
+      </div>
+
+      <div class="fader-demo">
+        <harmony-fader id="fader7" value="0" min="-12" max="12" step="0.5" label="Decibels"></harmony-fader>
+        <div class="value-display" id="value7">0.0 dB</div>
+        <label>-12 to +12 dB</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Disabled State</h2>
+    <div class="fader-group">
+      <div class="fader-demo">
+        <harmony-fader id="fader8" value="0.7" disabled label="Disabled Fader"></harmony-fader>
+        <div class="value-display" id="value8">0.70</div>
+        <label>Disabled</label>
+      </div>
+
+      <div class="controls">
+        <button onclick="toggleDisabled()">Toggle Disabled</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>5. Programmatic Control</h2>
+    <div class="fader-group">
+      <div class="fader-demo">
+        <harmony-fader id="fader9" value="0.5" label="Controllable"></harmony-fader>
+        <div class="value-display" id="value9">0.50</div>
+      </div>
+
+      <div class="controls">
+        <button onclick="setFaderValue(0)">Min</button>
+        <button onclick="setFaderValue(0.25)">25%</button>
+        <button onclick="setFaderValue(0.5)">50%</button>
+        <button onclick="setFaderValue(0.75)">75%</button>
+        <button onclick="setFaderValue(1)">Max</button>
+        <button onclick="animateFader()">Animate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>6. Event Logging</h2>
+    <div class="fader-group">
+      <div class="fader-demo">
+        <harmony-fader id="fader10" value="0.5" label="Event Test"></harmony-fader>
+        <div class="value-display" id="value10">0.50</div>
+      </div>
+    </div>
+    <div class="event-log" id="eventLog"></div>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
+
+  <script type="module">
+    import { FaderComponent } from './fader.component.js';
+
+    // Update value displays
+    function updateDisplay(faderId, displayId, formatter = (v) => v.toFixed(2)) {
+      const fader = document.getElementById(faderId);
+      const display = document.getElementById(displayId);
+
+      fader.addEventListener('fader-change', (e) => {
+        display.textContent = formatter(e.detail.value);
+      });
+
+      fader.addEventListener('fader-input', (e) => {
+        display.textContent = formatter(e.detail.value);
+      });
+    }
+
+    // Setup all basic faders
+    updateDisplay('fader1', 'value1');
+    updateDisplay('fader2', 'value2');
+    updateDisplay('fader3', 'value3');
+    updateDisplay('fader4', 'value4');
+    updateDisplay('fader5', 'value5');
+    updateDisplay('fader6', 'value6', (v) => Math.round(v));
+    updateDisplay('fader7', 'value7', (v) => v.toFixed(1) + ' dB');
+    updateDisplay('fader8', 'value8');
+    updateDisplay('fader9', 'value9');
+    updateDisplay('fader10', 'value10');
+
+    // Event logging
+    const fader10 = document.getElementById('fader10');
+    const eventLog = document.getElementById('eventLog');
+    let eventCount = 0;
+
+    fader10.addEventListener('fader-change', (e) => {
+      logEvent('fader-change', e.detail.value);
+    });
+
+    fader10.addEventListener('fader-input', (e) => {
+      logEvent('fader-input', e.detail.value);
+    });
+
+    function logEvent(type, value) {
+      eventCount++;
+      const entry = document.createElement('div');
+      entry.textContent = `[${eventCount}] ${type}: ${value.toFixed(3)}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 20 events
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    window.clearLog = () => {
+      eventLog.innerHTML = '';
+      eventCount = 0;
+    };
+
+    // Programmatic control
+    window.setFaderValue = (value) => {
+      const fader = document.getElementById('fader9');
+      fader.value = value;
+      document.getElementById('value9').textContent = value.toFixed(2);
+    };
+
+    window.animateFader = () => {
+      const fader = document.getElementById('fader9');
+      let value = 0;
+      const interval = setInterval(() => {
+        value += 0.01;
+        if (value > 1) {
+          value = 0;
+        }
+        fader.value = value;
+        document.getElementById('value9').textContent = value.toFixed(2);
+        
+        if (value >= 0.99) {
+          clearInterval(interval);
+        }
+      }, 16); // ~60fps
+    };
+
+    // Toggle disabled
+    window.toggleDisabled = () => {
+      const fader = document.getElementById('fader8');
+      if (fader.hasAttribute('disabled')) {
+        fader.removeAttribute('disabled');
+      } else {
+        fader.setAttribute('disabled', '');
+      }
+    };
+
+    // Performance monitoring
+    console.log('Fader Component Test Suite Loaded');
+    console.log('Instructions:');
+    console.log('- Drag faders with mouse');
+    console.log('- Use keyboard (Arrow keys, Page Up/Down, Home/End)');
+    console.log('- Scroll mouse wheel over faders');
+    console.log('- Check event log for event firing');
+    console.log('- Monitor DevTools Performance for 60fps');
+  </script>
+</body>
+</html>
