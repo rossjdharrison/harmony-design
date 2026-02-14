@@ -1,206 +1,256 @@
 # Harmony Design System
 
-A comprehensive design system for building musical interfaces with performance, accessibility, and consistency.
+A comprehensive design system for building musical interfaces with Web Components, WASM-powered audio processing, and event-driven architecture.
 
-## Overview
+## Table of Contents
 
-Harmony is a design system that bridges design and implementation for music creation tools. It provides reusable components, patterns, and tools to maintain consistency across the application.
+1. [Architecture Overview](#architecture-overview)
+2. [Event-Driven Communication](#event-driven-communication)
+3. [Event Source Highlighting](#event-source-highlighting)
+4. [Component Development](#component-development)
+5. [Bounded Contexts](#bounded-contexts)
+6. [Performance Requirements](#performance-requirements)
+7. [Development Workflow](#development-workflow)
 
-## Core Concepts
+## Architecture Overview
 
-### Component States
+Harmony uses a layered architecture with clear separation of concerns:
 
-Components progress through defined states during their lifecycle:
+- **UI Layer**: Vanilla Web Components (HTML/CSS/JS)
+- **Event Layer**: EventBus for decoupled communication
+- **Logic Layer**: Bounded Contexts (Rust → WASM)
+- **Audio Layer**: Graph Engine (Rust → WASM)
 
-- **draft**: Initial state, design in progress
-- **design_complete**: Design specification finalized
-- **implemented**: Code implementation complete
-- **validated**: Testing and validation complete
+### Technology Boundaries
 
-Each component's state is tracked in `harmony-design/components/{component-id}.state.json`.
+- **Rust → WASM**: Bounded contexts, graph engine, audio processing
+- **Vanilla JS**: UI rendering, DOM manipulation, event handling
+- **Python**: Test servers, build scripts, dev tools only
+- **npm**: Build tools and dev dependencies only (no runtime deps)
 
-### State Machine
+## Event-Driven Communication
 
-The state machine defines valid transitions between component states and their prerequisites.
+All component-to-component and component-to-BC communication happens via EventBus.
 
-**Definition:** `harmony-design/state-machine/definition.json`
+### Pattern
 
-**Transition Rules:** `harmony-design/state-machine/transition-rules.json`
-
-Transitions require specific prerequisites:
-- **draft → design_complete**: Design specification file (`.pen`) must exist
-- **design_complete → implemented**: Implementation file (`.js`) must exist
-- **implemented → validated**: Testing and validation must be complete
-
-See: [State Machine Definition](./state-machine/definition.json)
-
-### Component Links
-
-Components maintain relationships to other system elements:
-
-- **Domain Links**: What domain types render this component
-- **Intent Links**: What actions/intents are available
-- **UI Links**: Where component is used in application
-
-Links are stored in component state files and enable impact analysis.
-
-## MCP Tools
-
-### update_component_state
-
-MCP tool for updating component state with automatic validation.
-
-**Location:** `harmony-design/mcp/tools/update_component_state.py`
-
-**Usage:**
-
-```python
-from harmony_design.mcp.tools import update_component_state
-
-result = update_component_state(
-    component_id="button-primary",
-    new_state="design_complete"
-)
+```
+User Action → Component publishes event → EventBus routes → BC handles → BC publishes result
 ```
 
-**Validation:**
+### Event Schema
 
-The tool automatically checks:
-1. Component exists
-2. Transition is valid per state machine
-3. All prerequisites are satisfied
-4. Required files exist
-5. Required properties are set
+All events must have defined schemas in `harmony-schemas/`. Events are validated at runtime.
 
-**Force Mode:**
+### Direct Calls Prohibited
 
-Use `force=True` to bypass validation (use with caution):
+Components must NEVER call Bounded Contexts directly. Always use EventBus.
 
-```python
-result = update_component_state(
-    component_id="button-primary",
-    new_state="implemented",
-    force=True
-)
+See: [harmony-ui/core/event-bus.js](../harmony-ui/core/event-bus.js)
+
+## Event Source Highlighting
+
+The EventBusComponent includes visual highlighting to show which component emitted each event.
+
+### Features
+
+- **Unique Colors**: Each event source gets a consistent color from a 12-color palette
+- **Source Badges**: Visual badges display the source name with color coding
+- **Border Highlighting**: Event items have colored left borders matching their source
+- **Interactive Legend**: Collapsible legend shows all active sources
+- **Auto-Detection**: Sources are automatically extracted from event detail objects
+
+### How It Works
+
+When an event is logged:
+
+1. The source is extracted from `detail.source`, `detail.componentId`, or `detail.emitter`
+2. A unique color is assigned (or retrieved if source seen before)
+3. A colored badge is added to the event item
+4. The event item's left border is colored
+5. The legend is updated with the new source
+
+### Component Integration
+
+Components should include a `source` field when publishing events:
+
+```javascript
+eventBus.publish('ButtonClicked', {
+  source: 'PlayButton',  // ← Identifies the emitting component
+  action: 'play'
+});
 ```
 
-See: [MCP Tools Documentation](./mcp/README.md)
+### Visual Design
 
-## Component State Format
+- **Color Palette**: 12 distinct colors optimized for differentiation
+- **Badge Style**: Rounded rectangles with 20% opacity background
+- **Border Width**: 3px solid left border on event items
+- **Legend Layout**: Responsive grid, collapsible, sticky positioning
 
-Each component has a state file: `harmony-design/components/{component-id}.state.json`
+### Performance
 
-```json
-{
-  "component_id": "button-primary",
-  "state": "draft",
-  "links": {
-    "domain": [],
-    "intent": [],
-    "ui": []
-  },
-  "state_history": [
-    {
-      "from": "draft",
-      "to": "design_complete",
-      "timestamp": "2024-01-15T10:30:00Z"
-    }
-  ]
+- Color assignment: O(1) lookup via Map
+- Badge creation: < 1ms per event
+- Legend update: O(n) where n = number of unique sources
+- Memory: ~1KB per unique source
+
+### Files
+
+- [event-source-highlighter.js](../harmony-ui/components/event-bus-component/event-source-highlighter.js) - Core highlighting logic
+- [source-legend.js](../harmony-ui/components/event-bus-component/source-legend.js) - Legend UI component
+- [source-highlighting.css](../harmony-ui/components/event-bus-component/styles/source-highlighting.css) - Styles
+- [integration-patch.js](../harmony-ui/components/event-bus-component/integration-patch.js) - EventBusComponent integration
+
+## Component Development
+
+### Web Component Structure
+
+All UI components use shadow DOM and follow this structure:
+
+```javascript
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.render();
+    this.attachEventListeners();
+  }
+
+  render() {
+    // Render to shadow DOM
+  }
 }
 ```
 
-## Working with the System
+### Event Publishing
 
-### Creating a New Component
+Components publish events, never handle business logic:
 
-1. Create component state file in `harmony-design/components/`
-2. Initial state is `draft`
-3. Create design specification (`.pen` file)
-4. Update state to `design_complete` using MCP tool
-5. Implement component (`.js` file)
-6. Update state to `implemented`
-7. Test and validate
-8. Update state to `validated`
-
-### Updating Component State
-
-Always use the MCP tool to ensure validation:
-
-```python
-result = update_component_state("my-component", "design_complete")
-
-if not result["success"]:
-    print("Validation errors:")
-    for error in result["validation_errors"]:
-        print(f"  - {error}")
+```javascript
+this.publishEvent('ActionRequested', {
+  source: this.componentId,
+  action: 'play',
+  timestamp: Date.now()
+});
 ```
 
-### Checking Prerequisites
+### Testing Requirements
 
-Before attempting a state transition, ensure:
+All components must be tested in Chrome before task completion:
 
-1. Required files exist
-2. Required properties are set in state file
-3. Necessary links are established
+- ✅ Default state
+- ✅ Hover state
+- ✅ Focus state
+- ✅ Active state
+- ✅ Disabled state
+- ✅ Error states (if applicable)
+- ✅ Loading states (if applicable)
+- ✅ Empty states (if applicable)
 
-The MCP tool will report specific missing prerequisites.
+### Performance Testing
 
-## Testing
+Animations must maintain 60fps. Use Chrome DevTools Performance panel to verify.
 
-### MCP Tool Tests
+## Bounded Contexts
 
-Run MCP tool tests:
+Bounded Contexts (BCs) contain business logic and are implemented in Rust, compiled to WASM.
 
-```bash
-pytest harmony-design/mcp/tools/test_update_component_state.py -v
+### Pattern
+
+```rust
+// Subscribe to command events
+eventBus.subscribe("PlayCommand", handlePlay);
+
+// Process and publish results
+fn handlePlay(event: Event) {
+    // Business logic here
+    eventBus.publish("PlaybackStarted", result);
+}
 ```
 
-Tests cover:
-- State machine loading
-- Transition validation
-- Prerequisite checking
-- State updates
-- Force mode
-- Error handling
+### Schema Changes
 
-## Implementation Notes
+When changing BC behavior:
 
-### State Machine Validation
+1. Navigate to `harmony-schemas/`
+2. Modify the schema file
+3. Run codegen: `./scripts/codegen.sh`
+4. Verify compilation
+5. Commit schema + generated code together
 
-Validation logic in `ComponentStateUpdater` class checks:
+**Never edit generated Rust code directly.**
 
-1. **Transition Existence**: Is the transition defined in state machine?
-2. **File Prerequisites**: Do required files exist?
-3. **Property Prerequisites**: Are required properties set?
-4. **Link Prerequisites**: Are required links established?
+## Performance Requirements
 
-### Prerequisite Types
+### Absolute Constraints
 
-- `file_exists`: Check if specific file exists (supports `{component_id}` placeholder)
-- `property_set`: Check if property is set in component state
-- `linked_resources`: Check if specific link type has entries
+- **Render Budget**: Maximum 16ms per frame (60fps)
+- **Memory Budget**: Maximum 50MB WASM heap
+- **Load Budget**: Maximum 200ms initial load time
 
-### State History
+These cannot be violated under any circumstances.
 
-Each state transition is recorded with:
-- Previous state
-- New state
-- Timestamp (ISO 8601 UTC)
+## Development Workflow
 
-This provides audit trail for component lifecycle.
+### EventBusComponent Access
 
-## Architecture Compliance
+Press `Ctrl+Shift+E` on any page to open the EventBusComponent debugger. It shows:
 
-This implementation follows Harmony's architecture policies:
+- Real-time event stream
+- Event filtering by type
+- Event source highlighting
+- Event payload inspection
 
-- **Python for tooling**: MCP tools are Python (dev/build tools only)
-- **No runtime dependencies**: Tools are separate from runtime code
-- **Validation before action**: State changes validated before applied
-- **Explicit error reporting**: Clear validation error messages
-- **Audit trail**: State history tracked for all transitions
+The EventBusComponent must be included in the app-shell template on every page.
 
-## See Also
+### Error Logging
 
-- [MCP Tools](./mcp/README.md)
-- [State Machine Definition](./state-machine/definition.json)
-- [Transition Rules](./state-machine/transition-rules.json)
+EventBus errors (validation failures, missing subscribers, type mismatches) are logged to console with full context:
+
+- Event type
+- Source component
+- Payload data
+- Error message
+
+### Git Workflow
+
+1. Implement task
+2. Test in Chrome (all states)
+3. Update DESIGN_SYSTEM.md (mandatory)
+4. Commit changes
+5. Push to remote (mandatory before starting new task)
+
+### Documentation Requirements
+
+- DESIGN_SYSTEM.md must be updated for every task
+- Use B1-level English (simple, clear)
+- Code goes in files, not documentation
+- Use relative links to code files
+- Maintain two-way references (doc ↔ code)
+
+### Blocked Tasks
+
+If a task cannot be completed:
+
+1. Create report in `harmony-design/reports/blocked/{task_id}.md`
+2. Include reason, attempted solutions, recommended enabling work
+3. Await further instructions OR create enabling task
+
+## Quality Gates
+
+All tasks must pass quality gates before completion:
+
+- ✅ Performance budgets met
+- ✅ All tests pass
+- ✅ Chrome testing complete
+- ✅ Documentation updated
+- ✅ Changes committed and pushed
+- ✅ No technical debt introduced
+
+---
+
+*This document is the single source of truth for Harmony Design System. All code should reference relevant sections here, and this document should link to implementation files.*

@@ -1,0 +1,208 @@
+/**
+ * Event Source Highlighting Styles
+ * 
+ * Styles for visual highlighting of event sources in the EventBusComponent.
+ * Provides clear visual distinction between different event emitters.
+ * 
+ * See: harmony-design/DESIGN_SYSTEM.md#event-source-highlighting
+ */
+
+/* Source Badge */
+.event-source-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  border: 1px solid;
+  margin-right: 8px;
+  white-space: nowrap;
+  transition: transform 0.1s ease;
+}
+
+.event-source-badge:hover {
+  transform: scale(1.05);
+  cursor: help;
+}
+
+/* Event Item with Source Highlighting */
+.event-item {
+  border-left: 3px solid transparent;
+  transition: border-left-color 0.2s ease;
+}
+
+/* Source Legend */
+.event-source-legend {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px;
+  z-index: 10;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.legend-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.legend-toggle {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.15s ease;
+}
+
+.legend-toggle:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.legend-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.legend-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: #f9fafb;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.legend-item:hover {
+  background-color: #f3f4f6;
+  transform: translateX(2px);
+}
+
+.legend-item.highlighted {
+  background-color: #fef3c7;
+  animation: pulse-highlight 0.5s ease;
+}
+
+@keyframes pulse-highlight {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-source {
+  font-size: 11px;
+  font-family: 'SF Mono', 'Monaco', 'Cascadia Code', monospace;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legend-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 12px;
+  padding: 16px;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .event-source-legend {
+    background: #1f2937;
+    border-bottom-color: #374151;
+  }
+
+  .legend-title {
+    color: #e5e7eb;
+  }
+
+  .legend-toggle {
+    color: #9ca3af;
+  }
+
+  .legend-toggle:hover {
+    background-color: #374151;
+    color: #e5e7eb;
+  }
+
+  .legend-item {
+    background: #374151;
+  }
+
+  .legend-item:hover {
+    background-color: #4b5563;
+  }
+
+  .legend-item.highlighted {
+    background-color: #78350f;
+  }
+
+  .legend-source {
+    color: #e5e7eb;
+  }
+
+  .legend-empty {
+    color: #6b7280;
+  }
+}
+
+/* Performance optimization: use GPU acceleration */
+.legend-item,
+.event-source-badge {
+  will-change: transform;
+}
+
+/* Accessibility */
+.legend-toggle:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .legend-content {
+    grid-template-columns: 1fr;
+  }
+
+  .event-source-legend {
+    position: relative;
+  }
+}
