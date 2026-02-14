@@ -1,8 +1,13 @@
 //! Harmony Design System Schemas
 //! 
-//! Core data structures and type definitions for the Harmony Design System.
-//! This crate defines the canonical schema for all design system entities.
+//! This crate contains all schema definitions for the Harmony Design System.
+//! Schemas define the structure and validation rules for design system data.
 
-pub mod graph;
+pub mod lifecycle_states;
 
-pub use graph::{Edge, EdgeMetadata, EdgeType};
+pub use lifecycle_states::{
+    LifecycleState,
+    LifecycleEntry,
+    LifecycleHistory,
+    StateMetadata,
+};

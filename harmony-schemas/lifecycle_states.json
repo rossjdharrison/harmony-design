@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.system/schemas/lifecycle_states.json",
+  "title": "Lifecycle States Schema",
+  "description": "Defines the lifecycle states for components in the Harmony Design System",
+  "type": "object",
+  "properties": {
+    "state": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "design_complete",
+        "in_development",
+        "implemented",
+        "published",
+        "deprecated"
+      ],
+      "description": "Current lifecycle state of the component"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp when this state was entered"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Optional reason for state change (especially useful for deprecated state)"
+        },
+        "changedBy": {
+          "type": "string",
+          "description": "Identifier of person or system that changed the state"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about this state"
+        }
+      }
+    }
+  },
+  "required": ["state", "timestamp"],
+  "definitions": {
+    "lifecycleHistory": {
+      "type": "array",
+      "description": "Complete history of lifecycle state changes",
+      "items": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "$ref": "#/properties/state"
+          },
+          "timestamp": {
+            "$ref": "#/properties/timestamp"
+          },
+          "metadata": {
+            "$ref": "#/properties/metadata"
+          }
+        },
+        "required": ["state", "timestamp"]
+      }
+    },
+    "stateTransitions": {
+      "type": "object",
+      "description": "Valid state transitions in the lifecycle",
+      "properties": {
+        "draft": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["design_complete", "deprecated"]
+          },
+          "description": "From draft, can move to design_complete or deprecated"
+        },
+        "design_complete": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["in_development", "draft", "deprecated"]
+          },
+          "description": "From design_complete, can move to in_development, back to draft, or deprecated"
+        },
+        "in_development": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["implemented", "design_complete", "deprecated"]
+          },
+          "description": "From in_development, can move to implemented, back to design_complete, or deprecated"
+        },
+        "implemented": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["published", "in_development", "deprecated"]
+          },
+          "description": "From implemented, can move to published, back to in_development, or deprecated"
+        },
+        "published": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["deprecated", "in_development"]
+          },
+          "description": "From published, can move to deprecated or back to in_development for updates"
+        },
+        "deprecated": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": []
+          },
+          "description": "Deprecated is a terminal state"
+        }
+      }
+    }
+  }
+}
