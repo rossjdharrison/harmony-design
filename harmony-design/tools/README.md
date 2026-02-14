@@ -1,58 +1,65 @@
-/**
- * Design System Tools
- * 
- * Collection of tools for querying and analyzing the Harmony Design System graph.
- * 
- * @see harmony-design/DESIGN_SYSTEM.md#design-system-tools
- */
+# Harmony Design System Tools
 
-/**
- * Available Tools:
- * 
- * 1. query_components - Filter and search components by various criteria
- *    - Filter by level (atom, molecule, organism, template, page)
- *    - Filter by state (draft, design_complete, implementation_ready, etc.)
- *    - Filter by token usage
- * 
- * 2. get_component_dependencies - Trace composition chains
- *    - Get upstream dependencies (what a component uses)
- *    - Get downstream dependents (what uses a component)
- *    - Find circular dependencies
- *    - Calculate dependency statistics
- *    - Find shortest paths between components
- * 
- * Usage Examples:
- * 
- * // Find all atoms in draft state
- * const draftAtoms = await queryComponents({
- *   level: 'atom',
- *   state: 'draft'
- * });
- * 
- * // Get all dependencies of a button
- * const deps = await getComponentDependencies({
- *   componentId: 'button-primary',
- *   direction: 'upstream',
- *   maxDepth: 5
- * });
- * 
- * // Find what components use an icon
- * const usages = await getComponentDependencies({
- *   componentId: 'icon-base',
- *   direction: 'downstream'
- * });
- * 
- * // Check for circular dependencies
- * const cycles = await findCircularDependencies('button-primary');
- * 
- * // Get dependency statistics
- * const stats = await getDependencyStats('card-stats');
- */
+Development and validation tools for the Harmony Design System.
 
-export { queryComponents } from './query_components.js';
-export { 
-  getComponentDependencies,
-  findCircularDependencies,
-  getDependencyStats,
-  findShortestPath
-} from './get_component_dependencies.js';
+See: [harmony-design/DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#development-tools)
+
+## Available Tools
+
+### validate_composition.py
+
+Validates that component composition relationships follow atomic design hierarchy rules.
+
+**Usage:**
+```bash
+python tools/validate_composition.py path/to/graph.json
+```
+
+**Rules Enforced:**
+- Primitives cannot contain other components
+- Molecules can only contain primitives
+- Organisms can contain molecules and primitives
+- Templates can contain organisms, molecules, and primitives
+- Pages can contain any component type
+
+**Exit Codes:**
+- `0`: All composition rules pass
+- `1`: One or more violations found or error occurred
+
+**Example Output:**
+```
+✓ All composition rules validated successfully
+  Checked 42 composition relationships
+```
+
+Or if violations found:
+```
+✗ Found 2 composition rule violation(s):
+
+1. Invalid composition: molecule 'Card' cannot contain organism 'Header'. 
+   Allowed children: primitive
+   Edge: card -> header
+
+2. Invalid composition: primitive 'Button' cannot contain primitive 'Icon'. 
+   Allowed children: none
+   Edge: button -> icon
+```
+
+### Running Tests
+
+```bash
+# Install pytest if needed
+pip install pytest
+
+# Run composition validator tests
+pytest tools/test_validate_composition.py -v
+```
+
+## Integration with CI
+
+Add to your CI pipeline to enforce composition rules:
+
+```yaml
+- name: Validate Composition Rules
+  run: python harmony-design/tools/validate_composition.py harmony-graph/graph.json
+```

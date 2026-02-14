@@ -1,291 +1,217 @@
 # Harmony Design System
 
-Welcome to the Harmony Design System documentation. This system helps you build consistent, accessible, and performant user interfaces using a graph-based approach to component composition.
+A comprehensive design system for building consistent, accessible, and performant user interfaces.
 
-## Table of Contents
+## Overview
 
-1. [Core Concepts](#core-concepts)
-2. [Component Hierarchy](#component-hierarchy)
-3. [Lifecycle States](#lifecycle-states)
-4. [Composition Relationships](#composition-relationships)
-5. [Design System Tools](#design-system-tools)
-6. [Working with the System](#working-with-the-system)
-7. [Implementation Notes](#implementation-notes)
+Harmony is a design system built on atomic design principles with a strong focus on composition, performance, and maintainability. It provides a complete toolchain for managing design specifications, component implementations, and their relationships.
 
-## Core Concepts
+## Atomic Design Hierarchy
 
-The Harmony Design System uses a **graph-based architecture** where components, tokens, and patterns are nodes connected by typed edges. This allows us to:
+Components are organized into five levels following atomic design methodology:
 
-- Trace dependencies between components
-- Understand composition chains
-- Validate design consistency
-- Generate documentation automatically
-- Enforce architectural constraints
+- **Primitives**: Basic building blocks (buttons, inputs, icons) - cannot contain other components
+- **Molecules**: Simple component groups (search field = input + button) - can only contain primitives
+- **Organisms**: Complex UI sections (header, card list) - can contain molecules and primitives
+- **Templates**: Page layouts without content - can contain organisms, molecules, and primitives
+- **Pages**: Complete views with real content - can contain any component type
 
-### Key Entities
+## Composition Rules
 
-- **DesignSpecNodes**: Component specifications in `.pen` files
-- **ImplementationNodes**: TypeScript/JavaScript implementations (`.tsx`, `.js`)
-- **DesignTokens**: Visual properties (colors, spacing, typography)
-- **Edges**: Relationships between nodes (`composes_of`, `inherits_pattern`, `implements`)
+The design system enforces strict composition rules to maintain hierarchy integrity:
 
-## Component Hierarchy
+### Rule Enforcement
 
-Components are organized in levels following atomic design principles:
+Composition relationships are validated using the `validate_composition` tool (see [Development Tools](#development-tools)).
 
-1. **Atoms**: Basic building blocks (buttons, inputs, icons)
-2. **Molecules**: Simple combinations of atoms (form fields, cards)
-3. **Organisms**: Complex UI sections (navigation, headers)
-4. **Templates**: Page layouts without content
-5. **Pages**: Complete views with real content
+**Allowed Compositions:**
 
-See [core/type-navigator.js](core/type-navigator.js) for graph traversal implementation.
+| Parent Level | Can Contain |
+|--------------|-------------|
+| Primitive | *(nothing)* |
+| Molecule | Primitives only |
+| Organism | Molecules, Primitives |
+| Template | Organisms, Molecules, Primitives |
+| Page | Any component type |
 
-## Lifecycle States
+**Examples:**
 
-Every component progresses through defined states:
+✓ Valid: `SearchField` (molecule) contains `Input` (primitive) and `Button` (primitive)  
+✓ Valid: `Header` (organism) contains `Navigation` (molecule) and `Logo` (primitive)  
+✗ Invalid: `Button` (primitive) cannot contain `Icon` (primitive)  
+✗ Invalid: `Card` (molecule) cannot contain `Header` (organism)
 
-- `draft`: Initial concept, not ready for implementation
-- `design_complete`: Design finalized, ready for development
-- `implementation_ready`: Technical specs complete
-- `in_development`: Currently being built
-- `review`: Awaiting review
-- `approved`: Ready for production use
-- `deprecated`: Marked for removal
+### Composition Graph
 
-State transitions are tracked in the graph to maintain design-development synchronization.
+Component relationships are stored in `harmony-graph/graph.json` as directed edges:
 
-## Composition Relationships
-
-Components relate to each other through typed edges:
-
-### composes_of
-
-Indicates a component is built from other components.
-
-```
-button-primary (molecule)
-  ├─ composes_of → icon-base (atom)
-  └─ composes_of → text-label (atom)
-```
-
-### inherits_pattern
-
-Indicates a component follows a design pattern.
-
-```
-button-primary → inherits_pattern → interactive-pattern
-```
-
-### implements
-
-Links design specifications to code implementations.
-
-```
-button-primary.pen → implements → button-primary.tsx
-```
-
-See [tools/get_component_dependencies.js](tools/get_component_dependencies.js) for tracing these relationships.
-
-## Design System Tools
-
-Tools for querying and analyzing the design system graph.
-
-### query_components
-
-Filter and search components by criteria:
-
-```javascript
-import { queryComponents } from './tools/query_components.js';
-
-// Find all atoms in draft state
-const draftAtoms = await queryComponents({
-  level: 'atom',
-  state: 'draft'
-});
-
-// Find components using a specific token
-const componentsWithPrimary = await queryComponents({
-  usesToken: 'color-primary-500'
-});
-```
-
-### get_component_dependencies
-
-Trace composition chains and understand dependencies:
-
-```javascript
-import { getComponentDependencies } from './tools/get_component_dependencies.js';
-
-// Get all dependencies of a component (what it uses)
-const deps = await getComponentDependencies({
-  componentId: 'button-primary',
-  direction: 'upstream',
-  maxDepth: 5
-});
-
-// Find what uses a component
-const usages = await getComponentDependencies({
-  componentId: 'icon-base',
-  direction: 'downstream'
-});
-
-// Get both directions
-const fullGraph = await getComponentDependencies({
-  componentId: 'card-stats',
-  direction: 'both',
-  includePatterns: true
-});
-```
-
-#### Dependency Query Options
-
-- **componentId** (required): Component to trace from
-- **direction**: `'upstream'` (dependencies), `'downstream'` (dependents), or `'both'`
-- **maxDepth**: Maximum traversal depth (default: 10)
-- **includePatterns**: Include `inherits_pattern` edges (default: false)
-- **edgeTypes**: Array of edge types to follow (default: `['composes_of']`)
-
-#### Result Structure
-
-```javascript
+```json
 {
-  rootComponentId: 'button-primary',
-  direction: 'upstream',
-  totalDependencies: 5,
-  maxDepthReached: 2,
-  tree: {
-    id: 'button-primary',
-    name: 'Primary Button',
-    type: 'molecule',
-    depth: 0,
-    relationship: 'root',
-    dependencies: [
-      {
-        id: 'icon-base',
-        name: 'Icon Base',
-        type: 'atom',
-        depth: 1,
-        relationship: 'composes_of',
-        dependencies: []
-      },
-      // ... more dependencies
-    ]
-  },
-  flatList: ['button-primary', 'icon-base', 'text-label', ...],
-  depthMap: {
-    'button-primary': 0,
-    'icon-base': 1,
-    'text-label': 1
-  }
+  "edges": [
+    {
+      "from": "search-field",
+      "to": "input",
+      "type": "composedOf"
+    }
+  ]
 }
 ```
 
-### Helper Functions
+Related tools:
+- [tools/validate_composition.py](tools/validate_composition.py) - Validates composition rules
+- [tools/get_component_dependencies.py](tools/get_component_dependencies.py) - Traces composition tree
 
-#### findCircularDependencies
+## Component Lifecycle
 
-Detect circular composition chains:
+Components progress through defined states:
 
-```javascript
-import { findCircularDependencies } from './tools/get_component_dependencies.js';
+1. **draft** - Initial design in progress
+2. **design_complete** - Design finalized, ready for implementation
+3. **in_development** - Implementation in progress
+4. **implemented** - Code complete, needs testing
+5. **tested** - Tested in Chrome, ready for production
 
-const cycles = await findCircularDependencies('button-primary');
-// Returns: [['comp-a', 'comp-b', 'comp-a']] if cycle exists
-```
+See lifecycle schema: [harmony-schemas/src/lifecycle.rs](../harmony-schemas/src/lifecycle.rs)
 
-#### getDependencyStats
+## Development Tools
 
-Get quick statistics:
+### Composition Validation
 
-```javascript
-import { getDependencyStats } from './tools/get_component_dependencies.js';
+**Tool:** `tools/validate_composition.py`
 
-const stats = await getDependencyStats('button-primary');
-// Returns: {
-//   directDependencies: 2,
-//   totalDependencies: 5,
-//   dependents: 12,
-//   maxDepth: 3
-// }
-```
-
-#### findShortestPath
-
-Find shortest composition path between components:
-
-```javascript
-import { findShortestPath } from './tools/get_component_dependencies.js';
-
-const path = await findShortestPath('page-dashboard', 'icon-base');
-// Returns: ['page-dashboard', 'card-stats', 'icon-base']
-```
-
-## Working with the System
-
-### Adding a New Component
-
-1. Create design spec in `.pen` file
-2. Set initial state to `draft`
-3. Define composition relationships
-4. Progress through lifecycle states
-5. Link implementation when ready
-
-### Tracing Dependencies
-
-Use `get_component_dependencies` to understand:
-
-- What components a feature depends on
-- Impact analysis before changes
-- Reusability opportunities
-- Circular dependency issues
-
-### Validating Architecture
-
-- Check that atoms don't depend on molecules
-- Ensure no circular dependencies
-- Verify all implementations link to specs
-- Confirm state progression is valid
-
-## Implementation Notes
-
-### TypeNavigator-Only Queries
-
-All graph queries must use TypeNavigator. Direct database access is not allowed. This ensures:
-
-- Consistent query patterns
-- Proper type validation
-- Performance optimization
-- Cache coherence
-
-See [core/type-navigator.js](core/type-navigator.js) for API details.
-
-### Performance Considerations
-
-- Dependency queries are cached per session
-- Maximum depth limits prevent infinite traversal
-- Cycle detection uses visited set for O(n) complexity
-- Flat list generation for quick lookups
-
-### Edge Type Conventions
-
-- `composes_of`: Component A contains component B
-- `inherits_pattern`: Component follows a design pattern
-- `implements`: Code file implements a design spec
-- `uses_token`: Component uses a design token
-
-### Testing
-
-Run tool tests:
+Validates that all composition relationships follow atomic design hierarchy rules.
 
 ```bash
-node harmony-design/tools/get_component_dependencies.test.js
+python harmony-design/tools/validate_composition.py harmony-graph/graph.json
 ```
 
-All tools must have test coverage before deployment.
+**When to Use:**
+- Before committing changes to component relationships
+- In CI pipeline to catch violations early
+- When refactoring component hierarchy
 
----
+**Exit Codes:**
+- `0` - All rules pass
+- `1` - Violations found or error occurred
 
-**Last Updated**: 2024 (task-del-get-component-dependencies-too)
+See: [tools/README.md](tools/README.md#validate_compositionpy)
 
-For questions or contributions, see the project repository.
+### Component Querying
+
+**Tool:** `query_components` (TypeNavigator)
+
+Filter and search components by level, state, or tokens.
+
+See recent commit: `cee6a0d feat(task-del-query-components-tool-filter-b)`
+
+### Dependency Tracing
+
+**Tool:** `get_component_dependencies` (TypeNavigator)
+
+Trace full composition tree for a component.
+
+See recent commit: `14d71a2 feat(task-del-get-component-dependencies-too)`
+
+## File Structure
+
+```
+harmony-design/
+├── DESIGN_SYSTEM.md          # This file - main documentation
+├── specs/                     # Design specifications (.pen files)
+├── tools/                     # Development and validation tools
+│   ├── validate_composition.py
+│   ├── test_validate_composition.py
+│   └── README.md
+└── reports/                   # Task reports and blocked items
+
+harmony-graph/
+└── graph.json                 # Component graph with relationships
+
+harmony-schemas/
+└── src/                       # Rust schemas for graph nodes
+    ├── lifecycle.rs
+    └── composition.rs
+```
+
+## Testing Requirements
+
+All UI components must be tested in Chrome before marking tasks complete (Policy #10).
+
+**Test Coverage:**
+- Default, hover, focus, active, disabled states
+- Error states, loading states, empty states (for complex components)
+- Performance: 60fps for animations (use Chrome DevTools Performance panel)
+
+**Retesting Required When:**
+- Design spec (.pen file) changes for implemented component
+- Composition relationships change
+- Lifecycle state advances to `tested`
+
+## Performance Budgets
+
+**Absolute Constraints:**
+- Render: 16ms per frame (60fps)
+- Memory: 50MB WASM heap maximum
+- Load: 200ms initial load time
+
+**Architecture:**
+- Core logic: Rust → WASM
+- UI rendering: Vanilla HTML/CSS/JS with Web Components
+- No runtime npm dependencies
+- No frameworks (React, Vue, etc.)
+
+## Event-Driven Architecture
+
+**Pattern:** UI components publish events → EventBus routes → Bounded Contexts handle
+
+**UI Components:**
+```javascript
+// Components publish, never call BCs directly
+button.addEventListener('click', () => {
+  eventBus.publish('PlayRequested', { trackId: '123' });
+});
+```
+
+**Bounded Contexts:**
+```rust
+// BCs subscribe to commands, publish results
+eventBus.subscribe('PlayRequested', handle_play);
+// ... process ...
+eventBus.publish('PlaybackStarted', { trackId: '123' });
+```
+
+**Debugging:** EventBusComponent available on every page via `Ctrl+Shift+E`
+
+## Documentation Standards
+
+- Written in B1-level English (simple, clear)
+- Logical sections per concern
+- Concise but friendly tone
+- Relative links to code files
+- Minimal code samples (code lives in files)
+- Two-way references: docs ↔ code
+
+## Quality Gates
+
+Before completing any task:
+
+1. ✓ Composition rules validated
+2. ✓ Performance budgets met
+3. ✓ UI components tested in Chrome (all states)
+4. ✓ Documentation updated (this file)
+5. ✓ Changes committed and pushed
+6. ✓ No technical debt introduced
+
+## Related Documentation
+
+- [Tools README](tools/README.md) - Detailed tool documentation
+- [Blocked Tasks](reports/blocked/) - Tasks awaiting enablement
+- Schema files in `harmony-schemas/src/` - Type definitions
+
+## Recent Changes
+
+- Composition validation tool with test suite
+- Component dependency tracing
+- Lifecycle state tracking
+- Design spec to implementation linking
+- Query filtering by level, state, tokens

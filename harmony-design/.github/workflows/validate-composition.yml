@@ -1,0 +1,44 @@
+name: Validate Composition Rules
+
+on:
+  push:
+    paths:
+      - 'harmony-graph/graph.json'
+      - 'harmony-design/specs/**'
+  pull_request:
+    paths:
+      - 'harmony-graph/graph.json'
+      - 'harmony-design/specs/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install pytest
+          
+      - name: Run composition validator tests
+        run: |
+          cd harmony-design/tools
+          pytest test_validate_composition.py -v
+          
+      - name: Validate composition rules
+        run: |
+          python harmony-design/tools/validate_composition.py harmony-graph/graph.json
+          
+      - name: Report results
+        if: failure()
+        run: |
+          echo "❌ Composition validation failed"
+          echo "See errors above for details"
+          exit 1
