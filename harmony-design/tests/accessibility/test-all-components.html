@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Design System - Accessibility Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+
+    h1 {
+      color: #4a9eff;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .controls {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #2a2a2a;
+      border-radius: 4px;
+    }
+
+    button {
+      background: #4a9eff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+
+    button:hover {
+      background: #3a8eef;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    #results {
+      background: #2a2a2a;
+      border-radius: 4px;
+      padding: 1rem;
+      min-height: 200px;
+    }
+
+    .result-item {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #333;
+      border-radius: 4px;
+      border-left: 4px solid #555;
+    }
+
+    .result-item.passed {
+      border-left-color: #4caf50;
+    }
+
+    .result-item.failed {
+      border-left-color: #f44336;
+    }
+
+    .result-item h3 {
+      margin: 0 0 0.5rem 0;
+      color: #fff;
+    }
+
+    .result-item .stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .stat.passed { color: #4caf50; }
+    .stat.failed { color: #f44336; }
+    .stat.incomplete { color: #ff9800; }
+
+    pre {
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #888;
+    }
+
+    .summary {
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+    }
+
+    .summary-item {
+      text-align: center;
+    }
+
+    .summary-item .value {
+      font-size: 2rem;
+      font-weight: bold;
+      display: block;
+    }
+
+    .summary-item .label {
+      font-size: 0.9rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>Accessibility Testing Dashboard</h1>
+  <p class="subtitle">Automated axe-core testing for all Harmony Design System components</p>
+
+  <div class="controls">
+    <button id="run-all">Run All Tests</button>
+    <button id="run-primitives">Test Primitives</button>
+    <button id="run-molecules">Test Molecules</button>
+    <button id="clear-results">Clear Results</button>
+  </div>
+
+  <div id="summary" class="summary" style="display: none;">
+    <div class="summary-item">
+      <span class="value" id="total-count">0</span>
+      <span class="label">Total Tests</span>
+    </div>
+    <div class="summary-item">
+      <span class="value" style="color: #4caf50;" id="passed-count">0</span>
+      <span class="label">Passed</span>
+    </div>
+    <div class="summary-item">
+      <span class="value" style="color: #f44336;" id="failed-count">0</span>
+      <span class="label">Failed</span>
+    </div>
+  </div>
+
+  <div id="results">
+    <p style="color: #888;">Click "Run All Tests" to begin accessibility testing...</p>
+  </div>
+
+  <script type="module">
+    import { runAxeTests, formatAxeResults, loadAxeCore } from './axe-setup.js';
+    import { testComponentBatch } from './component-test-runner.js';
+
+    // Load axe-core on page load
+    loadAxeCore().then(() => {
+      console.log('✓ axe-core loaded successfully');
+    }).catch(error => {
+      console.error('Failed to load axe-core:', error);
+    });
+
+    const resultsContainer = document.getElementById('results');
+    const summaryContainer = document.getElementById('summary');
+
+    function showLoading() {
+      resultsContainer.innerHTML = '<div class="loading">Running tests...</div>';
+    }
+
+    function displayResults(results) {
+      summaryContainer.style.display = 'flex';
+      document.getElementById('total-count').textContent = results.total;
+      document.getElementById('passed-count').textContent = results.passed;
+      document.getElementById('failed-count').textContent = results.failed;
+
+      resultsContainer.innerHTML = '';
+
+      results.components.forEach(component => {
+        const item = document.createElement('div');
+        item.className = `result-item ${component.violations === 0 ? 'passed' : 'failed'}`;
+        
+        const status = component.violations === 0 ? '✓' : '✗';
+        
+        item.innerHTML = `
+          <h3>${status} ${component.name}</h3>
+          <div class="stats">
+            <span class="stat passed">✓ ${component.passes || 0} passed</span>
+            <span class="stat failed">✗ ${component.violations || 0} violations</span>
+            ${component.incomplete ? `<span class="stat incomplete">⚠ ${component.incomplete} incomplete</span>` : ''}
+          </div>
+          ${component.error ? `<pre style="color: #f44336;">${component.error}</pre>` : ''}
+        `;
+        
+        resultsContainer.appendChild(item);
+      });
+    }
+
+    // Mock component creation for testing
+    // In real implementation, these would import actual components
+    function createMockButton() {
+      const button = document.createElement('button');
+      button.textContent = 'Test Button';
+      button.setAttribute('aria-label', 'Test button for accessibility');
+      return button;
+    }
+
+    function createMockInput() {
+      const container = document.createElement('div');
+      const label = document.createElement('label');
+      label.textContent = 'Test Input';
+      label.setAttribute('for', 'test-input');
+      const input = document.createElement('input');
+      input.id = 'test-input';
+      input.type = 'text';
+      input.setAttribute('aria-describedby', 'test-help');
+      const help = document.createElement('span');
+      help.id = 'test-help';
+      help.textContent = 'Helper text';
+      container.appendChild(label);
+      container.appendChild(input);
+      container.appendChild(help);
+      return container;
+    }
+
+    function createMockSlider() {
+      const container = document.createElement('div');
+      const label = document.createElement('label');
+      label.textContent = 'Volume';
+      label.setAttribute('for', 'test-slider');
+      const slider = document.createElement('input');
+      slider.id = 'test-slider';
+      slider.type = 'range';
+      slider.min = '0';
+      slider.max = '100';
+      slider.value = '50';
+      slider.setAttribute('aria-label', 'Volume control');
+      slider.setAttribute('aria-valuemin', '0');
+      slider.setAttribute('aria-valuemax', '100');
+      slider.setAttribute('aria-valuenow', '50');
+      container.appendChild(label);
+      container.appendChild(slider);
+      return container;
+    }
+
+    document.getElementById('run-all').addEventListener('click', async () => {
+      showLoading();
+      
+      const components = [
+        { name: 'Button (Primary)', element: createMockButton() },
+        { name: 'Input Field', element: createMockInput() },
+        { name: 'Slider Control', element: createMockSlider() }
+      ];
+
+      const results = await testComponentBatch(components);
+      displayResults(results);
+    });
+
+    document.getElementById('run-primitives').addEventListener('click', async () => {
+      showLoading();
+      
+      const components = [
+        { name: 'Button', element: createMockButton() },
+        { name: 'Input', element: createMockInput() }
+      ];
+
+      const results = await testComponentBatch(components);
+      displayResults(results);
+    });
+
+    document.getElementById('run-molecules').addEventListener('click', async () => {
+      showLoading();
+      
+      const components = [
+        { name: 'Slider', element: createMockSlider() }
+      ];
+
+      const results = await testComponentBatch(components);
+      displayResults(results);
+    });
+
+    document.getElementById('clear-results').addEventListener('click', () => {
+      resultsContainer.innerHTML = '<p style="color: #888;">Results cleared. Run tests to see new results.</p>';
+      summaryContainer.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
