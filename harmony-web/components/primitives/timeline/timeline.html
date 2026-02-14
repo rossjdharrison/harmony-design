@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timeline Primitive - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #00ff00;
+    }
+
+    .demo-box {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #333;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .control-group label {
+      font-size: 0.875rem;
+      color: #888;
+    }
+
+    .control-group input,
+    .control-group button {
+      padding: 0.5rem;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 0.875rem;
+    }
+
+    .control-group button {
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .control-group button:hover {
+      background: #3a3a3a;
+    }
+
+    .control-group button:active {
+      background: #1a1a1a;
+    }
+
+    .event-log {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 0.875rem;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .event-log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    .event-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .event-type {
+      color: #00ff00;
+      font-weight: bold;
+    }
+
+    .event-data {
+      color: #888;
+    }
+
+    .info-box {
+      background: #1a1a1a;
+      border-left: 3px solid #00ff00;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 4px;
+    }
+
+    .info-box h3 {
+      color: #00ff00;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .info-box ul {
+      margin-left: 1.5rem;
+    }
+
+    .info-box li {
+      margin-bottom: 0.25rem;
+      color: #ccc;
+    }
+
+    harmony-timeline {
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Timeline Primitive</h1>
+    <p class="subtitle">Beat/bar markers for audio timeline visualization</p>
+
+    <div class="section">
+      <h2>Interactive Demo</h2>
+      <div class="demo-box">
+        <harmony-timeline 
+          id="demo-timeline"
+          duration="60"
+          beats-per-bar="4"
+          beat-subdivisions="4"
+          zoom="1.0"
+          current-position="0">
+        </harmony-timeline>
+
+        <div class="controls">
+          <div class="control-group">
+            <label for="duration">Duration (seconds)</label>
+            <input type="number" id="duration" value="60" min="10" max="600" step="10">
+          </div>
+          <div class="control-group">
+            <label for="beats-per-bar">Beats Per Bar</label>
+            <input type="number" id="beats-per-bar" value="4" min="2" max="8">
+          </div>
+          <div class="control-group">
+            <label for="subdivisions">Subdivisions</label>
+            <input type="number" id="subdivisions" value="4" min="1" max="8">
+          </div>
+          <div class="control-group">
+            <label for="zoom">Zoom</label>
+            <input type="number" id="zoom" value="1.0" min="0.1" max="10" step="0.1">
+          </div>
+          <div class="control-group">
+            <label for="position">Position (seconds)</label>
+            <input type="number" id="position" value="0" min="0" max="60" step="0.1">
+          </div>
+          <div class="control-group">
+            <label>&nbsp;</label>
+            <button id="play-btn">Play</button>
+          </div>
+          <div class="control-group">
+            <label>&nbsp;</label>
+            <button id="stop-btn">Stop</button>
+          </div>
+          <div class="control-group">
+            <label>&nbsp;</label>
+            <button id="toggle-disabled">Toggle Disabled</button>
+          </div>
+        </div>
+
+        <div class="event-log" id="event-log">
+          <div class="event-log-entry">
+            <span class="event-type">Event Log</span>
+            <span class="event-data"> - Click timeline or use controls to see events</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <h3>Features</h3>
+        <ul>
+          <li>Bar markers with numbers</li>
+          <li>Beat and subdivision lines</li>
+          <li>Configurable time signature (beats per bar)</li>
+          <li>Adjustable zoom level</li>
+          <li>Playhead indicator</li>
+          <li>Click and drag interaction</li>
+          <li>Performance optimized (60fps target)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>States</h2>
+      
+      <div class="demo-box">
+        <h3 style="color: #ccc; margin-bottom: 1rem;">Default State</h3>
+        <harmony-timeline 
+          duration="30"
+          beats-per-bar="4"
+          zoom="1.5">
+        </harmony-timeline>
+      </div>
+
+      <div class="demo-box">
+        <h3 style="color: #ccc; margin-bottom: 1rem;">Disabled State</h3>
+        <harmony-timeline 
+          duration="30"
+          beats-per-bar="4"
+          zoom="1.5"
+          disabled>
+        </harmony-timeline>
+      </div>
+
+      <div class="demo-box">
+        <h3 style="color: #ccc; margin-bottom: 1rem;">Different Time Signature (3/4)</h3>
+        <harmony-timeline 
+          duration="30"
+          beats-per-bar="3"
+          zoom="1.5">
+        </harmony-timeline>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Performance Metrics</h2>
+      <div class="demo-box">
+        <div id="performance-metrics" style="font-family: monospace; color: #888;">
+          Waiting for interaction...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { HarmonyTimeline } from './timeline.js';
+
+    const timeline = document.getElementById('demo-timeline');
+    const eventLog = document.getElementById('event-log');
+    const performanceMetrics = document.getElementById('performance-metrics');
+
+    let isPlaying = false;
+    let playbackInterval = null;
+
+    // Log events
+    function logEvent(type, data) {
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.innerHTML = `
+        <span class="event-type">${type}</span>
+        <span class="event-data"> - ${JSON.stringify(data)}</span>
+      `;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+
+      // Keep only last 10 entries
+      while (eventLog.children.length > 10) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Update performance metrics
+    function updatePerformanceMetrics() {
+      const metrics = timeline.getPerformanceMetrics();
+      performanceMetrics.innerHTML = `
+        Last Render Time: ${metrics.lastRenderTime.toFixed(2)}ms<br>
+        Render Count: ${metrics.renderCount}<br>
+        Status: ${metrics.lastRenderTime > 16 ? '<span style="color: #ff0000;">⚠ Exceeds 16ms budget</span>' : '<span style="color: #00ff00;">✓ Within budget</span>'}
+      `;
+    }
+
+    // Timeline events
+    timeline.addEventListener('timeline-click', (e) => {
+      logEvent('timeline-click', {
+        position: e.detail.position.toFixed(2),
+        bar: e.detail.bar,
+        beat: e.detail.beat
+      });
+      timeline.setPosition(e.detail.position);
+      document.getElementById('position').value = e.detail.position.toFixed(1);
+      updatePerformanceMetrics();
+    });
+
+    timeline.addEventListener('timeline-drag', (e) => {
+      logEvent('timeline-drag', {
+        start: e.detail.startPosition.toFixed(2),
+        end: e.detail.endPosition.toFixed(2)
+      });
+      updatePerformanceMetrics();
+    });
+
+    // Controls
+    document.getElementById('duration').addEventListener('input', (e) => {
+      timeline.setAttribute('duration', e.target.value);
+      document.getElementById('position').max = e.target.value;
+    });
+
+    document.getElementById('beats-per-bar').addEventListener('input', (e) => {
+      timeline.setAttribute('beats-per-bar', e.target.value);
+    });
+
+    document.getElementById('subdivisions').addEventListener('input', (e) => {
+      timeline.setAttribute('beat-subdivisions', e.target.value);
+    });
+
+    document.getElementById('zoom').addEventListener('input', (e) => {
+      timeline.setZoom(parseFloat(e.target.value));
+    });
+
+    document.getElementById('position').addEventListener('input', (e) => {
+      timeline.setPosition(parseFloat(e.target.value));
+    });
+
+    document.getElementById('play-btn').addEventListener('click', () => {
+      if (!isPlaying) {
+        isPlaying = true;
+        const startTime = Date.now();
+        const startPosition = parseFloat(document.getElementById('position').value);
+        
+        playbackInterval = setInterval(() => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          const newPosition = startPosition + elapsed;
+          const duration = parseFloat(document.getElementById('duration').value);
+          
+          if (newPosition >= duration) {
+            document.getElementById('stop-btn').click();
+            return;
+          }
+          
+          timeline.setPosition(newPosition);
+          document.getElementById('position').value = newPosition.toFixed(1);
+        }, 16); // ~60fps
+      }
+    });
+
+    document.getElementById('stop-btn').addEventListener('click', () => {
+      if (isPlaying) {
+        isPlaying = false;
+        clearInterval(playbackInterval);
+      }
+    });
+
+    document.getElementById('toggle-disabled').addEventListener('click', () => {
+      if (timeline.hasAttribute('disabled')) {
+        timeline.removeAttribute('disabled');
+      } else {
+        timeline.setAttribute('disabled', '');
+      }
+    });
+
+    // Initial performance update
+    updatePerformanceMetrics();
+  </script>
+</body>
+</html>
