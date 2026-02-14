@@ -1,0 +1,478 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Component Event Schemas",
+  "description": "Event schemas for UI component interactions with bounded contexts",
+  "definitions": {
+    "BaseEvent": {
+      "type": "object",
+      "required": ["type", "timestamp", "source"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Event type identifier"
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Unix timestamp in milliseconds"
+        },
+        "source": {
+          "type": "string",
+          "description": "Component or BC that published the event"
+        },
+        "correlationId": {
+          "type": "string",
+          "description": "Optional ID to correlate request/response events"
+        }
+      }
+    },
+    
+    "PlaybackCommandEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.command.play" },
+            "payload": {
+              "type": "object",
+              "required": ["trackId"],
+              "properties": {
+                "trackId": {
+                  "type": "string",
+                  "description": "Unique identifier for the track to play"
+                },
+                "startPosition": {
+                  "type": "number",
+                  "description": "Optional start position in seconds",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackCommandPauseEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.command.pause" },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "savePosition": {
+                  "type": "boolean",
+                  "description": "Whether to save current position"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackCommandStopEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.command.stop" }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackCommandSeekEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.command.seek" },
+            "payload": {
+              "type": "object",
+              "required": ["position"],
+              "properties": {
+                "position": {
+                  "type": "number",
+                  "description": "Target position in seconds",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackCommandVolumeEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.command.volume" },
+            "payload": {
+              "type": "object",
+              "required": ["level"],
+              "properties": {
+                "level": {
+                  "type": "number",
+                  "description": "Volume level 0.0 to 1.0",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackResultStartedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.result.started" },
+            "payload": {
+              "type": "object",
+              "required": ["trackId", "duration"],
+              "properties": {
+                "trackId": { "type": "string" },
+                "duration": {
+                  "type": "number",
+                  "description": "Track duration in seconds"
+                },
+                "position": {
+                  "type": "number",
+                  "description": "Current position in seconds"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackResultPausedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.result.paused" },
+            "payload": {
+              "type": "object",
+              "required": ["position"],
+              "properties": {
+                "position": {
+                  "type": "number",
+                  "description": "Position where playback paused"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackResultStoppedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.result.stopped" }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackResultProgressEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.result.progress" },
+            "payload": {
+              "type": "object",
+              "required": ["position", "duration"],
+              "properties": {
+                "position": { "type": "number" },
+                "duration": { "type": "number" },
+                "buffered": {
+                  "type": "number",
+                  "description": "Amount buffered in seconds"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "PlaybackResultErrorEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "playback.result.error" },
+            "payload": {
+              "type": "object",
+              "required": ["code", "message"],
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": ["LOAD_FAILED", "DECODE_ERROR", "NETWORK_ERROR", "INVALID_TRACK"]
+                },
+                "message": { "type": "string" },
+                "details": { "type": "object" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "ComponentCommandUpdateStateEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "component.command.updateState" },
+            "payload": {
+              "type": "object",
+              "required": ["componentId", "state"],
+              "properties": {
+                "componentId": { "type": "string" },
+                "state": {
+                  "type": "string",
+                  "description": "Target state from state machine"
+                },
+                "validationRequired": {
+                  "type": "boolean",
+                  "description": "Whether to validate transition prerequisites"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "ComponentResultStateUpdatedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "component.result.stateUpdated" },
+            "payload": {
+              "type": "object",
+              "required": ["componentId", "previousState", "newState"],
+              "properties": {
+                "componentId": { "type": "string" },
+                "previousState": { "type": "string" },
+                "newState": { "type": "string" },
+                "validationsPassed": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "ComponentResultValidationFailedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "component.result.validationFailed" },
+            "payload": {
+              "type": "object",
+              "required": ["componentId", "state", "failedChecks"],
+              "properties": {
+                "componentId": { "type": "string" },
+                "state": { "type": "string" },
+                "failedChecks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "check": { "type": "string" },
+                      "reason": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "GraphCommandQueryEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "graph.command.query" },
+            "payload": {
+              "type": "object",
+              "required": ["queryType"],
+              "properties": {
+                "queryType": {
+                  "type": "string",
+                  "enum": ["findComponentsByState", "findLinkedUI", "findDependencies", "findUsages"]
+                },
+                "parameters": {
+                  "type": "object",
+                  "description": "Query-specific parameters"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "GraphResultQueryResponseEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "graph.result.queryResponse" },
+            "payload": {
+              "type": "object",
+              "required": ["results"],
+              "properties": {
+                "results": {
+                  "type": "array",
+                  "items": { "type": "object" }
+                },
+                "count": { "type": "number" },
+                "queryTime": {
+                  "type": "number",
+                  "description": "Query execution time in milliseconds"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "UICommandNavigateEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "ui.command.navigate" },
+            "payload": {
+              "type": "object",
+              "required": ["route"],
+              "properties": {
+                "route": { "type": "string" },
+                "params": { "type": "object" },
+                "replaceHistory": { "type": "boolean" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "UIResultNavigatedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "ui.result.navigated" },
+            "payload": {
+              "type": "object",
+              "required": ["route"],
+              "properties": {
+                "route": { "type": "string" },
+                "previousRoute": { "type": "string" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "AudioCommandProcessEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "audio.command.process" },
+            "payload": {
+              "type": "object",
+              "required": ["operation", "audioData"],
+              "properties": {
+                "operation": {
+                  "type": "string",
+                  "enum": ["normalize", "fade", "trim", "mix", "analyze"]
+                },
+                "audioData": {
+                  "type": "string",
+                  "description": "Base64 encoded audio data or reference"
+                },
+                "parameters": { "type": "object" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    
+    "AudioResultProcessedEvent": {
+      "allOf": [
+        { "$ref": "#/definitions/BaseEvent" },
+        {
+          "properties": {
+            "type": { "const": "audio.result.processed" },
+            "payload": {
+              "type": "object",
+              "required": ["operation", "result"],
+              "properties": {
+                "operation": { "type": "string" },
+                "result": {
+                  "type": "object",
+                  "description": "Operation-specific result data"
+                },
+                "processingTime": {
+                  "type": "number",
+                  "description": "Processing time in milliseconds"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  
+  "oneOf": [
+    { "$ref": "#/definitions/PlaybackCommandEvent" },
+    { "$ref": "#/definitions/PlaybackCommandPauseEvent" },
+    { "$ref": "#/definitions/PlaybackCommandStopEvent" },
+    { "$ref": "#/definitions/PlaybackCommandSeekEvent" },
+    { "$ref": "#/definitions/PlaybackCommandVolumeEvent" },
+    { "$ref": "#/definitions/PlaybackResultStartedEvent" },
+    { "$ref": "#/definitions/PlaybackResultPausedEvent" },
+    { "$ref": "#/definitions/PlaybackResultStoppedEvent" },
+    { "$ref": "#/definitions/PlaybackResultProgressEvent" },
+    { "$ref": "#/definitions/PlaybackResultErrorEvent" },
+    { "$ref": "#/definitions/ComponentCommandUpdateStateEvent" },
+    { "$ref": "#/definitions/ComponentResultStateUpdatedEvent" },
+    { "$ref": "#/definitions/ComponentResultValidationFailedEvent" },
+    { "$ref": "#/definitions/GraphCommandQueryEvent" },
+    { "$ref": "#/definitions/GraphResultQueryResponseEvent" },
+    { "$ref": "#/definitions/UICommandNavigateEvent" },
+    { "$ref": "#/definitions/UIResultNavigatedEvent" },
+    { "$ref": "#/definitions/AudioCommandProcessEvent" },
+    { "$ref": "#/definitions/AudioResultProcessedEvent" }
+  ]
+}
