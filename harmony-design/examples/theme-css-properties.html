@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Custom Properties - Harmony Design System</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--color-background, #ffffff);
+      color: var(--color-text, #000000);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: var(--color-primary-base, #007bff);
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: var(--color-surface, #f8f9fa);
+      border: 1px solid var(--color-border, #dee2e6);
+      border-radius: var(--radius-medium, 8px);
+      padding: var(--spacing-medium, 16px);
+      margin-bottom: var(--spacing-medium, 16px);
+      box-shadow: var(--shadow-small, 0 2px 4px rgba(0,0,0,0.1));
+    }
+
+    .button {
+      background: var(--color-primary-base, #007bff);
+      color: white;
+      border: none;
+      padding: var(--spacing-small, 8px) var(--spacing-medium, 16px);
+      border-radius: var(--radius-small, 4px);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+
+    .button:hover {
+      background: var(--color-primary-hover, #0056b3);
+    }
+
+    .controls {
+      display: flex;
+      gap: var(--spacing-small, 8px);
+      margin-bottom: var(--spacing-large, 24px);
+    }
+
+    .property-list {
+      display: grid;
+      gap: var(--spacing-small, 8px);
+    }
+
+    .property-item {
+      display: grid;
+      grid-template-columns: 200px 1fr 100px;
+      gap: var(--spacing-small, 8px);
+      padding: var(--spacing-small, 8px);
+      background: var(--color-background, #ffffff);
+      border-radius: var(--radius-small, 4px);
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+
+    .property-name {
+      font-weight: bold;
+      color: var(--color-primary-base, #007bff);
+    }
+
+    .property-value {
+      color: var(--color-text-secondary, #6c757d);
+    }
+
+    .property-preview {
+      width: 80px;
+      height: 24px;
+      border-radius: var(--radius-small, 4px);
+      border: 1px solid var(--color-border, #dee2e6);
+    }
+
+    .status {
+      padding: var(--spacing-small, 8px);
+      border-radius: var(--radius-small, 4px);
+      margin-bottom: var(--spacing-medium, 16px);
+      background: var(--color-success-background, #d4edda);
+      color: var(--color-success-text, #155724);
+      border: 1px solid var(--color-success-border, #c3e6cb);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>CSS Custom Properties Demo</h1>
+
+    <div class="status" id="status">
+      Initializing theme system...
+    </div>
+
+    <div class="controls">
+      <button class="button" id="toggleTheme">Toggle Theme</button>
+      <button class="button" id="refreshProperties">Refresh Properties</button>
+      <button class="button" id="exportCSS">Export CSS</button>
+    </div>
+
+    <div class="card">
+      <h2>Theme-Aware Components</h2>
+      <p>These components use CSS custom properties and automatically update when the theme changes.</p>
+      <button class="button">Primary Button</button>
+    </div>
+
+    <div class="card">
+      <h2>Active CSS Custom Properties</h2>
+      <div class="property-list" id="propertyList">
+        <!-- Properties will be injected here -->
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { 
+      generateCSSProperties, 
+      injectCSSProperties,
+      getCSSProperty,
+      createCSSPropertyMap
+    } from '../src/core/theme/css-properties.js';
+    
+    import { createThemeStylesheet } from '../src/core/theme/theme-stylesheet.js';
+
+    // Sample tokens (in real app, these would come from the token system)
+    const lightTokens = {
+      color: {
+        primary: {
+          base: '#007bff',
+          hover: '#0056b3'
+        },
+        background: '#ffffff',
+        surface: '#f8f9fa',
+        text: '#212529',
+        textSecondary: '#6c757d',
+        border: '#dee2e6',
+        success: {
+          background: '#d4edda',
+          text: '#155724',
+          border: '#c3e6cb'
+        }
+      },
+      spacing: {
+        small: '8px',
+        medium: '16px',
+        large: '24px'
+      },
+      radius: {
+        small: '4px',
+        medium: '8px'
+      },
+      shadow: {
+        small: '0 2px 4px rgba(0,0,0,0.1)'
+      }
+    };
+
+    const darkTokens = {
+      color: {
+        primary: {
+          base: '#4da3ff',
+          hover: '#1a8fff'
+        },
+        background: '#1a1a1a',
+        surface: '#2d2d2d',
+        text: '#e9ecef',
+        textSecondary: '#adb5bd',
+        border: '#495057',
+        success: {
+          background: '#1e4620',
+          text: '#c3e6cb',
+          border: '#28a745'
+        }
+      },
+      spacing: {
+        small: '8px',
+        medium: '16px',
+        large: '24px'
+      },
+      radius: {
+        small: '4px',
+        medium: '8px'
+      },
+      shadow: {
+        small: '0 2px 4px rgba(0,0,0,0.3)'
+      }
+    };
+
+    // Initialize theme stylesheet
+    const stylesheet = createThemeStylesheet(lightTokens, darkTokens);
+    
+    let isDark = false;
+
+    // Update status
+    document.getElementById('status').textContent = 'Theme system initialized! CSS custom properties are active.';
+
+    // Display properties
+    function displayProperties() {
+      const propertyList = document.getElementById('propertyList');
+      propertyList.innerHTML = '';
+
+      const currentTokens = isDark ? darkTokens : lightTokens;
+      const cssMap = createCSSPropertyMap(currentTokens);
+
+      cssMap.forEach((value, name) => {
+        const item = document.createElement('div');
+        item.className = 'property-item';
+
+        const nameEl = document.createElement('div');
+        nameEl.className = 'property-name';
+        nameEl.textContent = name;
+
+        const valueEl = document.createElement('div');
+        valueEl.className = 'property-value';
+        valueEl.textContent = value;
+
+        const preview = document.createElement('div');
+        preview.className = 'property-preview';
+        
+        // Set preview based on property type
+        if (name.includes('color') || name.includes('background') || name.includes('border')) {
+          preview.style.background = value;
+        } else if (name.includes('shadow')) {
+          preview.style.boxShadow = value;
+        } else if (name.includes('radius')) {
+          preview.style.borderRadius = value;
+          preview.style.background = 'var(--color-primary-base)';
+        } else if (name.includes('spacing')) {
+          preview.style.width = value;
+          preview.style.background = 'var(--color-primary-base)';
+        }
+
+        item.appendChild(nameEl);
+        item.appendChild(valueEl);
+        item.appendChild(preview);
+
+        propertyList.appendChild(item);
+      });
+    }
+
+    // Toggle theme
+    document.getElementById('toggleTheme').addEventListener('click', () => {
+      isDark = !isDark;
+      document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      displayProperties();
+    });
+
+    // Refresh properties
+    document.getElementById('refreshProperties').addEventListener('click', () => {
+      displayProperties();
+    });
+
+    // Export CSS
+    document.getElementById('exportCSS').addEventListener('click', () => {
+      const css = stylesheet.toCSS();
+      const blob = new Blob([css], { type: 'text/css' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'harmony-theme.css';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Initial display
+    displayProperties();
+  </script>
+</body>
+</html>
