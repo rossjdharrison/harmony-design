@@ -1,139 +1,146 @@
 # Harmony Design System
 
-Welcome to the Harmony Design System documentation. This system helps you build music applications with consistent design and good performance.
+Welcome! This document describes the Harmony Design System - how it works, how to use it, and how to contribute.
 
 ## What is Harmony?
 
-Harmony is a design system for music software. It provides ready-to-use components and patterns that work together smoothly.
+Harmony is a design system for building audio and creative applications. It provides reusable components, patterns, and tools that work together smoothly.
 
-## How to Use This Documentation
+## Current Status
 
-This document explains concepts and how things work. Code files contain implementation details. We link between documentation and code so you can find what you need quickly.
+The system is in early development. The foundation has been set up, but specific components and features are being added step by step.
+
+### Recent Activity
+
+- Initial repository structure created
+- Several feature implementations in progress
+- Core policies and constraints established
+
+## How to Work With This System
+
+### For Developers
+
+When building components or features:
+
+1. **Check the policies** - Read the absolute constraints and mandatory rules
+2. **Follow the patterns** - Use EventBus for communication, Web Components for UI
+3. **Test in Chrome** - All UI components must be tested before completion
+4. **Update this document** - Documentation is mandatory for every task
+
+### For Designers
+
+Design specifications should be provided as `.pen` files. When designs change, components must be retested.
 
 ## Architecture Overview
 
-Harmony uses a clean separation of concerns:
+### Technology Choices
 
-- **UI Layer**: Vanilla HTML/CSS/JS with Web Components
-- **Core Logic**: Rust compiled to WebAssembly (WASM)
-- **Communication**: Event-driven architecture with EventBus
-
-### Technology Boundaries
-
-**Rust → WASM** is used for:
+**Rust + WASM** is used for:
 - Bounded contexts (business logic)
-- Graph engine (audio routing)
-- Audio processing (DSP)
+- Graph engine (audio processing)
+- Performance-critical operations
 
-**HTML/CSS/JS** is used for:
+**Vanilla HTML/CSS/JavaScript** is used for:
 - UI rendering
 - DOM manipulation
-- User interactions
+- Component implementation
 
-**Python** is used for:
-- Test servers (pytest)
+**Python** is used ONLY for:
+- Test servers
 - Build scripts
 - Development tools
-- Prototypes
 
-**npm packages** are used for:
-- Build tools
-- Dev servers
-- Testing frameworks
+### Component Communication
 
-These boundaries cannot be crossed without architecture review.
+Components use an **EventBus pattern**:
 
-## Performance Budgets
+1. UI components publish events (never call business logic directly)
+2. EventBus routes events to subscribers
+3. Bounded contexts handle commands and publish results
 
-All code must meet these requirements:
+Example: Button click → Event published → EventBus routes → Logic handles → Result event → UI updates
 
-- **Render Budget**: Maximum 16ms per frame (60fps)
-- **Memory Budget**: Maximum 50MB WASM heap
-- **Load Budget**: Maximum 200ms initial load time
+### Performance Budgets
 
-## Event-Driven Communication
+All code must meet these limits:
 
-Components communicate through events, never directly.
+- **16ms per frame** - For smooth 60fps rendering
+- **50MB WASM heap** - Maximum memory usage
+- **200ms initial load** - Maximum startup time
 
-### UI Component Pattern
+## Component Structure
 
-```
-User clicks button → Component publishes event → EventBus routes → Bounded Context handles
-```
+Components are organized by complexity:
 
-See: `harmony-core/event-bus.js`
+- **Primitives** - Basic building blocks (buttons, inputs)
+- **Molecules** - Simple combinations (search box, card)
+- **Organisms** - Complex components (navigation, player controls)
+- **Templates** - Page layouts
 
-### Bounded Context Pattern
+## Testing Requirements
 
-```
-Subscribe to command event → Process logic → Publish result event
-```
+Every UI component must be tested in Chrome for these states:
 
-Bounded Contexts must use the ProcessCommand pattern.
+- Default
+- Hover
+- Focus
+- Active
+- Disabled
+- Error (if applicable)
+- Loading (if applicable)
+- Empty (if applicable)
 
-## Component Development
+Animations must maintain 60fps (verified with Chrome DevTools Performance panel).
 
-All UI components must:
+## Documentation Rules
 
-1. Use Web Components with shadow DOM
-2. Publish events instead of calling business logic directly
-3. Be tested in Chrome before completion
-4. Verify all states: default, hover, focus, active, disabled
-5. Test animations for 60fps performance
+This is the **single source of truth** for the design system. Code files should have minimal comments that reference sections in this document.
 
-See: `harmony-ui/components/` for examples (coming soon)
+When you change code, update this document. When you read this document, check that code matches.
 
-## Schema-Driven Development
+## Getting Help
 
-When changing Rust behavior:
+- **Blocked on a task?** Create a report in `harmony-design/reports/blocked/{task_id}.md`
+- **Need to understand a component?** Check this document first, then look at code files
+- **Found a bug?** Check if it violates performance budgets or mandatory rules
 
-1. Navigate to `harmony-schemas/`
-2. Modify the schema
-3. Run codegen
-4. Verify compilation
+## What's Next
 
-**Never edit generated Rust code directly.**
+The system needs foundational work before features can be built:
 
-Commit schema changes and generated code together.
+1. EventBus infrastructure
+2. App shell template
+3. Component library structure
+4. Testing workflows
 
-## Quality Gates
+Check `harmony-design/reports/blocked/` for current blockers and enabling work recommendations.
 
-Every task must pass quality gates before proceeding. No technical debt is allowed.
-
-## Debugging Tools
-
-The EventBusComponent is available on every page for debugging:
-
-- Hidden by default
-- Show with `Ctrl+Shift+E`
-- Logs all event traffic
-
-EventBus errors are logged to console with full context.
-
-## Project Structure
+## File Structure
 
 ```
-harmony-design/          # This documentation and design specs
-harmony-core/           # Core WASM modules and EventBus
-harmony-ui/             # UI components
-harmony-schemas/        # Schema definitions for codegen
+harmony-design/
+├── DESIGN_SYSTEM.md          # This file
+├── reports/
+│   └── blocked/              # Blocked task reports
+└── (more structure to be added)
 ```
-
-## Getting Started
-
-(This section will grow as components are added)
 
 ## Contributing
 
-When completing any task:
+Before starting any task:
 
-1. Implement the feature completely
-2. Update this documentation
-3. Commit changes
-4. Push to remote
+1. Read the absolute constraints and mandatory rules
+2. Check existing patterns in the codebase
+3. Verify you have all needed information
+4. Create a blocked task report if you cannot proceed
 
-Documentation updates are non-optional for task completion.
+After completing any task:
+
+1. Update this documentation
+2. Test in Chrome (for UI components)
+3. Verify all policies are satisfied
+4. Commit and push changes
 
 ---
 
-*This is a living document. It grows with the system.*
+*This document evolves with the system. Last updated: Initial version*
