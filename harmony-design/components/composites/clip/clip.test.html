@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Clip - Test Page</title>
+  <style>
+    :root {
+      --harmony-surface-1: #1a1a1a;
+      --harmony-surface-2: #252525;
+      --harmony-surface-3: #333;
+      --harmony-surface-4: #444;
+      --harmony-surface-5: #555;
+      --harmony-accent: #00d4ff;
+      --harmony-text: #ffffff;
+      --harmony-text-secondary: #aaaaaa;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: var(--harmony-text);
+      padding: 24px;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 24px;
+      font-size: 32px;
+      font-weight: 600;
+    }
+
+    .test-section {
+      margin-bottom: 48px;
+    }
+
+    .test-section h2 {
+      margin-bottom: 16px;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--harmony-accent);
+    }
+
+    .clip-wrapper {
+      margin-bottom: 24px;
+    }
+
+    .controls {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--harmony-surface-1);
+      border-radius: 8px;
+    }
+
+    .controls h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: var(--harmony-surface-3);
+      color: var(--harmony-text);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: var(--harmony-surface-4);
+    }
+
+    button:active {
+      background: var(--harmony-surface-5);
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--harmony-text-secondary);
+    }
+
+    input[type="range"] {
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .event-log {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--harmony-surface-1);
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .event-log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid var(--harmony-surface-2);
+    }
+
+    .event-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .event-type {
+      color: var(--harmony-accent);
+      font-weight: bold;
+    }
+
+    .performance-stats {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--harmony-surface-1);
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+    }
+
+    .stat-label {
+      color: var(--harmony-text-secondary);
+    }
+
+    .stat-value {
+      color: var(--harmony-accent);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🎵 Harmony Clip Component Test</h1>
+
+    <div class="test-section">
+      <h2>Default State</h2>
+      <div class="clip-wrapper">
+        <harmony-clip 
+          id="clip1"
+          duration="10"
+          position="0"
+          bpm="120"
+          beat-division="4">
+        </harmony-clip>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>With Waveform Data</h2>
+      <div class="clip-wrapper">
+        <harmony-clip 
+          id="clip2"
+          duration="5"
+          position="0"
+          bpm="140"
+          beat-division="4">
+        </harmony-clip>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Interactive Controls</h2>
+      <div class="controls">
+        <h3>Playback Simulation</h3>
+        <div class="control-group">
+          <button id="simulatePlay">Simulate Play</button>
+          <button id="simulatePause">Simulate Pause</button>
+          <button id="simulateStop">Simulate Stop</button>
+        </div>
+        <div class="control-group">
+          <label>Position:</label>
+          <input type="range" id="positionSlider" min="0" max="10" step="0.1" value="0">
+          <span id="positionValue">0.0s</span>
+        </div>
+        <div class="control-group">
+          <label>BPM:</label>
+          <input type="range" id="bpmSlider" min="60" max="200" step="1" value="120">
+          <span id="bpmValue">120</span>
+        </div>
+        <div class="control-group">
+          <button id="generateWaveform">Generate Random Waveform</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Event Log</h2>
+      <div class="event-log" id="eventLog">
+        <div class="event-log-entry">Waiting for events...</div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Performance Stats</h2>
+      <div class="performance-stats" id="perfStats">
+        <div class="stat-row">
+          <span class="stat-label">Render Time:</span>
+          <span class="stat-value" id="renderTime">0ms</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Memory Usage:</span>
+          <span class="stat-value" id="memoryUsage">0MB</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">FPS:</span>
+          <span class="stat-value" id="fps">60</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Timeline component (dependency) -->
+  <script src="../../primitives/timeline/timeline.js"></script>
+  
+  <!-- Import Clip component -->
+  <script src="./clip.js"></script>
+
+  <script>
+    // Test utilities
+    const eventLog = document.getElementById('eventLog');
+    const clip1 = document.getElementById('clip1');
+    const clip2 = document.getElementById('clip2');
+
+    function logEvent(type, detail) {
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.innerHTML = `<span class="event-type">${type}</span>: ${JSON.stringify(detail)}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 20 entries
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Listen to all clip events
+    ['clip:play', 'clip:pause', 'clip:stop', 'clip:seek', 'clip:loop-toggle'].forEach(eventType => {
+      window.addEventListener(eventType, (e) => {
+        logEvent(eventType, e.detail);
+      });
+    });
+
+    // Generate sample waveform data
+    function generateWaveform(samples = 200) {
+      const data = [];
+      for (let i = 0; i < samples; i++) {
+        // Generate a sine wave with some randomness
+        const t = i / samples;
+        const sine = Math.sin(t * Math.PI * 4);
+        const noise = (Math.random() - 0.5) * 0.3;
+        const envelope = Math.sin(t * Math.PI); // Amplitude envelope
+        data.push((sine + noise) * envelope);
+      }
+      return data;
+    }
+
+    // Initialize clip2 with waveform data
+    clip2.setWaveformData(generateWaveform());
+
+    // Interactive controls
+    document.getElementById('simulatePlay').addEventListener('click', () => {
+      clip1.setAttribute('playing', '');
+      window.dispatchEvent(new CustomEvent('playback:state-changed', {
+        detail: { clipId: 'clip1', state: 'playing' }
+      }));
+    });
+
+    document.getElementById('simulatePause').addEventListener('click', () => {
+      clip1.removeAttribute('playing');
+      window.dispatchEvent(new CustomEvent('playback:state-changed', {
+        detail: { clipId: 'clip1', state: 'paused' }
+      }));
+    });
+
+    document.getElementById('simulateStop').addEventListener('click', () => {
+      clip1.removeAttribute('playing');
+      clip1.setAttribute('position', '0');
+      window.dispatchEvent(new CustomEvent('playback:state-changed', {
+        detail: { clipId: 'clip1', state: 'stopped' }
+      }));
+      window.dispatchEvent(new CustomEvent('playback:position-changed', {
+        detail: { clipId: 'clip1', position: 0 }
+      }));
+    });
+
+    document.getElementById('positionSlider').addEventListener('input', (e) => {
+      const position = parseFloat(e.target.value);
+      document.getElementById('positionValue').textContent = `${position.toFixed(1)}s`;
+      clip1.setAttribute('position', position);
+      window.dispatchEvent(new CustomEvent('playback:position-changed', {
+        detail: { clipId: 'clip1', position }
+      }));
+    });
+
+    document.getElementById('bpmSlider').addEventListener('input', (e) => {
+      const bpm = parseInt(e.target.value);
+      document.getElementById('bpmValue').textContent = bpm;
+      clip1.setAttribute('bpm', bpm);
+    });
+
+    document.getElementById('generateWaveform').addEventListener('click', () => {
+      clip1.setWaveformData(generateWaveform());
+      clip2.setWaveformData(generateWaveform());
+    });
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastTime = performance.now();
+
+    function updatePerformanceStats() {
+      const now = performance.now();
+      frameCount++;
+
+      if (now - lastTime >= 1000) {
+        const fps = Math.round(frameCount * 1000 / (now - lastTime));
+        document.getElementById('fps').textContent = fps;
+        frameCount = 0;
+        lastTime = now;
+
+        // Memory usage (if available)
+        if (performance.memory) {
+          const memoryMB = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+          document.getElementById('memoryUsage').textContent = `${memoryMB}MB`;
+        }
+      }
+
+      requestAnimationFrame(updatePerformanceStats);
+    }
+
+    updatePerformanceStats();
+
+    // Measure initial render time
+    const renderStart = performance.now();
+    requestAnimationFrame(() => {
+      const renderTime = (performance.now() - renderStart).toFixed(2);
+      document.getElementById('renderTime').textContent = `${renderTime}ms`;
+    });
+
+    console.log('✅ Clip component test page loaded');
+    console.log('📊 Monitor the event log and performance stats');
+    console.log('🎮 Use the interactive controls to test functionality');
+  </script>
+</body>
+</html>
