@@ -1,0 +1,50 @@
+@context(harmony.edges)
+@version(1.0.0)
+
+# Edge: implements_design
+# Connects implementation nodes (.tsx files) to DesignSpecNodes
+
+edge ImplementsDesign {
+  source: ImplementationNode
+  target: DesignSpecNode
+  
+  properties {
+    # Completeness of implementation (0.0 - 1.0)
+    completeness: float = 1.0
+    
+    # Which states are implemented
+    implemented_states: list<string> = []
+    
+    # Which variants are implemented
+    implemented_variants: list<string> = []
+    
+    # Timestamp of last verification
+    last_verified: timestamp?
+    
+    # Any known deviations from spec
+    deviations: list<string> = []
+    
+    # Implementation notes
+    notes: string?
+  }
+  
+  constraints {
+    completeness >= 0.0 and completeness <= 1.0
+    unique(source, target)  # One implementation per spec
+  }
+}
+
+# Node type for implementation files
+node ImplementationNode {
+  properties {
+    file_path: string
+    language: string  # "tsx", "ts", "js"
+    component_name: string
+    exports: list<string> = []
+  }
+  
+  constraints {
+    file_path matches ".*\\.(tsx|ts|js)$"
+    language in ["tsx", "ts", "js"]
+  }
+}
