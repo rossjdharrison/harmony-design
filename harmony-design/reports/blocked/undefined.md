@@ -1,55 +1,64 @@
 # Blocked Task Report: undefined
 
 **Date:** 2024
+**Reporter:** Autonomous Executor
 **Status:** BLOCKED - Cannot Proceed
 
 ## Reason for Block
 
-The task cannot be implemented because:
+The task cannot be executed because:
 
-1. **Task ID is undefined**: The task identifier is literally "undefined", making it impossible to track or reference this work
-2. **No task description available**: The description field states "Details not available"
-3. **No requirements specified**: Without a description, there are no requirements to implement against
-4. **No acceptance criteria**: Cannot determine when the task would be complete
+1. **Task ID:** `undefined` - No valid task identifier provided
+2. **Task Description:** "Details not available" - No actionable requirements specified
+3. **No Context:** PROJECT CONTEXT shows "No structure available"
 
 ## Attempted Solutions
 
-None - there is no actionable information to work with.
+1. ✗ Reviewed task metadata - all fields are undefined/unavailable
+2. ✗ Checked recent commits - only generic "Task implementation" messages without specifics
+3. ✗ Analyzed project context - no structure information available
 
-## Context
+## What is Needed to Unblock
 
-Recent commits show pattern of undefined tasks:
-- e8fdaf3 feat(undefined): Task implementation
-- acbd30e feat(undefined): Task implementation
-- c9292d3 feat(undefined): Task implementation
-- 5121988 feat(undefined): Task implementation
-- ef17e51 feat(undefined): Task implementation
+To proceed with task execution, the following information is required:
 
-This suggests a systemic issue with task definition or the task assignment system.
+### Minimum Required Information
 
-## Recommended Enabling Work
+1. **Valid Task ID** - A specific identifier for tracking
+2. **Task Description** - Clear, actionable requirements describing what needs to be implemented
+3. **Acceptance Criteria** - How to verify the task is complete
+4. **Context** - Which part of the Harmony Design System this affects (e.g., component, bounded context, infrastructure)
 
-To unblock this task, one of the following is required:
+### Recommended Task Structure
 
-1. **Provide task details**: Supply a proper task description with:
-   - Clear objective
-   - Acceptance criteria
-   - Any relevant design specs or requirements
-   - Expected deliverables
+```yaml
+task:
+  id: "HDS-XXX"
+  description: "Implement [specific feature/component]"
+  type: [component|bounded-context|infrastructure|documentation]
+  acceptance_criteria:
+    - Criterion 1
+    - Criterion 2
+  context:
+    area: [ui|audio|graph|schema|tooling]
+    files_affected: []
+```
 
-2. **Assign a valid task ID**: Replace "undefined" with a trackable identifier
+## Recommended Next Steps
 
-3. **Provide context**: If this relates to recent work, clarify what aspect needs implementation
+**Option A:** Provide complete task specification and re-run executor
 
-## Next Steps
+**Option B:** Create an enabling task to:
+- Define the task requirements
+- Establish acceptance criteria
+- Identify affected system areas
 
-Awaiting:
-- Valid task definition, OR
-- Clarification of requirements, OR
-- Assignment of a different task with complete information
+## Policy Compliance Note
 
-## Policy Compliance
+This report is created in compliance with:
+- **Policy 18:** Blocked Task Reporting Protocol
+- **Policy 19:** Documentation Non-Optional (documenting why task cannot proceed)
 
-This report satisfies **Policy #18: Blocked Task Reporting Protocol**.
+## Awaiting Instructions
 
-The task cannot proceed to implementation, documentation, or commit stages without the enabling work described above.
+Cannot proceed until valid task specification is provided.
