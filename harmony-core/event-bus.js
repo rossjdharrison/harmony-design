@@ -1,30 +1,34 @@
 /**
- * @fileoverview EventBus - Central event routing system for Harmony Design System
+ * @fileoverview EventBus implementation for decoupling UI components from Bounded Contexts.
+ * See: /harmony-design/docs/architecture/event-bus-pattern.md
  * 
- * The EventBus enables decoupled communication between UI components and bounded contexts.
- * All events are validated and logged for debugging.
- * 
- * See: harmony-design/DESIGN_SYSTEM.md#event-driven-communication
+ * @module harmony-core/event-bus
  */
 
 /**
- * @typedef {Object} HarmonyEvent
- * @property {string} type - Event type identifier
- * @property {string} source - Component or context that published the event
- * @property {*} payload - Event data
- * @property {number} timestamp - Event creation timestamp
+ * @typedef {Object} Event
+ * @property {string} type - Event type in format: {domain}.{context}.{action}
+ * @property {*} payload - Event payload
+ * @property {string} [source] - Source component/BC identifier
+ * @property {number} timestamp - Event timestamp
  */
 
 /**
- * Central event bus for Harmony Design System
- * Manages event publication, subscription, and routing
+ * @typedef {function(Event): void} EventHandler
  */
-class EventBus {
+
+/**
+ * EventBus for publish-subscribe pattern between UI and Bounded Contexts.
+ * Enforces policy: Components never call BCs directly.
+ * 
+ * @class EventBus
+ */
+export class EventBus {
   constructor() {
-    /** @type {Map<string, Set<Function>>} */
+    /** @type {Map<string, Set<EventHandler>>} */
     this.subscribers = new Map();
     
-    /** @type {Array<HarmonyEvent>} */
+    /** @type {Array<Event>} */
     this.eventHistory = [];
     
     /** @type {number} */
@@ -35,28 +39,23 @@ class EventBus {
   }
 
   /**
-   * Subscribe to events of a specific type
-   * @param {string} eventType - The event type to listen for
-   * @param {Function} handler - Callback function to handle the event
-   * @returns {Function} Unsubscribe function
+   * Subscribe to events of a specific type.
+   * 
+   * @param {string} eventType - Event type to subscribe to
+   * @param {EventHandler} handler - Handler function
+   * @returns {function(): void} Unsubscribe function
    */
   subscribe(eventType, handler) {
-    if (typeof eventType !== 'string' || !eventType) {
-      this._logError('subscribe', 'Invalid event type', { eventType });
-      return () => {};
-    }
-
-    if (typeof handler !== 'function') {
-      this._logError('subscribe', 'Handler must be a function', { eventType });
-      return () => {};
-    }
-
     if (!this.subscribers.has(eventType)) {
       this.subscribers.set(eventType, new Set());
     }
-
+    
     this.subscribers.get(eventType).add(handler);
-
+    
+    if (this.debugMode) {
+      console.log(`[EventBus] Subscribed to: ${eventType}`, handler);
+    }
+    
     // Return unsubscribe function
     return () => {
       const handlers = this.subscribers.get(eventType);
@@ -70,123 +69,101 @@ class EventBus {
   }
 
   /**
-   * Publish an event to all subscribers
-   * @param {string} eventType - The event type
-   * @param {string} source - The source component/context
-   * @param {*} payload - The event payload
+   * Publish an event to all subscribers.
+   * 
+   * @param {Event} event - Event to publish
+   * @throws {Error} If event validation fails
    */
-  publish(eventType, source, payload) {
-    // Validate inputs
-    if (typeof eventType !== 'string' || !eventType) {
-      this._logError('publish', 'Invalid event type', { eventType, source, payload });
-      return;
+  publish(event) {
+    // Validate event structure
+    if (!event.type || typeof event.type !== 'string') {
+      const error = new Error('Event must have a string type property');
+      console.error('[EventBus] Validation error:', error, event);
+      throw error;
     }
 
-    if (typeof source !== 'string' || !source) {
-      this._logError('publish', 'Invalid source', { eventType, source, payload });
-      return;
-    }
-
-    // Create event object
-    const event = {
-      type: eventType,
-      source,
-      payload,
-      timestamp: Date.now()
+    // Enrich event with metadata
+    const enrichedEvent = {
+      ...event,
+      timestamp: event.timestamp || Date.now(),
+      source: event.source || 'unknown'
     };
 
     // Add to history
-    this._addToHistory(event);
-
-    // Log if in debug mode
-    if (this.debugMode) {
-      console.log('[EventBus] Publishing:', event);
+    this.eventHistory.push(enrichedEvent);
+    if (this.eventHistory.length > this.maxHistorySize) {
+      this.eventHistory.shift();
     }
 
-    // Get subscribers
-    const handlers = this.subscribers.get(eventType);
-
+    // Get subscribers for this event type
+    const handlers = this.subscribers.get(event.type);
+    
     if (!handlers || handlers.size === 0) {
       if (this.debugMode) {
-        console.warn('[EventBus] No subscribers for event type:', eventType);
+        console.warn(`[EventBus] No subscribers for event: ${event.type}`, event);
       }
       return;
     }
 
-    // Call all handlers
+    if (this.debugMode) {
+      console.log(`[EventBus] Publishing: ${event.type}`, enrichedEvent);
+      console.log(`[EventBus] Subscribers: ${handlers.size}`);
+    }
+
+    // Notify all subscribers
     handlers.forEach(handler => {
       try {
-        handler(event);
+        handler(enrichedEvent);
       } catch (error) {
-        this._logError('publish', 'Handler threw error', {
-          eventType,
-          source,
-          error: error.message,
-          stack: error.stack
-        });
+        console.error(
+          `[EventBus] Handler error for event: ${event.type}`,
+          { event: enrichedEvent, error, handler }
+        );
       }
     });
   }
 
   /**
-   * Get event history for debugging
-   * @returns {Array<HarmonyEvent>}
+   * Get event history for debugging.
+   * 
+   * @returns {Array<Event>} Event history
    */
   getHistory() {
     return [...this.eventHistory];
   }
 
   /**
-   * Clear event history
+   * Clear event history.
    */
   clearHistory() {
     this.eventHistory = [];
   }
 
   /**
-   * Enable or disable debug mode
-   * @param {boolean} enabled
+   * Enable or disable debug mode.
+   * 
+   * @param {boolean} enabled - Debug mode state
    */
   setDebugMode(enabled) {
-    this.debugMode = !!enabled;
-    console.log('[EventBus] Debug mode:', this.debugMode ? 'enabled' : 'disabled');
+    this.debugMode = enabled;
+    console.log(`[EventBus] Debug mode: ${enabled ? 'ON' : 'OFF'}`);
   }
 
   /**
-   * Add event to history with size limit
-   * @private
-   * @param {HarmonyEvent} event
+   * Get current subscribers for debugging.
+   * 
+   * @returns {Object} Subscriber information
    */
-  _addToHistory(event) {
-    this.eventHistory.push(event);
-    if (this.eventHistory.length > this.maxHistorySize) {
-      this.eventHistory.shift();
-    }
-  }
-
-  /**
-   * Log error with context
-   * @private
-   * @param {string} operation - The operation that failed
-   * @param {string} message - Error message
-   * @param {Object} context - Additional context
-   */
-  _logError(operation, message, context) {
-    console.error('[EventBus Error]', {
-      operation,
-      message,
-      context,
-      timestamp: Date.now()
+  getSubscribers() {
+    const result = {};
+    this.subscribers.forEach((handlers, eventType) => {
+      result[eventType] = handlers.size;
     });
+    return result;
   }
 }
 
-// Create singleton instance
-const eventBus = new EventBus();
-
-// Make available globally for debugging
+// Create global singleton instance
 if (typeof window !== 'undefined') {
-  window.HarmonyEventBus = eventBus;
+  window.eventBus = window.eventBus || new EventBus();
 }
-
-export default eventBus;

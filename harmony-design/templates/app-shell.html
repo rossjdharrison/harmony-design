@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+    }
+
+    #app {
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Application content goes here -->
+  </div>
+
+  <!-- EventBus Debug Component (Ctrl+Shift+E to toggle) -->
+  <event-bus-debug></event-bus-debug>
+
+  <!-- Core EventBus -->
+  <script type="module" src="/harmony-core/event-bus.js"></script>
+  
+  <!-- EventBus Debug Component -->
+  <script type="module" src="/harmony-ui/components/event-bus-debug.js"></script>
+  
+  <!-- Application scripts -->
+  <script type="module">
+    // Initialize EventBus
+    console.log('[App] EventBus initialized:', window.eventBus);
+    
+    // Example: Enable debug mode in development
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      window.eventBus.setDebugMode(true);
+    }
+  </script>
+</body>
+</html>
