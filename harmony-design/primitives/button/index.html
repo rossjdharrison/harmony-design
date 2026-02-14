@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HDS Button - Interactive Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: #f9fafb;
+    }
+
+    h1 {
+      color: #1f2937;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: white;
+      padding: 32px;
+      margin-bottom: 32px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      color: #1f2937;
+      margin-top: 0;
+      margin-bottom: 24px;
+      font-size: 20px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .label {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .event-log {
+      background: #1f2937;
+      color: #10b981;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      padding: 16px;
+      border-radius: 4px;
+      height: 200px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .event-log-entry {
+      margin-bottom: 4px;
+    }
+
+    .event-log-entry .timestamp {
+      color: #6b7280;
+    }
+
+    .event-log-entry .event-type {
+      color: #3b82f6;
+      font-weight: bold;
+    }
+
+    .event-log-entry .detail {
+      color: #10b981;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .code-example {
+      background: #f3f4f6;
+      padding: 16px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      margin-top: 12px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>HDS Button Primitive</h1>
+  <p class="subtitle">Interactive test page for button component with toggle/momentary modes</p>
+
+  <!-- Momentary Mode Tests -->
+  <div class="section">
+    <h2>Momentary Mode (Default)</h2>
+    <p class="label">Standard momentary buttons - emit press and release events</p>
+    
+    <div class="button-row">
+      <hds-button id="btn-momentary-primary">Primary</hds-button>
+      <hds-button variant="secondary">Secondary</hds-button>
+      <hds-button variant="tertiary">Tertiary</hds-button>
+    </div>
+
+    <p class="label">Sizes</p>
+    <div class="button-row">
+      <hds-button size="small">Small</hds-button>
+      <hds-button size="medium">Medium</hds-button>
+      <hds-button size="large">Large</hds-button>
+    </div>
+
+    <p class="label">States</p>
+    <div class="button-row">
+      <hds-button>Normal</hds-button>
+      <hds-button disabled>Disabled</hds-button>
+    </div>
+
+    <div class="code-example">&lt;hds-button&gt;Click Me&lt;/hds-button&gt;</div>
+  </div>
+
+  <!-- Toggle Mode Tests -->
+  <div class="section">
+    <h2>Toggle Mode</h2>
+    <p class="label">Toggle buttons - maintain pressed state and emit toggle events</p>
+    
+    <div class="button-row">
+      <hds-button mode="toggle" id="btn-toggle-1">Mute</hds-button>
+      <hds-button mode="toggle" pressed id="btn-toggle-2">Solo</hds-button>
+      <hds-button mode="toggle" variant="secondary">Record</hds-button>
+      <hds-button mode="toggle" variant="tertiary">Loop</hds-button>
+    </div>
+
+    <p class="label">Toggle sizes</p>
+    <div class="button-row">
+      <hds-button mode="toggle" size="small">Small</hds-button>
+      <hds-button mode="toggle" size="medium">Medium</hds-button>
+      <hds-button mode="toggle" size="large">Large</hds-button>
+    </div>
+
+    <p class="label">Toggle states</p>
+    <div class="button-row">
+      <hds-button mode="toggle">Off</hds-button>
+      <hds-button mode="toggle" pressed>On</hds-button>
+      <hds-button mode="toggle" disabled>Disabled</hds-button>
+    </div>
+
+    <div class="code-example">&lt;hds-button mode="toggle" pressed&gt;Mute&lt;/hds-button&gt;</div>
+  </div>
+
+  <!-- Programmatic Control -->
+  <div class="section">
+    <h2>Programmatic Control</h2>
+    <p class="label">Test programmatic API methods</p>
+    
+    <div class="button-row">
+      <hds-button id="btn-api-momentary">Momentary Button</hds-button>
+      <hds-button mode="toggle" id="btn-api-toggle">Toggle Button</hds-button>
+    </div>
+
+    <div class="controls">
+      <button onclick="testPress()">Call press()</button>
+      <button onclick="testRelease()">Call release()</button>
+      <button onclick="testToggle()">Call toggle()</button>
+    </div>
+
+    <div class="code-example">
+// Momentary mode
+button.press();
+button.release();
+
+// Toggle mode
+button.toggle();
+    </div>
+  </div>
+
+  <!-- Event Log -->
+  <div class="section">
+    <h2>Event Log</h2>
+    <p class="label">Real-time event monitoring - all button events are logged below</p>
+    <div class="controls">
+      <button onclick="clearLog()">Clear Log</button>
+      <button onclick="toggleAutoScroll()">Toggle Auto-scroll</button>
+    </div>
+    <div id="event-log" class="event-log"></div>
+  </div>
+
+  <!-- Keyboard Interaction Test -->
+  <div class="section">
+    <h2>Keyboard Interaction</h2>
+    <p class="label">Test keyboard navigation (Tab, Space, Enter)</p>
+    
+    <div class="button-row">
+      <hds-button>Button 1</hds-button>
+      <hds-button>Button 2</hds-button>
+      <hds-button mode="toggle">Toggle 1</hds-button>
+      <hds-button mode="toggle">Toggle 2</hds-button>
+    </div>
+
+    <p style="font-size: 14px; color: #6b7280; margin-top: 16px;">
+      Use Tab to navigate, Space or Enter to activate
+    </p>
+  </div>
+
+  <script type="module">
+    import './hds-button.js';
+
+    const eventLog = document.getElementById('event-log');
+    let autoScroll = true;
+    let eventCount = 0;
+
+    // Listen to all button events
+    document.addEventListener('button-press', logEvent);
+    document.addEventListener('button-release', logEvent);
+    document.addEventListener('button-toggle', logEvent);
+
+    function logEvent(event) {
+      eventCount++;
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      
+      const timestamp = new Date().toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        fractionalSecondDigits: 3
+      });
+      
+      const detailStr = JSON.stringify(event.detail, null, 2)
+        .split('\n')
+        .slice(1, -1)
+        .join(' ');
+      
+      entry.innerHTML = `
+        <span class="timestamp">[${timestamp}]</span> 
+        <span class="event-type">${event.type}</span> 
+        <span class="detail">${detailStr}</span>
+      `;
+      
+      eventLog.appendChild(entry);
+      
+      if (autoScroll) {
+        eventLog.scrollTop = eventLog.scrollHeight;
+      }
+
+      // Keep log size manageable
+      if (eventCount > 100) {
+        eventLog.removeChild(eventLog.firstChild);
+      }
+    }
+
+    window.clearLog = function() {
+      eventLog.innerHTML = '';
+      eventCount = 0;
+    };
+
+    window.toggleAutoScroll = function() {
+      autoScroll = !autoScroll;
+      console.log('Auto-scroll:', autoScroll);
+    };
+
+    // Programmatic API tests
+    window.testPress = function() {
+      const btn = document.getElementById('btn-api-momentary');
+      btn.press();
+    };
+
+    window.testRelease = function() {
+      const btn = document.getElementById('btn-api-momentary');
+      btn.release();
+    };
+
+    window.testToggle = function() {
+      const btn = document.getElementById('btn-api-toggle');
+      btn.toggle();
+    };
+
+    // Log page ready
+    console.log('HDS Button test page loaded');
+    console.log('Open DevTools Console to see debug logs');
+  </script>
+</body>
+</html>
