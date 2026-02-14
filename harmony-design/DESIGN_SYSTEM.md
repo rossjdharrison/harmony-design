@@ -1,37 +1,29 @@
-# Harmony Design System Documentation
+# Harmony Design System
 
-## Blocked Task Protocol
+## Blocked Tasks
 
-When a task cannot be completed, we follow a structured reporting process.
-
-### What Makes a Task Blocked?
-
-A task is blocked when:
-- Task requirements are undefined or incomplete
-- Dependencies are missing
-- Technical constraints prevent implementation
-- Specifications conflict with system policies
-
-### Reporting Process
-
-1. Create a report in `harmony-design/reports/blocked/{task_id}.md`
-2. Document the reason for blocking
-3. List attempted solutions
-4. Recommend enabling work
-5. Await further instructions or create enabling tasks
+When a task cannot be completed, we create a report to track the issue.
 
 ### Current Blocked Tasks
 
-- **undefined**: Missing task specification and requirements
+- **undefined**: Missing task metadata - see [blocked report](./reports/blocked/undefined.md)
 
-See [blocked task reports](./reports/blocked/) for details.
+### How Blocked Tasks Work
 
-## How to Provide Valid Task Information
+If you are assigned a task that cannot be completed:
 
-Every task should include:
-- **Unique ID**: For tracking and reference
-- **Clear Description**: What needs to be built or changed
-- **Acceptance Criteria**: How to verify completion
-- **Context**: Which part of the system is affected
+1. Create a report in `reports/blocked/{task_id}.md`
+2. Explain why the task is blocked
+3. List what you tried to do
+4. Suggest what needs to happen next
+5. Wait for instructions
 
-This ensures efficient implementation and maintains system quality.
+This helps us track problems and fix them quickly.
+
+## Working with the System
+
+(This section will grow as tasks are completed and features are added)
+
+### Documentation Rules
+
+This file is the single source of truth for the Harmony Design System. All concepts, patterns, and implementation notes live here. Code files contain minimal comments that reference sections in this document.
