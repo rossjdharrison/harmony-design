@@ -1,0 +1,241 @@
+/**
+ * Motion system styles for Harmony Design System
+ * Provides consistent animation behavior with reduced motion support
+ * @see harmony-design/DESIGN_SYSTEM.md#reduced-motion-support
+ */
+
+:root {
+  /* Duration tokens */
+  --motion-duration-instant: 0ms;
+  --motion-duration-fast: 150ms;
+  --motion-duration-normal: 250ms;
+  --motion-duration-slow: 400ms;
+  
+  /* Easing tokens */
+  --motion-easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --motion-easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+  --motion-easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+  --motion-easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
+}
+
+/**
+ * Reduced motion overrides
+ * Applied when user prefers reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-fast: 0ms;
+    --motion-duration-normal: 0ms;
+    --motion-duration-slow: 50ms;
+    --motion-easing-standard: linear;
+    --motion-easing-decelerate: linear;
+    --motion-easing-accelerate: linear;
+    --motion-easing-sharp: linear;
+  }
+  
+  /* Disable all animations and transitions by default */
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Allow essential state transitions with minimal duration */
+  [data-motion-essential] {
+    animation-duration: 50ms !important;
+    transition-duration: 50ms !important;
+  }
+}
+
+/**
+ * Utility classes for common animations
+ */
+
+/* Fade animations */
+.motion-fade-in {
+  animation: fade-in var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.motion-fade-out {
+  animation: fade-out var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Slide animations */
+.motion-slide-in-up {
+  animation: slide-in-up var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.motion-slide-in-down {
+  animation: slide-in-down var(--motion-duration-normal) var(--motion-easing-decelerate);
+}
+
+.motion-slide-out-up {
+  animation: slide-out-up var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+.motion-slide-out-down {
+  animation: slide-out-down var(--motion-duration-normal) var(--motion-easing-accelerate);
+}
+
+@keyframes slide-in-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-down {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out-up {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+@keyframes slide-out-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+/* Scale animations */
+.motion-scale-in {
+  animation: scale-in var(--motion-duration-fast) var(--motion-easing-decelerate);
+}
+
+.motion-scale-out {
+  animation: scale-out var(--motion-duration-fast) var(--motion-easing-accelerate);
+}
+
+@keyframes scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scale-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* Transition utilities */
+.motion-transition-all {
+  transition: all var(--motion-duration-normal) var(--motion-easing-standard);
+}
+
+.motion-transition-opacity {
+  transition: opacity var(--motion-duration-normal) var(--motion-easing-standard);
+}
+
+.motion-transition-transform {
+  transition: transform var(--motion-duration-normal) var(--motion-easing-standard);
+}
+
+.motion-transition-colors {
+  transition: color var(--motion-duration-fast) var(--motion-easing-standard),
+              background-color var(--motion-duration-fast) var(--motion-easing-standard),
+              border-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+/* Hover and focus effects */
+.motion-hover-lift {
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard),
+              box-shadow var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.motion-hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.motion-hover-scale {
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.motion-hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Focus ring animation */
+.motion-focus-ring {
+  transition: outline-offset var(--motion-duration-fast) var(--motion-easing-standard),
+              outline-color var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.motion-focus-ring:focus-visible {
+  outline-offset: 2px;
+}
+
+/**
+ * Performance optimizations
+ * Use will-change for animated properties
+ */
+.motion-will-change-transform {
+  will-change: transform;
+}
+
+.motion-will-change-opacity {
+  will-change: opacity;
+}
+
+/* Remove will-change after animation */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-will-change-transform,
+  .motion-will-change-opacity {
+    animation-fill-mode: forwards;
+  }
+}
