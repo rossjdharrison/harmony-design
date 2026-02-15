@@ -1,217 +1,276 @@
 # Harmony Design System
 
-A comprehensive design system for building consistent, accessible, and performant user interfaces.
+A performance-focused design system built with vanilla Web Components.
 
-## Overview
+## Directory Structure
 
-Harmony is a design system built on atomic design principles with a strong focus on composition, performance, and maintainability. It provides a complete toolchain for managing design specifications, component implementations, and their relationships.
+The Harmony Design System follows a clear, flat directory structure. **No nested directories are allowed.**
 
-## Atomic Design Hierarchy
-
-Components are organized into five levels following atomic design methodology:
-
-- **Primitives**: Basic building blocks (buttons, inputs, icons) - cannot contain other components
-- **Molecules**: Simple component groups (search field = input + button) - can only contain primitives
-- **Organisms**: Complex UI sections (header, card list) - can contain molecules and primitives
-- **Templates**: Page layouts without content - can contain organisms, molecules, and primitives
-- **Pages**: Complete views with real content - can contain any component type
-
-## Composition Rules
-
-The design system enforces strict composition rules to maintain hierarchy integrity:
-
-### Rule Enforcement
-
-Composition relationships are validated using the `validate_composition` tool (see [Development Tools](#development-tools)).
-
-**Allowed Compositions:**
-
-| Parent Level | Can Contain |
-|--------------|-------------|
-| Primitive | *(nothing)* |
-| Molecule | Primitives only |
-| Organism | Molecules, Primitives |
-| Template | Organisms, Molecules, Primitives |
-| Page | Any component type |
-
-**Examples:**
-
-✓ Valid: `SearchField` (molecule) contains `Input` (primitive) and `Button` (primitive)  
-✓ Valid: `Header` (organism) contains `Navigation` (molecule) and `Logo` (primitive)  
-✗ Invalid: `Button` (primitive) cannot contain `Icon` (primitive)  
-✗ Invalid: `Card` (molecule) cannot contain `Header` (organism)
-
-### Composition Graph
-
-Component relationships are stored in `harmony-graph/graph.json` as directed edges:
-
-```json
-{
-  "edges": [
-    {
-      "from": "search-field",
-      "to": "input",
-      "type": "composedOf"
-    }
-  ]
-}
-```
-
-Related tools:
-- [tools/validate_composition.py](tools/validate_composition.py) - Validates composition rules
-- [tools/get_component_dependencies.py](tools/get_component_dependencies.py) - Traces composition tree
-
-## Component Lifecycle
-
-Components progress through defined states:
-
-1. **draft** - Initial design in progress
-2. **design_complete** - Design finalized, ready for implementation
-3. **in_development** - Implementation in progress
-4. **implemented** - Code complete, needs testing
-5. **tested** - Tested in Chrome, ready for production
-
-See lifecycle schema: [harmony-schemas/src/lifecycle.rs](../harmony-schemas/src/lifecycle.rs)
-
-## Development Tools
-
-### Composition Validation
-
-**Tool:** `tools/validate_composition.py`
-
-Validates that all composition relationships follow atomic design hierarchy rules.
-
-```bash
-python harmony-design/tools/validate_composition.py harmony-graph/graph.json
-```
-
-**When to Use:**
-- Before committing changes to component relationships
-- In CI pipeline to catch violations early
-- When refactoring component hierarchy
-
-**Exit Codes:**
-- `0` - All rules pass
-- `1` - Violations found or error occurred
-
-See: [tools/README.md](tools/README.md#validate_compositionpy)
-
-### Component Querying
-
-**Tool:** `query_components` (TypeNavigator)
-
-Filter and search components by level, state, or tokens.
-
-See recent commit: `cee6a0d feat(task-del-query-components-tool-filter-b)`
-
-### Dependency Tracing
-
-**Tool:** `get_component_dependencies` (TypeNavigator)
-
-Trace full composition tree for a component.
-
-See recent commit: `14d71a2 feat(task-del-get-component-dependencies-too)`
-
-## File Structure
+### Root Structure
 
 ```
 harmony-design/
-├── DESIGN_SYSTEM.md          # This file - main documentation
-├── specs/                     # Design specifications (.pen files)
-├── tools/                     # Development and validation tools
-│   ├── validate_composition.py
-│   ├── test_validate_composition.py
-│   └── README.md
-└── reports/                   # Task reports and blocked items
-
-harmony-graph/
-└── graph.json                 # Component graph with relationships
-
-harmony-schemas/
-└── src/                       # Rust schemas for graph nodes
-    ├── lifecycle.rs
-    └── composition.rs
+├── src/                    # Core system files
+│   ├── event-bus.js       # Central event routing
+│   └── type-navigator.js  # Type-safe queries
+├── primitives/            # Basic UI components (buttons, inputs)
+├── molecules/             # Combined primitives (search bars, cards)
+├── organisms/             # Complex components (headers, forms)
+├── templates/             # Page layouts
+├── bounded-contexts/      # Domain logic (Rust → WASM)
+├── scripts/               # Build and verification tools
+├── reports/               # Task reports and documentation
+│   └── blocked/          # Blocked task reports
+└── DESIGN_SYSTEM.md      # This file
 ```
 
-## Testing Requirements
+### Critical Rule: No Nesting
 
-All UI components must be tested in Chrome before marking tasks complete (Policy #10).
+The system must **never** have nested `harmony-design/harmony-design/` directories. This can happen during:
+- Git operations (clone, merge)
+- Manual file moves
+- Build script errors
 
-**Test Coverage:**
-- Default, hover, focus, active, disabled states
-- Error states, loading states, empty states (for complex components)
-- Performance: 60fps for animations (use Chrome DevTools Performance panel)
+**Verification Tool:** Run `scripts/verify-structure.ps1` to check for nesting issues.
 
-**Retesting Required When:**
-- Design spec (.pen file) changes for implemented component
-- Composition relationships change
-- Lifecycle state advances to `tested`
+**Fix Tool:** If nesting is detected, run `scripts/fix-nested-structure.ps1` to automatically correct it.
 
 ## Performance Budgets
 
-**Absolute Constraints:**
-- Render: 16ms per frame (60fps)
-- Memory: 50MB WASM heap maximum
-- Load: 200ms initial load time
+Every component must meet these limits:
 
-**Architecture:**
-- Core logic: Rust → WASM
-- UI rendering: Vanilla HTML/CSS/JS with Web Components
-- No runtime npm dependencies
-- No frameworks (React, Vue, etc.)
+- **Render Budget:** 16ms per frame (60fps)
+- **Memory Budget:** 50MB WASM heap maximum
+- **Load Budget:** 200ms initial load time
 
-## Event-Driven Architecture
+See [Performance Testing](#performance-testing) for verification methods.
 
-**Pattern:** UI components publish events → EventBus routes → Bounded Contexts handle
+## Architecture Principles
 
-**UI Components:**
+### Technology Boundaries
+
+**Rust → WASM** for:
+- Bounded contexts (domain logic)
+- Graph engine
+- Audio processing
+
+**Vanilla HTML/CSS/JS** for:
+- UI rendering
+- DOM manipulation
+- Component interfaces
+
+**Python** for (development only):
+- Test servers (pytest)
+- Build scripts
+- Dev tools
+- Prototypes
+
+**npm packages** for (development only):
+- Build tools
+- Dev servers
+- Testing frameworks
+
+### Event-Driven Communication
+
+Components never call bounded contexts directly. All communication flows through the EventBus.
+
+**Pattern:**
+1. User interacts with component
+2. Component publishes event to EventBus
+3. EventBus routes to bounded context
+4. Bounded context processes and publishes result
+5. Component subscribes to result and updates UI
+
+See: [`src/event-bus.js`](src/event-bus.js)
+
+## Component Development
+
+### Web Components with Shadow DOM
+
+All UI components use native Web Components with shadow DOM for encapsulation.
+
+**Basic Structure:**
 ```javascript
-// Components publish, never call BCs directly
-button.addEventListener('click', () => {
-  eventBus.publish('PlayRequested', { trackId: '123' });
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
+    this.render();
+  }
+  
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>/* scoped styles */</style>
+      <div>/* component markup */</div>
+    `;
+  }
+}
+customElements.define('my-component', MyComponent);
+```
+
+### Testing Requirements
+
+Before marking any component task complete:
+
+1. **Test in Chrome** - All components must be manually tested
+2. **Test all states:**
+   - Default, hover, focus, active, disabled
+   - Error states, loading states, empty states (if applicable)
+3. **Performance testing:**
+   - Use Chrome DevTools Performance panel
+   - Verify 60fps for animations
+   - Check memory usage
+
+### Event Publishing Pattern
+
+Components publish events, never call methods directly:
+
+```javascript
+// In component
+this.dispatchEvent(new CustomEvent('action-requested', {
+  bubbles: true,
+  composed: true,
+  detail: { action: 'play', trackId: 123 }
+}));
+```
+
+See: [`primitives/`](primitives/) for examples
+
+## Bounded Contexts
+
+Domain logic lives in Rust and compiles to WASM. Each bounded context:
+
+1. Subscribes to command events
+2. Processes business logic
+3. Publishes result events
+
+**Pattern:**
+```javascript
+// Subscribe to commands
+eventBus.subscribe('PlayCommand', (event) => {
+  // Process in WASM
+  const result = wasmModule.play(event.detail.trackId);
+  
+  // Publish result
+  eventBus.publish('PlaybackStarted', { trackId: result.id });
 });
 ```
 
-**Bounded Contexts:**
-```rust
-// BCs subscribe to commands, publish results
-eventBus.subscribe('PlayRequested', handle_play);
-// ... process ...
-eventBus.publish('PlaybackStarted', { trackId: '123' });
-```
+See: [`bounded-contexts/`](bounded-contexts/)
 
-**Debugging:** EventBusComponent available on every page via `Ctrl+Shift+E`
+## Schema Management
+
+**Critical:** Never edit generated Rust code directly.
+
+**Process:**
+1. Navigate to `harmony-schemas/`
+2. Modify TypeScript schema
+3. Run codegen: `npm run codegen`
+4. Verify Rust compilation
+5. Commit schema AND generated code together
+
+CI will fail if schema changes but generated code is stale.
+
+## EventBus Debugging
+
+The EventBusComponent is available on every page for debugging.
+
+**Access:** Press `Ctrl+Shift+E` to toggle visibility
+
+**Features:**
+- View all published events
+- Inspect event payloads
+- Monitor subscriber activity
+- See validation errors
+
+All EventBus errors log to console with context:
+- Event type
+- Source component
+- Payload data
+- Error message
+
+See: [`src/event-bus.js`](src/event-bus.js)
 
 ## Documentation Standards
 
+This file (`DESIGN_SYSTEM.md`) is the **single source of truth** for system documentation.
+
+**Requirements:**
 - Written in B1-level English (simple, clear)
 - Logical sections per concern
 - Concise but friendly tone
 - Relative links to code files
 - Minimal code samples (code lives in files)
-- Two-way references: docs ↔ code
+
+**Two-way references:**
+- Documentation links to code files
+- Code comments point to relevant doc sections
+
+**Mandatory:** Every task must update this file before completion.
 
 ## Quality Gates
 
-Before completing any task:
+Before any task is complete:
 
-1. ✓ Composition rules validated
-2. ✓ Performance budgets met
-3. ✓ UI components tested in Chrome (all states)
-4. ✓ Documentation updated (this file)
-5. ✓ Changes committed and pushed
-6. ✓ No technical debt introduced
+1. ✓ Code compiles/runs without errors
+2. ✓ Component tested in Chrome (if UI component)
+3. ✓ Performance budgets met
+4. ✓ DESIGN_SYSTEM.md updated
+5. ✓ Changes committed
+6. ✓ Changes pushed to remote
 
-## Related Documentation
+## Blocked Tasks
 
-- [Tools README](tools/README.md) - Detailed tool documentation
-- [Blocked Tasks](reports/blocked/) - Tasks awaiting enablement
-- Schema files in `harmony-schemas/src/` - Type definitions
+If a task cannot be completed:
 
-## Recent Changes
+1. Create report: `reports/blocked/{task_id}.md`
+2. Include:
+   - Reason for blockage
+   - Attempted solutions
+   - Recommended enabling work
+3. Await further instructions OR create enabling task
 
-- Composition validation tool with test suite
-- Component dependency tracing
-- Lifecycle state tracking
-- Design spec to implementation linking
-- Query filtering by level, state, tokens
+## Scripts and Tools
+
+### Directory Structure Verification
+
+**Check structure:** `scripts/verify-structure.ps1`
+- Detects nested directories
+- Verifies expected folders exist
+- Checks critical files present
+
+**Fix nesting:** `scripts/fix-nested-structure.ps1`
+- Automatically moves files from nested directories
+- Removes empty nested folders
+- Interactive confirmation before changes
+
+**When to run:**
+- After git operations (clone, pull, merge)
+- Before starting new tasks
+- When directory structure seems incorrect
+- As part of CI/CD pipeline
+
+## Getting Started
+
+1. Clone repository
+2. Run `scripts/verify-structure.ps1` to check setup
+3. Review this documentation
+4. Explore [`primitives/`](primitives/) for component examples
+5. Check [`src/event-bus.js`](src/event-bus.js) for event patterns
+
+## Common Issues
+
+**Nested directories:** Run `scripts/verify-structure.ps1` then `scripts/fix-nested-structure.ps1` if needed.
+
+**Schema changes not reflecting:** Ensure you ran codegen and committed generated files together.
+
+**Component not responding:** Check EventBus console logs for validation errors.
+
+**Performance issues:** Use Chrome DevTools Performance panel to identify bottlenecks.
+
+---
+
+*This documentation is maintained as part of every task completion. Last updated: task-manual-fix-directory-structure*
