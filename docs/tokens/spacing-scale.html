@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spacing Scale - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f5f5;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #2563eb;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: #1e40af;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+
+    .description {
+      font-size: 1.1rem;
+      color: #4b5563;
+      margin-bottom: 2rem;
+      line-height: 1.8;
+    }
+
+    .spacing-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .spacing-item {
+      display: grid;
+      grid-template-columns: 80px 120px 1fr;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .spacing-label {
+      font-weight: 600;
+      color: #374151;
+      font-family: 'Courier New', monospace;
+    }
+
+    .spacing-value {
+      color: #6b7280;
+      font-family: 'Courier New', monospace;
+    }
+
+    .spacing-visual {
+      height: 32px;
+      background: #2563eb;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .spacing-item:hover .spacing-visual {
+      background: #1d4ed8;
+      transform: scaleY(1.1);
+    }
+
+    .usage-section {
+      background: #eff6ff;
+      padding: 1.5rem;
+      border-radius: 6px;
+      border-left: 4px solid #2563eb;
+      margin: 1.5rem 0;
+    }
+
+    .usage-section h3 {
+      color: #1e40af;
+      margin-bottom: 0.75rem;
+    }
+
+    .usage-list {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .usage-list li {
+      padding: 0.5rem 0;
+      color: #374151;
+    }
+
+    .usage-list li::before {
+      content: "→ ";
+      color: #2563eb;
+      font-weight: bold;
+      margin-right: 0.5rem;
+    }
+
+    .semantic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .semantic-card {
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .semantic-name {
+      font-weight: 600;
+      color: #1e40af;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 0.5rem;
+    }
+
+    .semantic-value {
+      color: #6b7280;
+      font-size: 0.9rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .code-block {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1.5rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin: 1rem 0;
+    }
+
+    .code-comment {
+      color: #94a3b8;
+    }
+
+    .code-property {
+      color: #7dd3fc;
+    }
+
+    .code-value {
+      color: #86efac;
+    }
+
+    .example-box {
+      border: 2px dashed #cbd5e1;
+      padding: 2rem;
+      border-radius: 6px;
+      margin: 1rem 0;
+      background: white;
+    }
+
+    .example-title {
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 1rem;
+    }
+
+    .spaced-elements {
+      display: flex;
+      align-items: center;
+    }
+
+    .element {
+      background: #2563eb;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Spacing Scale</h1>
+    <p class="description">
+      The Harmony Design System uses a consistent spacing scale based on a 4px base unit. 
+      This creates visual rhythm and maintains consistency across all components and layouts.
+      The scale progresses from micro spacing (4px) to large layout gaps (96px).
+    </p>
+
+    <h2>Base Scale</h2>
+    <div class="spacing-grid" id="spacingGrid"></div>
+
+    <div class="usage-section">
+      <h3>Scale Guidelines</h3>
+      <ul class="usage-list">
+        <li><strong>0:</strong> No spacing - use for resets and zero-gap layouts</li>
+        <li><strong>1-3 (4-12px):</strong> Micro spacing - inside components, between text and icons</li>
+        <li><strong>4-6 (16-24px):</strong> Small spacing - component padding, inline gaps</li>
+        <li><strong>8-12 (32-48px):</strong> Medium spacing - between components, section padding</li>
+        <li><strong>16-24 (64-96px):</strong> Large spacing - page sections, major layout gaps</li>
+      </ul>
+    </div>
+
+    <h2>Semantic Spacing Tokens</h2>
+    <p class="description">
+      Use semantic tokens for consistent component spacing. These map to scale values but provide meaningful names.
+    </p>
+    <div class="semantic-grid" id="semanticGrid"></div>
+
+    <h2>Usage Examples</h2>
+    
+    <div class="usage-section">
+      <h3>JavaScript</h3>
+      <div class="code-block">
+<span class="code-comment">// Import spacing functions</span>
+<span class="code-property">import</span> { getSpacing, getSemanticSpacing } <span class="code-property">from</span> <span class="code-value">'./tokens/spacing.js'</span>;
+
+<span class="code-comment">// Use scale values</span>
+<span class="code-property">const</span> gap = getSpacing(<span class="code-value">4</span>); <span class="code-comment">// 16px</span>
+
+<span class="code-comment">// Use semantic tokens</span>
+<span class="code-property">const</span> padding = getSemanticSpacing(<span class="code-value">'componentPaddingMedium'</span>); <span class="code-comment">// 16px</span>
+
+<span class="code-comment">// Apply to element</span>
+element.style.padding = <span class="code-value">`${padding}px`</span>;
+      </div>
+    </div>
+
+    <div class="usage-section">
+      <h3>CSS Custom Properties</h3>
+      <div class="code-block">
+<span class="code-comment">/* Use CSS variables */</span>
+.<span class="code-property">component</span> {
+  <span class="code-property">padding</span>: <span class="code-value">var(--spacing-4)</span>; <span class="code-comment">/* 16px */</span>
+  <span class="code-property">gap</span>: <span class="code-value">var(--spacing-gapMedium)</span>; <span class="code-comment">/* 16px */</span>
+}
+
+.<span class="code-property">section</span> {
+  <span class="code-property">margin-bottom</span>: <span class="code-value">var(--spacing-12)</span>; <span class="code-comment">/* 48px */</span>
+}
+      </div>
+    </div>
+
+    <h2>Visual Examples</h2>
+    
+    <div class="example-box">
+      <div class="example-title">Gap Between Elements (spacing-4 = 16px)</div>
+      <div class="spaced-elements" style="gap: 16px;">
+        <div class="element">Button 1</div>
+        <div class="element">Button 2</div>
+        <div class="element">Button 3</div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-title">Gap Between Elements (spacing-8 = 32px)</div>
+      <div class="spaced-elements" style="gap: 32px;">
+        <div class="element">Button 1</div>
+        <div class="element">Button 2</div>
+        <div class="element">Button 3</div>
+      </div>
+    </div>
+
+    <div class="example-box">
+      <div class="example-title">Component Padding (spacing-6 = 24px)</div>
+      <div class="element" style="padding: 24px;">
+        Component with 24px padding
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { spacing, semanticSpacing } from '../../tokens/spacing.js';
+
+    // Render base scale
+    const spacingGrid = document.getElementById('spacingGrid');
+    Object.entries(spacing).forEach(([key, value]) => {
+      const item = document.createElement('div');
+      item.className = 'spacing-item';
+      item.innerHTML = `
+        <div class="spacing-label">spacing-${key}</div>
+        <div class="spacing-value">${value}px</div>
+        <div class="spacing-visual" style="width: ${value}px;"></div>
+      `;
+      spacingGrid.appendChild(item);
+    });
+
+    // Render semantic tokens
+    const semanticGrid = document.getElementById('semanticGrid');
+    Object.entries(semanticSpacing).forEach(([key, value]) => {
+      const card = document.createElement('div');
+      card.className = 'semantic-card';
+      card.innerHTML = `
+        <div class="semantic-name">${key}</div>
+        <div class="semantic-value">${value}px (spacing-${Object.keys(spacing).find(k => spacing[k] === value)})</div>
+      `;
+      semanticGrid.appendChild(card);
+    });
+  </script>
+</body>
+</html>
