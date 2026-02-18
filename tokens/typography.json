@@ -1,0 +1,121 @@
+{
+  "typography": {
+    "font-family": {
+      "base": {
+        "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        "type": "fontFamily"
+      },
+      "mono": {
+        "value": "'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace",
+        "type": "fontFamily"
+      }
+    },
+    "font-size": {
+      "h1": {
+        "value": "2.5rem",
+        "type": "fontSize",
+        "comment": "40px"
+      },
+      "h2": {
+        "value": "2rem",
+        "type": "fontSize",
+        "comment": "32px"
+      },
+      "h3": {
+        "value": "1.5rem",
+        "type": "fontSize",
+        "comment": "24px"
+      },
+      "h4": {
+        "value": "1.25rem",
+        "type": "fontSize",
+        "comment": "20px"
+      },
+      "h5": {
+        "value": "1.125rem",
+        "type": "fontSize",
+        "comment": "18px"
+      },
+      "h6": {
+        "value": "1rem",
+        "type": "fontSize",
+        "comment": "16px"
+      },
+      "body-large": {
+        "value": "1.125rem",
+        "type": "fontSize",
+        "comment": "18px"
+      },
+      "body": {
+        "value": "1rem",
+        "type": "fontSize",
+        "comment": "16px"
+      },
+      "body-small": {
+        "value": "0.875rem",
+        "type": "fontSize",
+        "comment": "14px"
+      },
+      "label": {
+        "value": "0.875rem",
+        "type": "fontSize",
+        "comment": "14px"
+      },
+      "caption": {
+        "value": "0.75rem",
+        "type": "fontSize",
+        "comment": "12px"
+      }
+    },
+    "font-weight": {
+      "light": {
+        "value": "300",
+        "type": "fontWeight"
+      },
+      "regular": {
+        "value": "400",
+        "type": "fontWeight"
+      },
+      "medium": {
+        "value": "500",
+        "type": "fontWeight"
+      },
+      "semibold": {
+        "value": "600",
+        "type": "fontWeight"
+      },
+      "bold": {
+        "value": "700",
+        "type": "fontWeight"
+      }
+    },
+    "line-height": {
+      "tight": {
+        "value": "1.2",
+        "type": "lineHeight"
+      },
+      "normal": {
+        "value": "1.5",
+        "type": "lineHeight"
+      },
+      "relaxed": {
+        "value": "1.75",
+        "type": "lineHeight"
+      }
+    },
+    "letter-spacing": {
+      "tight": {
+        "value": "-0.02em",
+        "type": "letterSpacing"
+      },
+      "normal": {
+        "value": "0",
+        "type": "letterSpacing"
+      },
+      "wide": {
+        "value": "0.02em",
+        "type": "letterSpacing"
+      }
+    }
+  }
+}
