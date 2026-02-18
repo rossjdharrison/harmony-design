@@ -81,6 +81,97 @@ Six elevation levels (none, sm, default, md, lg, xl) create visual hierarchy thr
 See implementation: [tokens/shadow.js](./tokens/shadow.js)  
 Interactive demo: [docs/tokens/shadow.html](./docs/tokens/shadow.html)
 
+### Text Color Tokens
+
+Text color tokens provide semantic naming for text colors across different UI contexts and themes. These tokens automatically adapt between light and dark themes while maintaining proper contrast ratios.
+
+**Token Reference:** `tokens/text-color-tokens.js`
+**Visual Documentation:** `docs/tokens/text-color.html`
+
+#### Available Tokens
+
+- **text-primary**: Primary text color for body copy, headings, and main content
+  - Light: gb(17, 24, 39) (near-black for maximum readability)
+  - Dark: gb(249, 250, 251) (near-white for dark backgrounds)
+
+- **text-secondary**: Secondary text color for supporting content and labels
+  - Light: gb(75, 85, 99) (medium gray for hierarchy)
+  - Dark: gb(209, 213, 219) (light gray maintaining contrast)
+
+- **text-tertiary**: Tertiary text color for placeholder text and hints
+  - Light: gb(156, 163, 175) (lighter gray for minimal emphasis)
+  - Dark: gb(107, 114, 128) (medium gray for subtle content)
+
+- **text-disabled**: Disabled text color for inactive content
+  - Light: gb(209, 213, 219) (very light gray indicating unavailability)
+  - Dark: gb(75, 85, 99) (darker gray for disabled state)
+
+- **text-inverse**: Inverse text color for contrasting backgrounds
+  - Light: gb(255, 255, 255) (white text on dark backgrounds)
+  - Dark: gb(17, 24, 39) (dark text on light backgrounds in dark mode)
+
+#### Usage in CSS
+
+`css
+.heading {
+  color: var(--text-primary);
+}
+
+.label {
+  color: var(--text-secondary);
+}
+
+.placeholder {
+  color: var(--text-tertiary);
+}
+
+.disabled {
+  color: var(--text-disabled);
+}
+
+.button-text {
+  color: var(--text-inverse);
+}
+`
+
+#### Usage in JavaScript
+
+`javascript
+import { TEXT_COLOR_TOKENS, getTextColor, applyTextColorTokens } from './tokens/text-color-tokens.js';
+
+// Get specific color value
+const primaryColor = getTextColor('text-primary', 'light');
+element.style.color = primaryColor;
+
+// Apply all tokens to document
+applyTextColorTokens('dark');
+
+// Validate token name
+import { isValidTextColorToken } from './tokens/text-color-tokens.js';
+if (isValidTextColorToken('text-primary')) {
+  // Token exists
+}
+`
+
+#### Accessibility Considerations
+
+All text color tokens are designed to meet WCAG 2.1 Level AA contrast requirements:
+- Primary text: 7:1 contrast ratio (AAA)
+- Secondary text: 4.5:1 contrast ratio (AA)
+- Tertiary text: Use for non-critical content only
+- Disabled text: Intentionally lower contrast to indicate unavailability
+- Inverse text: Verified contrast on common background colors
+
+#### Theme Adaptation
+
+Text color tokens automatically adapt when theme changes. The system ensures:
+1. Consistent semantic meaning across themes
+2. Proper contrast ratios in both light and dark modes
+3. Smooth transitions between theme states
+4. Predictable behavior in mixed-theme contexts
+
+
+
 ## Components
 
 Components are built using Web Components with shadow DOM for encapsulation.
@@ -146,3 +237,55 @@ See development tools: [components/dev-tools/](./components/dev-tools/)
 Components must be tested in Chrome before completion, verifying all states (default, hover, focus, active, disabled).
 
 See test pages: [test-pages/](./test-pages/)
+
+### Surface State Tokens
+
+Surface state tokens define interactive state variations for surface elements. These tokens provide consistent visual feedback across all interactive components in the system.
+
+**Location:** 	okens/surface-state.css  
+**Documentation:** [Surface State Tokens Demo](docs/tokens/surface-state.html)
+
+**Available Tokens:**
+
+- **--surface-hover**: Applied when cursor hovers over interactive elements (opacity: 0.08)
+- **--surface-active**: Applied during click/press interaction (opacity: 0.12)
+- **--surface-selected**: Applied to selected or currently active items (opacity: 0.16)
+- **--surface-disabled**: Applied to non-interactive or disabled elements (opacity: 0.02)
+- **--surface-disabled-text**: Text color for disabled elements (opacity: 0.38)
+
+**Theme Support:**
+
+All surface state tokens have light and dark theme variants that automatically adapt based on the data-theme attribute.
+
+**Usage Example:**
+
+```css
+.button {
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.button:hover {
+  background: var(--surface-hover);
+}
+
+.button:active {
+  background: var(--surface-active);
+}
+
+.button[aria-selected="true"] {
+  background: var(--surface-selected);
+}
+
+.button:disabled {
+  background: var(--surface-disabled);
+  color: var(--surface-disabled-text);
+}
+```
+
+**Design Principles:**
+
+1. **Progressive Feedback**: States increase in visual prominence from hover ? active ? selected
+2. **Subtlety**: Hover states are subtle to avoid distraction
+3. **Clarity**: Selected states are clearly visible but not overwhelming
+4. **Accessibility**: Disabled states reduce prominence while maintaining readability
