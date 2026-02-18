@@ -1,0 +1,156 @@
+/**
+ * Glow Tokens
+ * 
+ * Defines glow effects for focus rings, active states, and selection highlights.
+ * Uses box-shadow with blur and spread for soft, luminous effects.
+ * 
+ * Pattern: --glow-{context}-{intensity}
+ * 
+ * Contexts:
+ * - focus: Focus rings for keyboard navigation (accessibility critical)
+ * - active: Active/pressed states for interactive elements
+ * - selection: Text and element selection highlights
+ * - hover: Subtle hover state glows
+ * 
+ * Intensities:
+ * - subtle: Minimal glow for secondary elements
+ * - default: Standard glow for most use cases
+ * - strong: Prominent glow for primary actions or alerts
+ * 
+ * @see DESIGN_SYSTEM.md#glow-tokens
+ * @module tokens/glow
+ */
+
+:root {
+  /* Focus Ring Glows - Accessibility Critical */
+  /* Primary focus (keyboard navigation) */
+  --glow-focus-subtle: 0 0 0 2px var(--color-primary-500),
+                       0 0 4px 0 rgba(59, 130, 246, 0.3);
+  
+  --glow-focus-default: 0 0 0 2px var(--color-primary-500),
+                        0 0 8px 0 rgba(59, 130, 246, 0.5);
+  
+  --glow-focus-strong: 0 0 0 3px var(--color-primary-500),
+                       0 0 12px 2px rgba(59, 130, 246, 0.6);
+
+  /* Error focus states */
+  --glow-focus-error: 0 0 0 2px var(--color-error-500),
+                      0 0 8px 0 rgba(239, 68, 68, 0.5);
+
+  /* Success focus states */
+  --glow-focus-success: 0 0 0 2px var(--color-success-500),
+                        0 0 8px 0 rgba(34, 197, 94, 0.5);
+
+  /* Warning focus states */
+  --glow-focus-warning: 0 0 0 2px var(--color-warning-500),
+                        0 0 8px 0 rgba(251, 191, 36, 0.5);
+
+  /* Active State Glows */
+  /* For pressed/active interactive elements */
+  --glow-active-subtle: 0 0 4px 0 rgba(59, 130, 246, 0.2),
+                        inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+  
+  --glow-active-default: 0 0 8px 0 rgba(59, 130, 246, 0.4),
+                         inset 0 2px 6px 0 rgba(0, 0, 0, 0.15);
+  
+  --glow-active-strong: 0 0 12px 2px rgba(59, 130, 246, 0.6),
+                        inset 0 3px 8px 0 rgba(0, 0, 0, 0.2);
+
+  /* Active states for semantic colors */
+  --glow-active-error: 0 0 8px 0 rgba(239, 68, 68, 0.4),
+                       inset 0 2px 6px 0 rgba(0, 0, 0, 0.15);
+
+  --glow-active-success: 0 0 8px 0 rgba(34, 197, 94, 0.4),
+                         inset 0 2px 6px 0 rgba(0, 0, 0, 0.15);
+
+  --glow-active-warning: 0 0 8px 0 rgba(251, 191, 36, 0.4),
+                         inset 0 2px 6px 0 rgba(0, 0, 0, 0.15);
+
+  /* Selection Highlight Glows */
+  /* For selected text, list items, or elements */
+  --glow-selection-subtle: 0 0 0 1px var(--color-primary-400),
+                           0 0 8px 0 rgba(59, 130, 246, 0.2);
+  
+  --glow-selection-default: 0 0 0 2px var(--color-primary-400),
+                            0 0 12px 0 rgba(59, 130, 246, 0.3);
+  
+  --glow-selection-strong: 0 0 0 2px var(--color-primary-500),
+                           0 0 16px 2px rgba(59, 130, 246, 0.4);
+
+  /* Multi-selection (multiple items selected) */
+  --glow-selection-multi: 0 0 0 2px var(--color-primary-300),
+                          0 0 8px 0 rgba(59, 130, 246, 0.25);
+
+  /* Hover State Glows */
+  /* Subtle glows for hover feedback */
+  --glow-hover-subtle: 0 0 8px 0 rgba(59, 130, 246, 0.15);
+  
+  --glow-hover-default: 0 0 12px 0 rgba(59, 130, 246, 0.25);
+  
+  --glow-hover-strong: 0 0 16px 2px rgba(59, 130, 246, 0.35);
+
+  /* Special Context Glows */
+  /* For drag and drop targets */
+  --glow-drop-target: 0 0 0 2px var(--color-primary-400),
+                      0 0 16px 4px rgba(59, 130, 246, 0.4);
+
+  /* For invalid/error states */
+  --glow-invalid: 0 0 0 2px var(--color-error-500),
+                  0 0 12px 0 rgba(239, 68, 68, 0.4);
+
+  /* For disabled states (very subtle) */
+  --glow-disabled: 0 0 4px 0 rgba(156, 163, 175, 0.1);
+
+  /* Audio-specific glows */
+  --glow-audio-active: 0 0 12px 2px rgba(34, 197, 94, 0.5);
+  --glow-audio-clipping: 0 0 12px 2px rgba(239, 68, 68, 0.6);
+  --glow-audio-muted: 0 0 8px 0 rgba(156, 163, 175, 0.3);
+
+  /* Performance note: Glows use box-shadow which is GPU-accelerated */
+  /* Avoid animating glow properties; use opacity transitions instead */
+}
+
+/* Dark theme overrides */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Increase glow intensity in dark mode for visibility */
+    --glow-focus-default: 0 0 0 2px var(--color-primary-400),
+                          0 0 12px 2px rgba(96, 165, 250, 0.6);
+    
+    --glow-focus-strong: 0 0 0 3px var(--color-primary-400),
+                         0 0 16px 4px rgba(96, 165, 250, 0.7);
+
+    --glow-selection-default: 0 0 0 2px var(--color-primary-400),
+                              0 0 16px 2px rgba(96, 165, 250, 0.4);
+
+    --glow-hover-default: 0 0 16px 2px rgba(96, 165, 250, 0.3);
+  }
+}
+
+/* High contrast mode - stronger, more defined glows */
+@media (prefers-contrast: high) {
+  :root {
+    --glow-focus-default: 0 0 0 3px var(--color-primary-500),
+                          0 0 0 6px rgba(59, 130, 246, 0.3);
+    
+    --glow-selection-default: 0 0 0 3px var(--color-primary-500),
+                              0 0 0 6px rgba(59, 130, 246, 0.3);
+  }
+}
+
+/* Reduced motion - remove blur effects, keep solid rings */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --glow-focus-subtle: 0 0 0 2px var(--color-primary-500);
+    --glow-focus-default: 0 0 0 2px var(--color-primary-500);
+    --glow-focus-strong: 0 0 0 3px var(--color-primary-500);
+    
+    --glow-selection-subtle: 0 0 0 1px var(--color-primary-400);
+    --glow-selection-default: 0 0 0 2px var(--color-primary-400);
+    --glow-selection-strong: 0 0 0 2px var(--color-primary-500);
+    
+    --glow-hover-subtle: none;
+    --glow-hover-default: 0 0 0 1px var(--color-primary-400);
+    --glow-hover-strong: 0 0 0 2px var(--color-primary-400);
+  }
+}
