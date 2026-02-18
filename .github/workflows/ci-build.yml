@@ -1,8 +1,9 @@
 name: CI Build Pipeline
 
 # harmony-design is a vanilla JS / no-npm design system.
-# There is no package.json or Cargo.toml here — all checks use Node.js
-# built-in APIs only.  No npm ci / cargo build steps.
+# package.json exists only to set "type": "module" so ESM test files load correctly.
+# There is no Cargo.toml and no npm dependencies.  No npm ci / cargo build steps.
+# Inline CI scripts use --input-type=commonjs because they use require().
 
 on:
   push:
@@ -28,7 +29,7 @@ jobs:
         # Vanilla-JS policy: all imports must be relative paths.
         # Uses only Node.js built-ins — no npm install needed.
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const fs = require('fs');
           const path = require('path');
 
@@ -64,7 +65,7 @@ jobs:
 
       - name: Check for forbidden framework usage
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const { execSync } = require('child_process');
           const patterns = ['import.*react', 'import.*vue', 'import.*svelte', 'import.*angular'];
           let found = false;
@@ -82,7 +83,7 @@ jobs:
 
       - name: Verify key token files exist
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const fs = require('fs');
           const required = [
             'tokens/index.js',
@@ -114,8 +115,10 @@ jobs:
 
       - name: Discover and run JS test files
         # Runs any *.test.js file using Node.js directly — no test runner needed.
+        # Test files use ESM import syntax; package.json "type":"module" enables them.
+        # This discovery script itself uses require() so needs --input-type=commonjs.
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const { execSync } = require('child_process');
           const fs = require('fs');
           const path = require('path');
@@ -170,7 +173,7 @@ jobs:
 
       - name: Validate component file structure
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const fs = require('fs');
           const path = require('path');
 
@@ -195,7 +198,7 @@ jobs:
 
       - name: Check tokens build output
         run: |
-          node - <<'EOF'
+          node --input-type=commonjs - <<'EOF'
           const fs = require('fs');
 
           // Verify token accessor and type declarations exist
