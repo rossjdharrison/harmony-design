@@ -6,6 +6,39 @@ A complete design system for building audio production interfaces with consisten
 
 Harmony is a design system built for professional audio applications. It provides design tokens, reusable components, and clear patterns for creating interfaces that are both beautiful and functional.
 
+
+### Typography Tokens
+
+The typography system provides a consistent font size scale for all text elements.
+
+**Font Size Scale** (8 steps):
+- `xs` (10px) - Captions, labels, helper text
+- `sm` (12px) - Secondary information, metadata
+- `base` (14px) - Body text, default UI text
+- `md` (16px) - Emphasized body text, small headings
+- `lg` (18px) - Subheadings, card titles
+- `xl` (20px) - Section headings, prominent labels
+- `2xl` (24px) - Page section titles
+- `3xl` (30px) - Page titles, hero text
+
+Each size includes optimized line heights for readability (ratios between 1.27-1.5).
+
+**Files**:
+- Implementation: [tokens/typography.js](tokens/typography.js)
+- Visual Documentation: [docs/tokens/font-size-scale.html](docs/tokens/font-size-scale.html)
+- Tests: [tokens/typography.test.html](tokens/typography.test.html)
+
+**Usage**:
+```javascript
+import { getFontSize, getTextStyle } from './tokens/typography.js';
+
+// Get font size
+const size = getFontSize('xl'); // '20px'
+
+// Get complete text style
+const style = getTextStyle('xl', 'bold');
+// { fontSize: '20px', lineHeight: '28px', fontWeight: '700', letterSpacing: '0' }
+```
 **Key Principles:**
 - **Performance First**: 60fps animations, <16ms render budget, <200ms load time
 - **Accessibility**: WCAG 2.1 AA compliance, keyboard navigation, screen reader support
