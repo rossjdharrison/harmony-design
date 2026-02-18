@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Accessor Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+    .suite { margin-bottom: 2rem; }
+    .suite-name { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; border-bottom: 2px solid #e0e0e0; padding-bottom: 0.25rem; }
+    .result { display: flex; gap: 0.5rem; align-items: baseline; padding: 0.2rem 0; font-size: 0.875rem; }
+    .pass { color: #2e7d32; }
+    .fail { color: #c62828; }
+    .badge { font-size: 0.75rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 3px; }
+    .badge.pass { background: #e8f5e9; color: #2e7d32; }
+    .badge.fail { background: #ffebee; color: #c62828; }
+    .summary { margin-top: 2rem; padding: 1rem; border-radius: 6px; font-weight: 600; }
+    .summary.all-pass { background: #e8f5e9; color: #1b5e20; }
+    .summary.has-fail { background: #ffebee; color: #b71c1c; }
+    code { background: #f5f5f5; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <h1>Token Accessor — Test Suite</h1>
+  <div id="output"></div>
+
+  <script type="module">
+    import {
+      getToken,
+      getTokenResult,
+      getAllTokens,
+      hasToken,
+      getTokenGroup,
+      resolveColor,
+      flattenTokens,
+      generateCSSVariables,
+      colors,
+      spacing,
+      fontWeights,
+      zIndex,
+      duration,
+    } from './token-accessor.js';
+
+    // ── Minimal test framework ─────────────────────────────────────────────
+
+    const suites = [];
+    let currentSuite = null;
+
+    function describe(name, fn) {
+      currentSuite = { name, tests: [] };
+      suites.push(currentSuite);
+      fn();
+    }
+
+    function it(label, fn) {
+      try {
+        fn();
+        currentSuite.tests.push({ label, pass: true });
+      } catch (err) {
+        currentSuite.tests.push({ label, pass: false, error: err.message });
+      }
+    }
+
+    function expect(actual) {
+      return {
+        toBe(expected) {
+          if (actual !== expected)
+            throw new Error(`Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+        },
+        toEqual(expected) {
+          const a = JSON.stringify(actual), b = JSON.stringify(expected);
+          if (a !== b) throw new Error(`Expected ${b}, got ${a}`);
+        },
+        toBeUndefined() {
+          if (actual !== undefined)
+            throw new Error(`Expected undefined, got ${JSON.stringify(actual)}`);
+        },
+        toBeTruthy() {
+          if (!actual) throw new Error(`Expected truthy, got ${JSON.stringify(actual)}`);
+        },
+        toBeFalsy() {
+          if (actual) throw new Error(`Expected falsy, got ${JSON.stringify(actual)}`);
+        },
+        toBeGreaterThan(n) {
+          if (actual <= n) throw new Error(`Expected > ${n}, got ${actual}`);
+        },
+        toContain(substr) {
+          if (!String(actual).includes(substr))
+            throw new Error(`Expected "${actual}" to contain "${substr}"`);
+        },
+        toBeTypeOf(t) {
+          if (typeof actual !== t)
+            throw new Error(`Expected typeof ${t}, got typeof ${typeof actual}`);
+        },
+      };
+    }
+
+    // ── Tests ──────────────────────────────────────────────────────────────
+
+    describe('getToken — basic path resolution', () => {
+      it('resolves a known color token', () => {
+        expect(getToken('colors.primary.500')).toBe('#2196f3');
+      });
+      it('resolves a spacing token', () => {
+        expect(getToken('spacing.md')).toBe('16px');
+      });
+      it('resolves a numeric font weight', () => {
+        expect(getToken('fontWeights.bold')).toBe(700);
+      });
+      it('resolves a numeric z-index', () => {
+        expect(getToken('zIndex.modal')).toBe(1400);
+      });
+      it('resolves a duration token', () => {
+        expect(getToken('duration.fast')).toBe('150ms');
+      });
+      it('returns undefined for unknown path', () => {
+        expect(getToken('colors.does.not.exist')).toBeUndefined();
+      });
+      it('returns undefined for empty segments', () => {
+        expect(getToken('')).toBeUndefined();
+      });
+    });
+
+    describe('getTokenResult — metadata wrapper', () => {
+      it('returns found:true for known path', () => {
+        const r = getTokenResult('colors.primary.500');
+        expect(r.found).toBe(true);
+        expect(r.value).toBe('#2196f3');
+        expect(r.path).toBe('colors.primary.500');
+      });
+      it('returns found:false for unknown path', () => {
+        const r = getTokenResult('nope.nope.nope');
+        expect(r.found).toBe(false);
+        expect(r.value).toBeUndefined();
+      });
+    });
+
+    describe('hasToken', () => {
+      it('returns true for known token', () => {
+        expect(hasToken('spacing.lg')).toBe(true);
+      });
+      it('returns false for unknown token', () => {
+        expect(hasToken('spacing.supergiant')).toBe(false);
+      });
+    });
+
+    describe('getTokenGroup', () => {
+      it('returns an object for a namespace', () => {
+        const group = getTokenGroup('colors.primary');
+        expect(typeof group).toBe('object');
+        expect(group['500']).toBe('#2196f3');
+      });
+      it('returns undefined for leaf node (not a group)', () => {
+        const result = getTokenGroup('colors.primary.500');
+        expect(result).toBeUndefined();
+      });
+    });
+
+    describe('resolveColor', () => {
+      it('resolves a color by relative color path', () => {
+        expect(resolveColor('primary.500')).toBe('#2196f3');
+      });
+      it('returns fallback for unknown color', () => {
+        expect(resolveColor('primary.9999', 'transparent')).toBe('transparent');
+      });
+      it('returns empty string fallback by default', () => {
+        expect(resolveColor('nope.nope')).toBe('');
+      });
+    });
+
+    describe('flattenTokens', () => {
+      it('produces a flat map with dot paths as keys', () => {
+        const flat = flattenTokens('spacing');
+        expect(flat['spacing.none']).toBe('0');
+        expect(flat['spacing.md']).toBe('16px');
+      });
+      it('only contains primitive values (no nested objects)', () => {
+        const flat = flattenTokens('colors');
+        for (const [, v] of Object.entries(flat)) {
+          const t = typeof v;
+          if (t !== 'string' && t !== 'number')
+            throw new Error(`Expected primitive, got ${t} for value ${v}`);
+        }
+      });
+      it('returns all tokens when called with no prefix', () => {
+        const flat = flattenTokens();
+        expect(Object.keys(flat).length).toBeGreaterThan(50);
+      });
+    });
+
+    describe('generateCSSVariables', () => {
+      it('produces a non-empty string', () => {
+        const css = generateCSSVariables();
+        expect(css.length).toBeGreaterThan(0);
+      });
+      it('uses the provided namespace prefix', () => {
+        const css = generateCSSVariables('hds');
+        expect(css).toContain('--hds-');
+      });
+      it('replaces dots in paths with hyphens', () => {
+        const css = generateCSSVariables('hds');
+        // should have hds-colors-primary-500 not hds-colors.primary.500
+        expect(css).toContain('--hds-colors-primary-500');
+      });
+      it('uses default prefix when none provided', () => {
+        const css = generateCSSVariables();
+        expect(css).toContain('--token-');
+      });
+    });
+
+    describe('getAllTokens', () => {
+      it('returns an object with all token groups', () => {
+        const all = getAllTokens();
+        expect(typeof all).toBe('object');
+        expect(typeof all.colors).toBe('object');
+        expect(typeof all.spacing).toBe('object');
+        expect(typeof all.fontWeights).toBe('object');
+      });
+    });
+
+    describe('direct token group re-exports', () => {
+      it('colors.primary.500 is accessible directly', () => {
+        expect(colors.primary['500']).toBe('#2196f3');
+      });
+      it('spacing.md is accessible directly', () => {
+        expect(spacing.md).toBe('16px');
+      });
+      it('fontWeights.bold is 700', () => {
+        expect(fontWeights.bold).toBe(700);
+      });
+      it('zIndex.modal is 1400', () => {
+        expect(zIndex.modal).toBe(1400);
+      });
+    });
+
+    // ── Render results ─────────────────────────────────────────────────────
+
+    const output = document.getElementById('output');
+    let passed = 0, failed = 0;
+
+    for (const suite of suites) {
+      const div = document.createElement('div');
+      div.className = 'suite';
+      div.innerHTML = `<div class="suite-name">${suite.name}</div>`;
+
+      for (const t of suite.tests) {
+        if (t.pass) passed++; else failed++;
+        const r = document.createElement('div');
+        r.className = `result ${t.pass ? 'pass' : 'fail'}`;
+        r.innerHTML = `
+          <span class="badge ${t.pass ? 'pass' : 'fail'}">${t.pass ? 'PASS' : 'FAIL'}</span>
+          <span>${t.label}</span>
+          ${t.error ? `<code>${t.error}</code>` : ''}
+        `;
+        div.appendChild(r);
+      }
+      output.appendChild(div);
+    }
+
+    const summary = document.createElement('div');
+    summary.className = `summary ${failed === 0 ? 'all-pass' : 'has-fail'}`;
+    summary.textContent = failed === 0
+      ? `✓ All ${passed} tests passed`
+      : `✗ ${failed} failed, ${passed} passed`;
+    output.appendChild(summary);
+  </script>
+</body>
+</html>
