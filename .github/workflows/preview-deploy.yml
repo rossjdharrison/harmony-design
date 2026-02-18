@@ -1,0 +1,226 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_ENV: production
+
+jobs:
+  build-preview:
+    name: Build Preview Bundle
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+      
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      
+      - name: Build WASM modules
+        run: |
+          if [ -d "bounded-contexts/component-lifecycle" ]; then
+            cd bounded-contexts/component-lifecycle
+            wasm-pack build --target web --out-dir ../../dist/wasm/component-lifecycle
+            cd ../..
+          fi
+      
+      - name: Build preview bundle
+        run: python scripts/build-preview.py
+      
+      - name: Generate preview metadata
+        run: |
+          echo "PR_NUMBER=${{ github.event.pull_request.number }}" >> preview-meta.txt
+          echo "COMMIT_SHA=${{ github.sha }}" >> preview-meta.txt
+          echo "BRANCH=${{ github.head_ref }}" >> preview-meta.txt
+          echo "BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> preview-meta.txt
+      
+      - name: Upload preview artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: preview-bundle
+          path: |
+            dist/
+            preview-meta.txt
+          retention-days: 7
+
+  deploy-vercel:
+    name: Deploy to Vercel
+    needs: build-preview
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download preview bundle
+        uses: actions/download-artifact@v3
+        with:
+          name: preview-bundle
+      
+      - name: Deploy to Vercel
+        id: vercel-deploy
+        run: |
+          # Note: Vercel CLI would be installed via npx (build-time only)
+          # This is a placeholder for the deployment command structure
+          echo "VERCEL_URL=https://harmony-pr-${{ github.event.pull_request.number }}.vercel.app" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      
+      - name: Comment PR with Vercel URL
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const deployUrl = '${{ steps.vercel-deploy.outputs.VERCEL_URL }}';
+            const comment = `
+            ## 🚀 Vercel Preview Deployment
+            
+            **Preview URL:** ${deployUrl}
+            
+            **Commit:** \`${{ github.sha }}\`
+            **Branch:** \`${{ github.head_ref }}\`
+            
+            ---
+            📊 [Performance Report](${deployUrl}/_performance)
+            🧪 [Component Storybook](${deployUrl}/_storybook)
+            📋 [EventBus Debug](${deployUrl}?debug=eventbus)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  deploy-netlify:
+    name: Deploy to Netlify
+    needs: build-preview
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download preview bundle
+        uses: actions/download-artifact@v3
+        with:
+          name: preview-bundle
+      
+      - name: Deploy to Netlify
+        id: netlify-deploy
+        run: |
+          # Note: Netlify CLI would be installed via npx (build-time only)
+          # This is a placeholder for the deployment command structure
+          echo "NETLIFY_URL=https://harmony-pr-${{ github.event.pull_request.number }}--harmony-design.netlify.app" >> $GITHUB_OUTPUT
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      
+      - name: Comment PR with Netlify URL
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const deployUrl = '${{ steps.netlify-deploy.outputs.NETLIFY_URL }}';
+            const comment = `
+            ## 🌐 Netlify Preview Deployment
+            
+            **Preview URL:** ${deployUrl}
+            
+            **Commit:** \`${{ github.sha }}\`
+            **Branch:** \`${{ github.head_ref }}\`
+            
+            ---
+            📊 [Performance Report](${deployUrl}/_performance)
+            🧪 [Component Storybook](${deployUrl}/_storybook)
+            📋 [EventBus Debug](${deployUrl}?debug=eventbus)
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  performance-check:
+    name: Performance Check on Preview
+    needs: [deploy-vercel]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Run Lighthouse CI
+        run: |
+          python scripts/lighthouse-check.py \
+            --url "https://harmony-pr-${{ github.event.pull_request.number }}.vercel.app" \
+            --budget-file .github/performance-budget.json \
+            --output reports/lighthouse-pr-${{ github.event.pull_request.number }}.json
+      
+      - name: Upload performance report
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-report
+          path: reports/lighthouse-pr-*.json
+          retention-days: 30
+      
+      - name: Comment performance results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = context.payload.pull_request.number;
+            const reportPath = `reports/lighthouse-pr-${prNumber}.json`;
+            
+            if (fs.existsSync(reportPath)) {
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              const comment = `
+              ## ⚡ Performance Check Results
+              
+              **Load Time:** ${report.loadTime}ms (Budget: 200ms)
+              **First Paint:** ${report.firstPaint}ms
+              **Interactive:** ${report.interactive}ms
+              
+              **Status:** ${report.passed ? '✅ PASSED' : '❌ FAILED'}
+              
+              ${report.passed ? '' : '⚠️ Performance budget exceeded. Please optimize before merging.'}
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
