@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>State Color Tokens - Test Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #1a1a1a;
+    }
+
+    body.dark-mode {
+      background: #1a1a1a;
+      color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    body.dark-mode header {
+      border-bottom-color: #333;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    body.dark-mode .controls {
+      background: #2a2a2a;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #333;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    body.dark-mode .section h2 {
+      color: #ddd;
+    }
+
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .token-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    body.dark-mode .token-card {
+      background: #2a2a2a;
+    }
+
+    .token-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      text-transform: capitalize;
+    }
+
+    .color-swatch {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+      background: #f9f9f9;
+    }
+
+    body.dark-mode .color-swatch {
+      background: #1a1a1a;
+    }
+
+    .color-box {
+      width: 60px;
+      height: 60px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,0.1);
+      flex-shrink: 0;
+    }
+
+    .color-info {
+      flex: 1;
+    }
+
+    .color-label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    body.dark-mode .color-value {
+      color: #999;
+    }
+
+    .demo-section {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .state-banner {
+      padding: 1rem 1.5rem;
+      border-radius: 6px;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .state-banner.error {
+      background: var(--state-error-subtle);
+      border-color: var(--state-error-border);
+      color: var(--state-error-text);
+    }
+
+    .state-banner.warning {
+      background: var(--state-warning-subtle);
+      border-color: var(--state-warning-border);
+      color: var(--state-warning-text);
+    }
+
+    .state-banner.success {
+      background: var(--state-success-subtle);
+      border-color: var(--state-success-border);
+      color: var(--state-success-text);
+    }
+
+    .state-banner.info {
+      background: var(--state-info-subtle);
+      border-color: var(--state-info-border);
+      color: var(--state-info-text);
+    }
+
+    .state-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .state-banner.error .state-icon {
+      background: var(--state-error-base);
+      color: white;
+    }
+
+    .state-banner.warning .state-icon {
+      background: var(--state-warning-base);
+      color: white;
+    }
+
+    .state-banner.success .state-icon {
+      background: var(--state-success-base);
+      color: white;
+    }
+
+    .state-banner.info .state-icon {
+      background: var(--state-info-base);
+      color: white;
+    }
+
+    .test-results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+
+    body.dark-mode .test-results {
+      background: #2a2a2a;
+    }
+
+    .test-pass {
+      color: #16a34a;
+    }
+
+    .test-fail {
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>State Color Tokens</h1>
+      <p>Semantic color tokens for UI state feedback</p>
+    </header>
+
+    <div class="controls">
+      <button id="toggleTheme">Toggle Dark Mode</button>
+      <button id="runTests">Run Tests</button>
+    </div>
+
+    <div class="section">
+      <h2>Token Palette</h2>
+      <div class="token-grid" id="tokenGrid"></div>
+    </div>
+
+    <div class="section">
+      <h2>Usage Examples</h2>
+      <div class="demo-section">
+        <div class="state-banner error">
+          <div class="state-icon">✕</div>
+          <div>
+            <strong>Error:</strong> Your session has expired. Please log in again.
+          </div>
+        </div>
+
+        <div class="state-banner warning">
+          <div class="state-icon">!</div>
+          <div>
+            <strong>Warning:</strong> You have unsaved changes. Save before leaving?
+          </div>
+        </div>
+
+        <div class="state-banner success">
+          <div class="state-icon">✓</div>
+          <div>
+            <strong>Success:</strong> Your changes have been saved successfully.
+          </div>
+        </div>
+
+        <div class="state-banner info">
+          <div class="state-icon">i</div>
+          <div>
+            <strong>Info:</strong> New features are available. Check the changelog.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-results" id="testResults"></div>
+  </div>
+
+  <script type="module">
+    import { 
+      stateColorTokens, 
+      stateColorTokensDark,
+      getStateColor,
+      applyStateColorTokens,
+      validateStateColorContrast
+    } from './state-color-tokens.js';
+
+    let darkMode = false;
+
+    // Render token grid
+    function renderTokenGrid() {
+      const grid = document.getElementById('tokenGrid');
+      const tokens = darkMode ? stateColorTokensDark : stateColorTokens;
+      
+      grid.innerHTML = '';
+      
+      Object.entries(tokens).forEach(([stateName, variants]) => {
+        const card = document.createElement('div');
+        card.className = 'token-card';
+        
+        const title = document.createElement('h3');
+        title.textContent = stateName.replace('state-', '');
+        card.appendChild(title);
+        
+        Object.entries(variants).forEach(([variantName, value]) => {
+          const swatch = document.createElement('div');
+          swatch.className = 'color-swatch';
+          
+          const box = document.createElement('div');
+          box.className = 'color-box';
+          box.style.backgroundColor = value;
+          
+          const info = document.createElement('div');
+          info.className = 'color-info';
+          
+          const label = document.createElement('div');
+          label.className = 'color-label';
+          label.textContent = variantName;
+          
+          const valueEl = document.createElement('div');
+          valueEl.className = 'color-value';
+          valueEl.textContent = value;
+          
+          info.appendChild(label);
+          info.appendChild(valueEl);
+          swatch.appendChild(box);
+          swatch.appendChild(info);
+          card.appendChild(swatch);
+        });
+        
+        grid.appendChild(card);
+      });
+    }
+
+    // Toggle theme
+    document.getElementById('toggleTheme').addEventListener('click', () => {
+      darkMode = !darkMode;
+      document.body.classList.toggle('dark-mode', darkMode);
+      applyStateColorTokens(document.documentElement, darkMode);
+      renderTokenGrid();
+    });
+
+    // Run tests
+    document.getElementById('runTests').addEventListener('click', () => {
+      const results = [];
+      
+      results.push('=== State Color Token Tests ===\n');
+      
+      // Test 1: Token retrieval
+      results.push('Test 1: Token Retrieval');
+      const errorToken = getStateColor('state-error');
+      if (errorToken && errorToken.base === '#dc2626') {
+        results.push('✓ PASS: state-error token retrieved correctly');
+      } else {
+        results.push('✗ FAIL: state-error token not found or incorrect');
+      }
+      
+      // Test 2: Variant access
+      results.push('\nTest 2: Variant Access');
+      const errorText = getStateColor('state-error.text');
+      if (errorText === '#991b1b') {
+        results.push('✓ PASS: state-error.text variant accessed correctly');
+      } else {
+        results.push('✗ FAIL: state-error.text variant incorrect');
+      }
+      
+      // Test 3: Dark mode tokens
+      results.push('\nTest 3: Dark Mode Tokens');
+      const errorDark = getStateColor('state-error', true);
+      if (errorDark && errorDark.base === '#ef4444') {
+        results.push('✓ PASS: Dark mode tokens retrieved correctly');
+      } else {
+        results.push('✗ FAIL: Dark mode tokens incorrect');
+      }
+      
+      // Test 4: All state types exist
+      results.push('\nTest 4: All State Types');
+      const requiredStates = ['state-error', 'state-warning', 'state-success', 'state-info'];
+      const allExist = requiredStates.every(state => getStateColor(state) !== null);
+      if (allExist) {
+        results.push('✓ PASS: All required state types exist');
+      } else {
+        results.push('✗ FAIL: Missing state types');
+      }
+      
+      // Test 5: CSS custom properties applied
+      results.push('\nTest 5: CSS Custom Properties');
+      const rootStyle = getComputedStyle(document.documentElement);
+      const errorVar = rootStyle.getPropertyValue('--state-error-base').trim();
+      if (errorVar) {
+        results.push(`✓ PASS: CSS variables applied (--state-error-base: ${errorVar})`);
+      } else {
+        results.push('✗ FAIL: CSS variables not applied');
+      }
+      
+      // Test 6: Contrast validation
+      results.push('\nTest 6: Contrast Validation');
+      const contrastResult = validateStateColorContrast('state-error');
+      if (contrastResult.valid) {
+        results.push(`✓ PASS: Contrast validation (${contrastResult.level} level)`);
+      } else {
+        results.push('✗ FAIL: Insufficient contrast');
+      }
+      
+      // Display results
+      const resultsEl = document.getElementById('testResults');
+      resultsEl.innerHTML = results.map(line => {
+        if (line.includes('✓ PASS')) {
+          return `<div class="test-pass">${line}</div>`;
+        } else if (line.includes('✗ FAIL')) {
+          return `<div class="test-fail">${line}</div>`;
+        }
+        return `<div>${line}</div>`;
+      }).join('');
+    });
+
+    // Initial render
+    renderTokenGrid();
+    
+    // Run tests on load
+    document.getElementById('runTests').click();
+  </script>
+</body>
+</html>
