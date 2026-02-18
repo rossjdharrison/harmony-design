@@ -1,0 +1,50 @@
+/**
+ * Primary Color Palette
+ * 
+ * 11-shade scale from 50 (lightest) to 950 (darkest)
+ * Based on perceptually uniform color space for consistent visual weight
+ * 
+ * Usage:
+ *   background-color: var(--color-primary-500);
+ *   color: var(--color-primary-text-default);
+ * 
+ * @see {@link ../../DESIGN_SYSTEM.md#color-tokens}
+ */
+
+:root {
+  /* Primary Scale - Raw Values */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+  --color-primary-950: #082f49;
+
+  /* Primary Semantic - Backgrounds */
+  --color-primary-background-subtle: var(--color-primary-50);
+  --color-primary-background-muted: var(--color-primary-100);
+  --color-primary-background-default: var(--color-primary-500);
+  --color-primary-background-hover: var(--color-primary-600);
+  --color-primary-background-active: var(--color-primary-700);
+
+  /* Primary Semantic - Borders */
+  --color-primary-border-subtle: var(--color-primary-200);
+  --color-primary-border-default: var(--color-primary-300);
+  --color-primary-border-strong: var(--color-primary-400);
+
+  /* Primary Semantic - Text */
+  --color-primary-text-subtle: var(--color-primary-600);
+  --color-primary-text-default: var(--color-primary-700);
+  --color-primary-text-strong: var(--color-primary-800);
+  --color-primary-text-on-primary: #ffffff;
+
+  /* Primary Semantic - Icons */
+  --color-primary-icon-subtle: var(--color-primary-400);
+  --color-primary-icon-default: var(--color-primary-500);
+  --color-primary-icon-strong: var(--color-primary-600);
+}

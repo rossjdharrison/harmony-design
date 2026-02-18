@@ -1,0 +1,89 @@
+{
+  "color": {
+    "primary": {
+      "background": {
+        "subtle": {
+          "value": "{color.primary.50}",
+          "type": "color",
+          "description": "Subtle primary background for cards, panels"
+        },
+        "muted": {
+          "value": "{color.primary.100}",
+          "type": "color",
+          "description": "Muted primary background for hover states"
+        },
+        "default": {
+          "value": "{color.primary.500}",
+          "type": "color",
+          "description": "Default primary background for buttons, badges"
+        },
+        "hover": {
+          "value": "{color.primary.600}",
+          "type": "color",
+          "description": "Primary background on hover"
+        },
+        "active": {
+          "value": "{color.primary.700}",
+          "type": "color",
+          "description": "Primary background on active/pressed state"
+        }
+      },
+      "border": {
+        "subtle": {
+          "value": "{color.primary.200}",
+          "type": "color",
+          "description": "Subtle primary border"
+        },
+        "default": {
+          "value": "{color.primary.300}",
+          "type": "color",
+          "description": "Default primary border"
+        },
+        "strong": {
+          "value": "{color.primary.400}",
+          "type": "color",
+          "description": "Strong primary border for emphasis"
+        }
+      },
+      "text": {
+        "subtle": {
+          "value": "{color.primary.600}",
+          "type": "color",
+          "description": "Subtle primary text"
+        },
+        "default": {
+          "value": "{color.primary.700}",
+          "type": "color",
+          "description": "Default primary text"
+        },
+        "strong": {
+          "value": "{color.primary.800}",
+          "type": "color",
+          "description": "Strong primary text for emphasis"
+        },
+        "onPrimary": {
+          "value": "#ffffff",
+          "type": "color",
+          "description": "Text color on primary backgrounds"
+        }
+      },
+      "icon": {
+        "subtle": {
+          "value": "{color.primary.400}",
+          "type": "color",
+          "description": "Subtle primary icon color"
+        },
+        "default": {
+          "value": "{color.primary.500}",
+          "type": "color",
+          "description": "Default primary icon color"
+        },
+        "strong": {
+          "value": "{color.primary.600}",
+          "type": "color",
+          "description": "Strong primary icon color"
+        }
+      }
+    }
+  }
+}

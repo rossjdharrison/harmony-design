@@ -1,0 +1,61 @@
+{
+  "color": {
+    "primary": {
+      "50": {
+        "value": "#f0f9ff",
+        "type": "color",
+        "description": "Lightest primary shade - backgrounds, subtle highlights"
+      },
+      "100": {
+        "value": "#e0f2fe",
+        "type": "color",
+        "description": "Very light primary - hover states, light backgrounds"
+      },
+      "200": {
+        "value": "#bae6fd",
+        "type": "color",
+        "description": "Light primary - borders, dividers, disabled states"
+      },
+      "300": {
+        "value": "#7dd3fc",
+        "type": "color",
+        "description": "Light-medium primary - secondary actions, icons"
+      },
+      "400": {
+        "value": "#38bdf8",
+        "type": "color",
+        "description": "Medium-light primary - interactive elements"
+      },
+      "500": {
+        "value": "#0ea5e9",
+        "type": "color",
+        "description": "Base primary - main brand color, primary actions"
+      },
+      "600": {
+        "value": "#0284c7",
+        "type": "color",
+        "description": "Medium-dark primary - hover states, emphasis"
+      },
+      "700": {
+        "value": "#0369a1",
+        "type": "color",
+        "description": "Dark primary - active states, text on light backgrounds"
+      },
+      "800": {
+        "value": "#075985",
+        "type": "color",
+        "description": "Very dark primary - high contrast text, headers"
+      },
+      "900": {
+        "value": "#0c4a6e",
+        "type": "color",
+        "description": "Darkest primary - maximum contrast, important text"
+      },
+      "950": {
+        "value": "#082f49",
+        "type": "color",
+        "description": "Ultra dark primary - extreme contrast, deep backgrounds"
+      }
+    }
+  }
+}

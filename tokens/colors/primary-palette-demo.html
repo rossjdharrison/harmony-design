@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Primary Color Palette Demo - Harmony Design System</title>
+  <link rel="stylesheet" href="primary.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 2rem;
+      background: #f8f9fa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .color-swatch {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #e0e0e0;
+    }
+
+    .color-preview {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1.5rem;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+
+    .color-info {
+      padding: 1rem;
+      background: #fafafa;
+    }
+
+    .color-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      color: #333;
+    }
+
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .color-usage {
+      font-size: 0.75rem;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    .semantic-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .semantic-group {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 1rem;
+    }
+
+    .semantic-group h3 {
+      margin-bottom: 1rem;
+      color: #555;
+      font-size: 1rem;
+    }
+
+    .semantic-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .semantic-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .semantic-color-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      border: 1px solid #e0e0e0;
+      flex-shrink: 0;
+    }
+
+    .semantic-label {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .contrast-checker {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .contrast-example {
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .contrast-preview {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .contrast-info {
+      padding: 1rem;
+      background: #fafafa;
+      font-size: 0.875rem;
+    }
+
+    .contrast-ratio {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .contrast-pass {
+      color: #22c55e;
+    }
+
+    .contrast-fail {
+      color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Primary Color Palette</h1>
+    <p class="subtitle">11-shade scale with semantic mappings and accessibility guidelines</p>
+
+    <div class="section">
+      <h2>Color Scale (50-950)</h2>
+      <div class="color-grid" id="scaleGrid"></div>
+    </div>
+
+    <div class="section">
+      <h2>Semantic Mappings</h2>
+      <div class="semantic-grid" id="semanticGrid"></div>
+    </div>
+
+    <div class="section">
+      <h2>Contrast Examples (WCAG Compliance)</h2>
+      <div class="contrast-checker" id="contrastChecker"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { 
+      primaryScale, 
+      primarySemantic, 
+      getContrastRatio,
+      meetsWCAG_AA,
+      meetsWCAG_AAA 
+    } from './primary.js';
+
+    // Render color scale
+    const scaleGrid = document.getElementById('scaleGrid');
+    const shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+    const usageDescriptions = {
+      50: 'Backgrounds, subtle highlights',
+      100: 'Hover states, light backgrounds',
+      200: 'Borders, dividers, disabled states',
+      300: 'Secondary actions, icons',
+      400: 'Interactive elements',
+      500: 'Main brand color, primary actions',
+      600: 'Hover states, emphasis',
+      700: 'Active states, text on light',
+      800: 'High contrast text, headers',
+      900: 'Maximum contrast, important text',
+      950: 'Extreme contrast, deep backgrounds'
+    };
+
+    shades.forEach(shade => {
+      const color = primaryScale[shade];
+      const swatch = document.createElement('div');
+      swatch.className = 'color-swatch';
+      swatch.innerHTML = `
+        <div class="color-preview" style="background-color: ${color}">
+          ${shade}
+        </div>
+        <div class="color-info">
+          <div class="color-name">primary-${shade}</div>
+          <div class="color-value">${color}</div>
+          <div class="color-usage">${usageDescriptions[shade]}</div>
+        </div>
+      `;
+      scaleGrid.appendChild(swatch);
+    });
+
+    // Render semantic mappings
+    const semanticGrid = document.getElementById('semanticGrid');
+    Object.entries(primarySemantic).forEach(([category, variants]) => {
+      const group = document.createElement('div');
+      group.className = 'semantic-group';
+      
+      let itemsHtml = '';
+      Object.entries(variants).forEach(([variant, color]) => {
+        itemsHtml += `
+          <div class="semantic-item">
+            <div class="semantic-color-box" style="background-color: ${color}"></div>
+            <div class="semantic-label">${variant}</div>
+          </div>
+        `;
+      });
+
+      group.innerHTML = `
+        <h3>${category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+        <div class="semantic-items">${itemsHtml}</div>
+      `;
+      semanticGrid.appendChild(group);
+    });
+
+    // Render contrast examples
+    const contrastChecker = document.getElementById('contrastChecker');
+    const contrastTests = [
+      { fg: primaryScale[700], bg: '#ffffff', label: 'Primary-700 on White' },
+      { fg: primaryScale[800], bg: '#ffffff', label: 'Primary-800 on White' },
+      { fg: '#ffffff', bg: primaryScale[500], label: 'White on Primary-500' },
+      { fg: '#ffffff', bg: primaryScale[600], label: 'White on Primary-600' },
+      { fg: primaryScale[900], bg: primaryScale[50], label: 'Primary-900 on Primary-50' },
+      { fg: primaryScale[700], bg: primaryScale[100], label: 'Primary-700 on Primary-100' }
+    ];
+
+    contrastTests.forEach(test => {
+      const ratio = getContrastRatio(test.fg, test.bg);
+      const aa = meetsWCAG_AA(test.fg, test.bg);
+      const aaa = meetsWCAG_AAA(test.fg, test.bg);
+
+      const example = document.createElement('div');
+      example.className = 'contrast-example';
+      example.innerHTML = `
+        <div class="contrast-preview" style="background-color: ${test.bg}; color: ${test.fg}">
+          <strong>Sample Text</strong>
+        </div>
+        <div class="contrast-info">
+          <div class="contrast-ratio">Ratio: ${ratio.toFixed(2)}:1</div>
+          <div class="${aa ? 'contrast-pass' : 'contrast-fail'}">
+            WCAG AA: ${aa ? '✓ Pass' : '✗ Fail'}
+          </div>
+          <div class="${aaa ? 'contrast-pass' : 'contrast-fail'}">
+            WCAG AAA: ${aaa ? '✓ Pass' : '✗ Fail'}
+          </div>
+          <div style="margin-top: 0.5rem; color: #888;">
+            ${test.label}
+          </div>
+        </div>
+      `;
+      contrastChecker.appendChild(example);
+    });
+  </script>
+</body>
+</html>
