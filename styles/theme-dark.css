@@ -1,0 +1,183 @@
+/**
+ * Dark Theme Semantic Token Overrides
+ * 
+ * Applies when [data-theme="dark"] attribute is present on root element.
+ * Overrides semantic tokens to provide appropriate dark mode values.
+ * 
+ * @see DESIGN_SYSTEM.md#tokens-dark-theme
+ * @see styles/tokens.css - Base token definitions
+ * @see tokens/semantic-tokens.json - Token specifications
+ */
+
+[data-theme="dark"] {
+  /* ============================================
+     Text Color Tokens - Dark Theme
+     ============================================ */
+  
+  --text-primary: var(--gray-50);
+  --text-secondary: var(--gray-400);
+  --text-tertiary: var(--gray-500);
+  --text-disabled: var(--gray-600);
+  --text-inverse: var(--gray-900);
+  
+  /* ============================================
+     Surface Tokens - Dark Theme
+     ============================================ */
+  
+  --surface-primary: var(--gray-900);
+  --surface-secondary: var(--gray-800);
+  --surface-tertiary: var(--gray-700);
+  --surface-elevated: var(--gray-850);
+  --surface-overlay: var(--gray-800);
+  
+  /* ============================================
+     Surface State Tokens - Dark Theme
+     ============================================ */
+  
+  --surface-hover: var(--gray-750);
+  --surface-active: var(--gray-700);
+  --surface-selected: var(--gray-700);
+  --surface-focus: var(--gray-750);
+  
+  /* ============================================
+     Border Tokens - Dark Theme
+     ============================================ */
+  
+  --border-default: var(--gray-700);
+  --border-subtle: var(--gray-800);
+  --border-strong: var(--gray-600);
+  --border-inverse: var(--gray-200);
+  
+  /* ============================================
+     State Color Tokens - Dark Theme
+     ============================================ */
+  
+  --state-error: var(--red-400);
+  --state-warning: var(--yellow-400);
+  --state-success: var(--green-400);
+  --state-info: var(--blue-400);
+  
+  --state-error-bg: rgba(239, 68, 68, 0.1);
+  --state-warning-bg: rgba(250, 204, 21, 0.1);
+  --state-success-bg: rgba(34, 197, 94, 0.1);
+  --state-info-bg: rgba(59, 130, 246, 0.1);
+  
+  /* ============================================
+     Accent Color Tokens - Dark Theme
+     ============================================ */
+  
+  --accent-primary: var(--blue-400);
+  --accent-primary-hover: var(--blue-300);
+  --accent-primary-active: var(--blue-500);
+  
+  --accent-secondary: var(--purple-400);
+  --accent-secondary-hover: var(--purple-300);
+  --accent-secondary-active: var(--purple-500);
+  
+  --accent-tertiary: var(--pink-400);
+  --accent-tertiary-hover: var(--pink-300);
+  --accent-tertiary-active: var(--pink-500);
+  
+  /* ============================================
+     Shadow Tokens - Dark Theme
+     Enhanced for dark backgrounds
+     ============================================ */
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-default: 0 1px 3px 0 rgba(0, 0, 0, 0.5), 0 1px 2px -1px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.6);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  
+  /* ============================================
+     Glow Tokens - Dark Theme
+     More visible on dark backgrounds
+     ============================================ */
+  
+  --glow-focus: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  --glow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.4);
+  --glow-focus-success: 0 0 0 3px rgba(34, 197, 94, 0.4);
+  
+  --glow-active: 0 0 8px rgba(59, 130, 246, 0.6);
+  --glow-active-strong: 0 0 12px rgba(59, 130, 246, 0.8);
+  
+  --glow-selection: 0 0 6px rgba(147, 51, 234, 0.5);
+  
+  /* ============================================
+     Audio Level Tokens - Dark Theme
+     Adjusted for dark mode visibility
+     ============================================ */
+  
+  --level-peak-color: var(--red-400);
+  --level-rms-color: var(--green-400);
+  --level-clip-color: var(--red-500);
+  --level-bg-color: var(--gray-800);
+  --level-grid-color: var(--gray-700);
+  
+  /* ============================================
+     Interactive Element Tokens - Dark Theme
+     ============================================ */
+  
+  --interactive-default: var(--gray-700);
+  --interactive-hover: var(--gray-600);
+  --interactive-active: var(--gray-500);
+  --interactive-disabled: var(--gray-800);
+  
+  /* ============================================
+     Link Tokens - Dark Theme
+     ============================================ */
+  
+  --link-default: var(--blue-400);
+  --link-hover: var(--blue-300);
+  --link-active: var(--blue-500);
+  --link-visited: var(--purple-400);
+  
+  /* ============================================
+     Code/Monospace Tokens - Dark Theme
+     ============================================ */
+  
+  --code-bg: var(--gray-850);
+  --code-text: var(--gray-200);
+  --code-border: var(--gray-700);
+  
+  /* ============================================
+     Scrollbar Tokens - Dark Theme
+     ============================================ */
+  
+  --scrollbar-track: var(--gray-900);
+  --scrollbar-thumb: var(--gray-700);
+  --scrollbar-thumb-hover: var(--gray-600);
+  
+  /* ============================================
+     Overlay Tokens - Dark Theme
+     ============================================ */
+  
+  --overlay-backdrop: rgba(0, 0, 0, 0.75);
+  --overlay-scrim: rgba(0, 0, 0, 0.5);
+  
+  /* ============================================
+     Divider Tokens - Dark Theme
+     ============================================ */
+  
+  --divider-default: var(--gray-800);
+  --divider-subtle: var(--gray-850);
+  --divider-strong: var(--gray-700);
+}
+
+/**
+ * Dark Theme Color Scheme Hint
+ * Tells browser to use dark scrollbars, form controls, etc.
+ */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/**
+ * Dark Theme Body Defaults
+ * Sets reasonable defaults for text and background
+ */
+[data-theme="dark"] body {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
+}
