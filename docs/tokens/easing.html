@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Easing Tokens - Harmony Design System</title>
+  <link rel="stylesheet" href="../../tokens/easing.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+    }
+
+    .demo-section {
+      margin-bottom: 3rem;
+    }
+
+    .demo-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #fff;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.5rem;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .demo-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .demo-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .demo-card .description {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .demo-card .value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 1rem;
+      word-break: break-all;
+    }
+
+    .animation-track {
+      height: 60px;
+      background: #0a0a0a;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .animation-ball {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+    }
+
+    .animation-ball.animating {
+      animation: slide 2s forwards;
+    }
+
+    @keyframes slide {
+      to {
+        transform: translateX(calc(100% + 150px));
+      }
+    }
+
+    .controls {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 200ms var(--easing-ease-out);
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .comparison-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+
+    .comparison-section h3 {
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    .comparison-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .comparison-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .comparison-label {
+      width: 150px;
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .comparison-track {
+      flex: 1;
+      height: 40px;
+      background: #0a0a0a;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .comparison-ball {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+    }
+
+    .play-all-btn {
+      background: #10b981;
+      margin-bottom: 1rem;
+    }
+
+    .play-all-btn:hover {
+      background: #059669;
+    }
+
+    .code-example {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+      overflow-x: auto;
+    }
+
+    .code-example code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #a0a0a0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Easing Tokens</h1>
+  <p class="subtitle">Animation timing functions for consistent motion design</p>
+
+  <div class="demo-section">
+    <h2>Standard Easing Functions</h2>
+    <div class="demo-grid">
+      <div class="demo-card">
+        <h3>Linear</h3>
+        <p class="description">Constant speed, no acceleration</p>
+        <p class="value">linear</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="linear"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'linear')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 300ms var(--easing-linear);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Ease In</h3>
+        <p class="description">Slow start, accelerating</p>
+        <p class="value">cubic-bezier(0.4, 0, 1, 1)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="ease-in"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'ease-in')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 300ms var(--easing-ease-in);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Ease Out</h3>
+        <p class="description">Fast start, decelerating</p>
+        <p class="value">cubic-bezier(0, 0, 0.2, 1)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="ease-out"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'ease-out')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 300ms var(--easing-ease-out);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Ease In Out</h3>
+        <p class="description">Slow start and end, fast middle</p>
+        <p class="value">cubic-bezier(0.4, 0, 0.2, 1)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="ease-in-out"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'ease-in-out')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 300ms var(--easing-ease-in-out);</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>Spring Presets</h2>
+    <div class="demo-grid">
+      <div class="demo-card">
+        <h3>Spring Gentle</h3>
+        <p class="description">Subtle spring effect, low bounce</p>
+        <p class="value">cubic-bezier(0.25, 0.1, 0.25, 1)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="spring-gentle"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'spring-gentle')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 400ms var(--easing-spring-gentle);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Spring Default</h3>
+        <p class="description">Standard spring, medium bounce</p>
+        <p class="value">cubic-bezier(0.34, 1.56, 0.64, 1)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="spring-default"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'spring-default')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 400ms var(--easing-spring-default);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Spring Bouncy</h3>
+        <p class="description">Pronounced spring, high bounce</p>
+        <p class="value">cubic-bezier(0.68, -0.55, 0.265, 1.55)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="spring-bouncy"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'spring-bouncy')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 500ms var(--easing-spring-bouncy);</code>
+        </div>
+      </div>
+
+      <div class="demo-card">
+        <h3>Spring Snappy</h3>
+        <p class="description">Quick, tight spring, minimal bounce</p>
+        <p class="value">cubic-bezier(0.5, 1.25, 0.75, 1.25)</p>
+        <div class="animation-track">
+          <div class="animation-ball" data-easing="spring-snappy"></div>
+        </div>
+        <div class="controls">
+          <button onclick="playAnimation(this, 'spring-snappy')">Play</button>
+        </div>
+        <div class="code-example">
+          <code>transition: all 350ms var(--easing-spring-snappy);</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="comparison-section">
+    <h3>Side-by-Side Comparison</h3>
+    <button class="play-all-btn" onclick="playAllComparisons()">Play All</button>
+    <div class="comparison-grid">
+      <div class="comparison-row">
+        <div class="comparison-label">Linear</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="linear"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Ease In</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="ease-in"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Ease Out</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="ease-out"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Ease In Out</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="ease-in-out"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Spring Gentle</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="spring-gentle"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Spring Default</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="spring-default"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Spring Bouncy</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="spring-bouncy"></div>
+        </div>
+      </div>
+      <div class="comparison-row">
+        <div class="comparison-label">Spring Snappy</div>
+        <div class="comparison-track">
+          <div class="comparison-ball" data-easing="spring-snappy"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { EASING, getEasing } from '../../tokens/easing.js';
+
+    window.playAnimation = function(button, easingType) {
+      const card = button.closest('.demo-card');
+      const ball = card.querySelector('.animation-ball');
+      const easing = getEasing(easingType);
+      
+      // Reset
+      ball.style.animation = 'none';
+      ball.offsetHeight; // Trigger reflow
+      
+      // Apply easing and animate
+      ball.style.animationTimingFunction = easing;
+      ball.classList.add('animating');
+      
+      setTimeout(() => {
+        ball.classList.remove('animating');
+      }, 2000);
+    };
+
+    window.playAllComparisons = function() {
+      const balls = document.querySelectorAll('.comparison-ball');
+      balls.forEach(ball => {
+        const easingType = ball.dataset.easing;
+        const easing = getEasing(easingType);
+        
+        // Reset
+        ball.style.transition = 'none';
+        ball.style.transform = 'translateX(0)';
+        ball.offsetHeight; // Trigger reflow
+        
+        // Apply easing and animate
+        ball.style.transition = `transform 1.5s ${easing}`;
+        requestAnimationFrame(() => {
+          ball.style.transform = 'translateX(calc(100% + 200px))';
+        });
+        
+        setTimeout(() => {
+          ball.style.transition = 'none';
+          ball.style.transform = 'translateX(0)';
+        }, 1600);
+      });
+    };
+
+    // Log available easing tokens
+    console.log('Available easing tokens:', EASING);
+  </script>
+</body>
+</html>
