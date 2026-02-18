@@ -1,5 +1,9 @@
 name: CI Build Pipeline
 
+# harmony-design is a vanilla JS / no-npm design system.
+# There is no package.json or Cargo.toml here — all checks use Node.js
+# built-in APIs only.  No npm ci / cargo build steps.
+
 on:
   push:
     branches: [ main, develop ]
@@ -10,263 +14,263 @@ jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run ESLint
-        run: npm run lint:js || echo "ESLint not configured"
-        continue-on-error: true
-      
-      - name: Run CSS Lint
-        run: npm run lint:css || echo "CSS Lint not configured"
-        continue-on-error: true
-      
-      - name: Check code formatting
-        run: npm run format:check || echo "Format check not configured"
-        continue-on-error: true
+
+      - name: Check for npm bare-specifier imports in JS source files
+        # Vanilla-JS policy: all imports must be relative paths.
+        # Uses only Node.js built-ins — no npm install needed.
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          const BAD_IMPORT = /import\s+.*from\s+['"](?!\.|\/)([^'"]+)['"]/;
+          const EXTENSIONS = new Set(['.js', '.mjs', '.cjs']);
+          const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'generated']);
+
+          let violations = 0;
+
+          function walk(dir) {
+            for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (IGNORE_DIRS.has(entry.name)) continue;
+              const full = path.join(dir, entry.name);
+              if (entry.isDirectory()) { walk(full); continue; }
+              if (!EXTENSIONS.has(path.extname(entry.name))) continue;
+              const src = fs.readFileSync(full, 'utf8');
+              src.split('\n').forEach((line, i) => {
+                if (BAD_IMPORT.test(line)) {
+                  console.error(`VIOLATION ${full}:${i+1}: ${line.trim()}`);
+                  violations++;
+                }
+              });
+            }
+          }
+
+          walk('.');
+          if (violations > 0) {
+            console.error(`\n${violations} npm import violation(s) found`);
+            process.exit(1);
+          }
+          console.log('All imports use relative paths ✓');
+          EOF
+
+      - name: Check for forbidden framework usage
+        run: |
+          node - <<'EOF'
+          const { execSync } = require('child_process');
+          const patterns = ['import.*react', 'import.*vue', 'import.*svelte', 'import.*angular'];
+          let found = false;
+          for (const p of patterns) {
+            try {
+              const r = execSync(
+                `grep -rn --include="*.js" --include="*.mjs" -i "${p}" . || true`
+              ).toString().trim();
+              if (r) { console.error('Framework import found:', r); found = true; }
+            } catch {}
+          }
+          if (found) process.exit(1);
+          console.log('No framework imports found ✓');
+          EOF
+
+      - name: Verify key token files exist
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const required = [
+            'tokens/index.js',
+            'tokens/colors.js',
+            'tokens/spacing.js',
+            'tokens/typography.js',
+          ];
+          let missing = 0;
+          for (const f of required) {
+            if (!fs.existsSync(f)) { console.error('Missing:', f); missing++; }
+            else console.log('Found:', f);
+          }
+          if (missing > 0) process.exit(1);
+          EOF
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
     needs: lint
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run unit tests
-        run: npm test || echo "No tests configured yet"
-        continue-on-error: true
-      
-      - name: Run component tests
-        run: npm run test:components || echo "Component tests not configured"
-        continue-on-error: true
-      
-      - name: Generate test coverage
-        run: npm run test:coverage || echo "Coverage not configured"
-        continue-on-error: true
-      
-      - name: Upload coverage reports
-        uses: codecov/codecov-action@v3
-        if: success()
-        with:
-          files: ./coverage/lcov.info
-          flags: unittests
-          fail_ci_if_error: false
+
+      - name: Discover and run JS test files
+        # Runs any *.test.js file using Node.js directly — no test runner needed.
+        run: |
+          node - <<'EOF'
+          const { execSync } = require('child_process');
+          const fs = require('fs');
+          const path = require('path');
+
+          const IGNORE = new Set(['node_modules', '.git', 'dist']);
+          const tests = [];
+
+          function walk(dir) {
+            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (IGNORE.has(e.name)) continue;
+              const full = path.join(dir, e.name);
+              if (e.isDirectory()) { walk(full); continue; }
+              if (e.name.endsWith('.test.js')) tests.push(full);
+            }
+          }
+          walk('.');
+
+          console.log(`Found ${tests.length} test file(s)`);
+          let passed = 0, failed = 0;
+          for (const t of tests) {
+            try {
+              execSync(`node "${t}"`, { stdio: 'inherit' });
+              console.log('PASS', t);
+              passed++;
+            } catch {
+              console.error('FAIL', t);
+              failed++;
+            }
+          }
+          console.log(`\nResults: ${passed} passed, ${failed} failed`);
+          if (failed > 0) process.exit(1);
+          EOF
+
+      - name: Count test HTML files
+        run: |
+          count=$(find . -name "*.test.html" -not -path "*/node_modules/*" | wc -l)
+          echo "Browser test pages found: $count"
 
   build:
-    name: Build Project
+    name: Validate Build
     runs-on: ubuntu-latest
     needs: test
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build project
-        run: npm run build || echo "Build script not configured"
-        continue-on-error: true
-      
-      - name: Check build output
-        run: |
-          if [ -d "dist" ]; then
-            echo "Build output directory exists"
-            ls -lah dist/
-          else
-            echo "No dist directory found"
-          fi
-      
-      - name: Archive build artifacts
-        uses: actions/upload-artifact@v3
-        if: success()
-        with:
-          name: build-artifacts
-          path: |
-            dist/
-            build/
-          retention-days: 7
 
-  rust-build:
-    name: Build Rust/WASM
-    runs-on: ubuntu-latest
-    needs: lint
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          target: wasm32-unknown-unknown
-          override: true
-      
-      - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Build component-lifecycle
-        working-directory: bounded-contexts/component-lifecycle
-        run: cargo build --target wasm32-unknown-unknown --release
-      
-      - name: Build WASM with wasm-pack
-        working-directory: bounded-contexts/component-lifecycle
-        run: wasm-pack build --target web --release || echo "wasm-pack build not configured"
-        continue-on-error: true
-      
-      - name: Upload WASM artifacts
+      - name: Validate component file structure
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          // Count JS component files
+          const IGNORE = new Set(['node_modules', '.git', 'dist', 'generated']);
+          let jsFiles = 0, cssFiles = 0;
+          function walk(dir) {
+            for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+              if (IGNORE.has(e.name)) continue;
+              const full = path.join(dir, e.name);
+              if (e.isDirectory()) { walk(full); continue; }
+              if (e.name.endsWith('.js')) jsFiles++;
+              if (e.name.endsWith('.css')) cssFiles++;
+            }
+          }
+          walk('.');
+          console.log(`JS files:  ${jsFiles}`);
+          console.log(`CSS files: ${cssFiles}`);
+          if (jsFiles === 0) { console.error('No JS files found — build may be missing'); process.exit(1); }
+          console.log('Build validation passed ✓');
+          EOF
+
+      - name: Check tokens build output
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+
+          // Verify token accessor and type declarations exist
+          const artifacts = [
+            'tokens/token-accessor.js',
+            'src/tokens/types.d.ts',
+          ];
+          let ok = true;
+          for (const a of artifacts) {
+            if (fs.existsSync(a)) console.log('✓', a);
+            else { console.warn('missing (non-fatal):', a); }
+          }
+          EOF
+
+      - name: Upload JS artifacts
         uses: actions/upload-artifact@v3
-        if: success()
         with:
-          name: wasm-artifacts
+          name: design-system-artifacts
           path: |
-            bounded-contexts/*/pkg/
+            tokens/
+            src/tokens/
+            components/
+            primitives/
+            controls/
           retention-days: 7
 
   quality-gates:
     name: Quality Gates
     runs-on: ubuntu-latest
-    needs: [build, rust-build]
-    
+    needs: build
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: dist/
-        continue-on-error: true
-      
+
       - name: Run bundle size check
-        run: npm run check:bundle-size || echo "Bundle size check not configured"
-        continue-on-error: true
-      
-      - name: Run performance budget check
-        run: npm run check:performance || echo "Performance check not configured"
-        continue-on-error: true
-      
-      - name: Validate composition rules
-        run: npm run validate:composition || echo "Composition validation not configured"
-        continue-on-error: true
-      
-      - name: Check for technical debt
-        run: |
-          echo "Checking for TODO/FIXME comments..."
-          grep -r "TODO\|FIXME" --include="*.js" --include="*.rs" . || echo "No technical debt markers found"
+        run: node scripts/check-bundle-size.js || echo "Bundle size check not blocking"
         continue-on-error: true
 
-  integration:
-    name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Download build artifacts
-        uses: actions/download-artifact@v3
-        with:
-          name: build-artifacts
-          path: dist/
-        continue-on-error: true
-      
-      - name: Start test server
+      - name: Check for technical debt markers
         run: |
-          npm run serve:test &
-          sleep 5
-        continue-on-error: true
-      
-      - name: Run integration tests
-        run: npm run test:integration || echo "Integration tests not configured"
-        continue-on-error: true
-      
-      - name: Run E2E tests
-        run: npm run test:e2e || echo "E2E tests not configured"
-        continue-on-error: true
+          count=$(grep -rn "TODO\|FIXME" --include="*.js" --include="*.css" . \
+                  --exclude-dir=node_modules --exclude-dir=.git | wc -l)
+          echo "Technical debt markers: $count"
 
   summary:
     name: Build Summary
     runs-on: ubuntu-latest
-    needs: [lint, test, build, rust-build, quality-gates, integration]
+    needs: [lint, test, build, quality-gates]
     if: always()
-    
+
     steps:
-      - name: Check job statuses
+      - name: Report job results
         run: |
-          echo "Lint: ${{ needs.lint.result }}"
-          echo "Test: ${{ needs.test.result }}"
-          echo "Build: ${{ needs.build.result }}"
-          echo "Rust Build: ${{ needs.rust-build.result }}"
-          echo "Quality Gates: ${{ needs.quality-gates.result }}"
-          echo "Integration: ${{ needs.integration.result }}"
-      
+          echo "Lint:           ${{ needs.lint.result }}"
+          echo "Test:           ${{ needs.test.result }}"
+          echo "Build:          ${{ needs.build.result }}"
+          echo "Quality Gates:  ${{ needs.quality-gates.result }}"
+
       - name: Determine overall status
         run: |
-          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
-             [[ "${{ needs.test.result }}" == "failure" ]] || \
-             [[ "${{ needs.build.result }}" == "failure" ]] || \
-             [[ "${{ needs.rust-build.result }}" == "failure" ]]; then
-            echo "CI Pipeline Failed"
+          lint="${{ needs.lint.result }}"
+          test="${{ needs.test.result }}"
+          build="${{ needs.build.result }}"
+
+          if [[ "$lint" == "failure" ]] || \
+             [[ "$test" == "failure" ]] || \
+             [[ "$build" == "failure" ]]; then
+            echo "❌ CI Pipeline Failed"
             exit 1
           else
-            echo "CI Pipeline Passed"
+            echo "✅ CI Pipeline Passed"
           fi
