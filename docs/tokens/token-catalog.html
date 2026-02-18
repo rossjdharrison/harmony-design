@@ -4,241 +4,289 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Harmony Design System - Token Catalog</title>
-  <link rel="stylesheet" href="../../styles/design-tokens.css">
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
     }
 
     body {
-      font-family: var(--font-family-base, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
-      background: var(--color-background-primary, #ffffff);
-      color: var(--color-text-primary, #1a1a1a);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       line-height: 1.6;
-    }
-
-    .catalog-header {
-      background: var(--color-background-secondary, #f5f5f5);
       padding: 2rem;
-      border-bottom: 1px solid var(--color-border-primary, #e0e0e0);
+      background: #fafafa;
+      color: #171717;
     }
 
-    .catalog-header h1 {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
-
-    .catalog-header p {
-      font-size: 1.125rem;
-      color: var(--color-text-secondary, #666666);
-    }
-
-    .catalog-nav {
-      position: sticky;
-      top: 0;
-      background: var(--color-background-primary, #ffffff);
-      border-bottom: 1px solid var(--color-border-primary, #e0e0e0);
-      padding: 1rem 2rem;
-      z-index: 100;
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-    }
-
-    .catalog-nav button {
-      background: transparent;
-      border: 1px solid var(--color-border-primary, #e0e0e0);
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      white-space: nowrap;
-      transition: all 0.2s ease;
-    }
-
-    .catalog-nav button:hover {
-      background: var(--color-background-secondary, #f5f5f5);
-    }
-
-    .catalog-nav button.active {
-      background: var(--color-primary, #007bff);
-      color: white;
-      border-color: var(--color-primary, #007bff);
-    }
-
-    .catalog-content {
-      max-width: 1400px;
+    .container {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 2rem;
     }
 
-    .token-section {
-      margin-bottom: 4rem;
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #0a0a0a;
     }
 
-    .token-section h2 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid var(--color-border-primary, #e0e0e0);
+    .subtitle {
+      font-size: 1.125rem;
+      color: #525252;
+      margin-bottom: 3rem;
     }
 
-    .token-section p {
-      color: var(--color-text-secondary, #666666);
-      margin-bottom: 2rem;
-    }
-
-    .token-grid {
-      display: grid;
-      gap: 1.5rem;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    }
-
-    .token-card {
-      background: var(--color-background-primary, #ffffff);
-      border: 1px solid var(--color-border-primary, #e0e0e0);
+    .section {
+      background: white;
       border-radius: 8px;
-      padding: 1.5rem;
-      transition: box-shadow 0.2s ease;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    .token-card:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .token-preview {
+    h2 {
+      font-size: 1.875rem;
       margin-bottom: 1rem;
-      padding: 1rem;
-      background: var(--color-background-secondary, #f5f5f5);
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 80px;
+      color: #171717;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 0.5rem;
     }
 
-    .token-name {
-      font-weight: 600;
-      font-size: 0.875rem;
-      margin-bottom: 0.5rem;
-      font-family: 'Courier New', monospace;
-      color: var(--color-primary, #007bff);
+    .scale-description {
+      margin-bottom: 1.5rem;
+      color: #525252;
+      font-size: 0.9375rem;
     }
 
-    .token-value {
-      font-size: 0.75rem;
-      color: var(--color-text-secondary, #666666);
-      font-family: 'Courier New', monospace;
-      margin-bottom: 0.5rem;
-    }
-
-    .token-usage {
-      font-size: 0.75rem;
-      color: var(--color-text-tertiary, #999999);
-      margin-top: 0.5rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid var(--color-border-primary, #e0e0e0);
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
     }
 
     .color-swatch {
+      border: 1px solid #e5e5e5;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .color-preview {
+      height: 100px;
       width: 100%;
-      height: 60px;
-      border-radius: 4px;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      position: relative;
     }
 
-    .spacing-box {
-      background: var(--color-primary, #007bff);
-      opacity: 0.3;
-    }
-
-    .typography-sample {
-      color: var(--color-text-primary, #1a1a1a);
-    }
-
-    .code-example {
-      background: #1e1e1e;
-      color: #d4d4d4;
+    .color-info {
       padding: 1rem;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
+      background: white;
+    }
+
+    .color-name {
+      font-weight: 600;
       font-size: 0.875rem;
-      overflow-x: auto;
-      margin-top: 1rem;
+      color: #171717;
+      margin-bottom: 0.25rem;
     }
 
-    .code-example .keyword {
-      color: #569cd6;
+    .color-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8125rem;
+      color: #525252;
+      margin-bottom: 0.5rem;
     }
 
-    .code-example .string {
-      color: #ce9178;
+    .color-description {
+      font-size: 0.8125rem;
+      color: #737373;
+      line-height: 1.4;
     }
 
-    .code-example .comment {
-      color: #6a9955;
-    }
-
-    .search-box {
-      width: 100%;
-      max-width: 500px;
-      padding: 0.75rem 1rem;
-      font-size: 1rem;
-      border: 1px solid var(--color-border-primary, #e0e0e0);
+    .contrast-indicator {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 0.25rem 0.5rem;
       border-radius: 4px;
-      margin-bottom: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
     }
 
-    .search-box:focus {
-      outline: none;
-      border-color: var(--color-primary, #007bff);
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-
-    .usage-example {
-      background: var(--color-background-secondary, #f5f5f5);
+    .usage-examples {
+      margin-top: 1rem;
       padding: 1rem;
+      background: #fafafa;
       border-radius: 4px;
-      margin-top: 1rem;
-      border-left: 3px solid var(--color-primary, #007bff);
+      border-left: 3px solid #0ea5e9;
     }
 
-    .usage-example h4 {
+    .usage-examples h3 {
       font-size: 0.875rem;
       margin-bottom: 0.5rem;
-      color: var(--color-text-primary, #1a1a1a);
+      color: #404040;
     }
 
-    .hidden {
-      display: none;
+    .usage-examples ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .usage-examples li {
+      font-size: 0.8125rem;
+      color: #525252;
+      padding: 0.25rem 0;
+    }
+
+    .usage-examples li::before {
+      content: "→ ";
+      color: #0ea5e9;
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .color-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="catalog-header">
-    <h1>Design Token Catalog</h1>
-    <p>Visual reference and usage examples for all design tokens in the Harmony Design System</p>
+  <div class="container">
+    <h1>Token Catalog</h1>
+    <p class="subtitle">Visual reference for all design tokens in the Harmony Design System</p>
+
+    <section class="section">
+      <h2>Primary Color Scale</h2>
+      <p class="scale-description">
+        The primary color scale provides 11 shades for the main brand color. Use lighter shades (50-200) for backgrounds and surfaces,
+        middle shades (400-600) for interactive elements and CTAs, and darker shades (700-950) for text and emphasis.
+      </p>
+      <div class="color-grid" id="primary-colors"></div>
+      <div class="usage-examples">
+        <h3>Common Usage Patterns</h3>
+        <ul>
+          <li>Primary buttons: 500-600</li>
+          <li>Button hover states: 400-500</li>
+          <li>Button active/pressed: 600-700</li>
+          <li>Background tints: 50-100</li>
+          <li>Links and interactive text: 600-700</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Neutral/Gray Scale</h2>
+      <p class="scale-description">
+        The neutral scale provides 11 achromatic shades for surfaces, text, and UI elements. This scale is essential for
+        establishing visual hierarchy and ensuring proper contrast ratios. Lighter shades (50-200) work for backgrounds,
+        middle shades (300-600) for secondary elements and borders, and darker shades (700-950) for text.
+      </p>
+      <div class="color-grid" id="neutral-colors"></div>
+      <div class="usage-examples">
+        <h3>Common Usage Patterns</h3>
+        <ul>
+          <li>Page backgrounds: 50-100</li>
+          <li>Card surfaces: 100</li>
+          <li>Borders and dividers: 200-300</li>
+          <li>Disabled states: 300-400</li>
+          <li>Placeholder text: 400</li>
+          <li>Secondary text: 500-600</li>
+          <li>Body text: 600-700</li>
+          <li>Headings: 700-800</li>
+          <li>Primary text: 900-950</li>
+        </ul>
+      </div>
+    </section>
   </div>
 
-  <nav class="catalog-nav">
-    <button class="active" data-category="all">All Tokens</button>
-    <button data-category="colors">Colors</button>
-    <button data-category="typography">Typography</button>
-    <button data-category="spacing">Spacing</button>
-    <button data-category="borders">Borders</button>
-    <button data-category="shadows">Shadows</button>
-    <button data-category="animations">Animations</button>
-  </nav>
+  <script type="module">
+    import { tokens } from './token-catalog.js';
 
-  <div class="catalog-content">
-    <input type="text" class="search-box" placeholder="Search tokens..." id="tokenSearch">
+    /**
+     * Calculate relative luminance for WCAG contrast ratio
+     * @param {string} hex - Hex color value
+     * @returns {number} Relative luminance
+     */
+    function getLuminance(hex) {
+      const rgb = parseInt(hex.slice(1), 16);
+      const r = ((rgb >> 16) & 0xff) / 255;
+      const g = ((rgb >> 8) & 0xff) / 255;
+      const b = (rgb & 0xff) / 255;
+
+      const [rs, gs, bs] = [r, g, b].map(c => 
+        c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+      );
+
+      return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    }
+
+    /**
+     * Calculate WCAG contrast ratio
+     * @param {string} hex1 - First hex color
+     * @param {string} hex2 - Second hex color
+     * @returns {number} Contrast ratio
+     */
+    function getContrastRatio(hex1, hex2) {
+      const lum1 = getLuminance(hex1);
+      const lum2 = getLuminance(hex2);
+      const lighter = Math.max(lum1, lum2);
+      const darker = Math.min(lum1, lum2);
+      return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    /**
+     * Render color swatches for a given scale
+     * @param {string} containerId - ID of container element
+     * @param {Object} colorScale - Color scale object
+     * @param {string} scaleName - Name of the scale
+     */
+    function renderColorScale(containerId, colorScale, scaleName) {
+      const container = document.getElementById(containerId);
+      
+      Object.entries(colorScale).forEach(([shade, token]) => {
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        
+        const contrastWithWhite = getContrastRatio(token.value, '#ffffff');
+        const contrastWithBlack = getContrastRatio(token.value, '#000000');
+        const textColor = contrastWithWhite > contrastWithBlack ? '#ffffff' : '#000000';
+        
+        swatch.innerHTML = `
+          <div class="color-preview" style="background-color: ${token.value}">
+            <div class="contrast-indicator" style="color: ${token.value}">
+              ${shade}
+            </div>
+          </div>
+          <div class="color-info">
+            <div class="color-name">${scaleName}-${shade}</div>
+            <div class="color-value">${token.value}</div>
+            <div class="color-description">${token.description}</div>
+          </div>
+        `;
+        
+        container.appendChild(swatch);
+      });
+    }
+
+    // Render color scales
+    if (tokens.color.primary) {
+      renderColorScale('primary-colors', tokens.color.primary, 'primary');
+    }
     
-    <div id="tokenCatalog"></div>
-  </div>
-
-  <script type="module" src="./token-catalog.js"></script>
+    if (tokens.color.neutral) {
+      renderColorScale('neutral-colors', tokens.color.neutral, 'neutral');
+    }
+  </script>
 </body>
 </html>

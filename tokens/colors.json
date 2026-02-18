@@ -1,0 +1,31 @@
+{
+  "$schema": "./schema.json",
+  "color": {
+    "primary": {
+      "50": { "value": "#f0f9ff", "type": "color", "description": "Lightest primary shade" },
+      "100": { "value": "#e0f2fe", "type": "color", "description": "Very light primary" },
+      "200": { "value": "#bae6fd", "type": "color", "description": "Light primary" },
+      "300": { "value": "#7dd3fc", "type": "color", "description": "Light-medium primary" },
+      "400": { "value": "#38bdf8", "type": "color", "description": "Medium-light primary" },
+      "500": { "value": "#0ea5e9", "type": "color", "description": "Base primary color" },
+      "600": { "value": "#0284c7", "type": "color", "description": "Medium-dark primary" },
+      "700": { "value": "#0369a1", "type": "color", "description": "Dark primary" },
+      "800": { "value": "#075985", "type": "color", "description": "Very dark primary" },
+      "900": { "value": "#0c4a6e", "type": "color", "description": "Darkest primary" },
+      "950": { "value": "#082f49", "type": "color", "description": "Deepest primary shade" }
+    },
+    "neutral": {
+      "50": { "value": "#fafafa", "type": "color", "description": "Lightest neutral - subtle backgrounds" },
+      "100": { "value": "#f5f5f5", "type": "color", "description": "Very light neutral - card backgrounds" },
+      "200": { "value": "#e5e5e5", "type": "color", "description": "Light neutral - borders, dividers" },
+      "300": { "value": "#d4d4d4", "type": "color", "description": "Light-medium neutral - disabled states" },
+      "400": { "value": "#a3a3a3", "type": "color", "description": "Medium-light neutral - placeholders" },
+      "500": { "value": "#737373", "type": "color", "description": "Base neutral - secondary text" },
+      "600": { "value": "#525252", "type": "color", "description": "Medium-dark neutral - body text" },
+      "700": { "value": "#404040", "type": "color", "description": "Dark neutral - headings" },
+      "800": { "value": "#262626", "type": "color", "description": "Very dark neutral - emphasis text" },
+      "900": { "value": "#171717", "type": "color", "description": "Darkest neutral - primary text" },
+      "950": { "value": "#0a0a0a", "type": "color", "description": "Deepest neutral - maximum contrast" }
+    }
+  }
+}

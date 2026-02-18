@@ -1,83 +1,88 @@
-# Token Documentation
+# Design Tokens
 
-This directory contains interactive documentation for the Harmony Design System token catalog.
-
-## Files
-
-- **token-catalog.html** - Interactive visual catalog of all design tokens
-- **token-catalog.js** - Token catalog rendering and interaction logic
-- **token-usage-guide.md** - Comprehensive usage guide for design tokens
-
-## Token Catalog Features
-
-### Visual Preview
-Each token is displayed with a visual representation:
-- **Colors**: Color swatches showing the actual color value
-- **Typography**: Sample text rendered with the font properties
-- **Spacing**: Visual boxes showing the spacing scale
-- **Borders**: Boxes demonstrating border styles and radius
-- **Shadows**: Elements with applied shadow effects
-- **Animations**: Interactive elements showing timing and duration
-
-### Usage Examples
-Each token card includes:
-- Token name (CSS custom property)
-- Current value
-- CSS usage examples
-- JavaScript usage with `useToken()` hook
-
-### Interactive Features
-- **Search**: Filter tokens by name
-- **Category Navigation**: Browse by token category
-- **Hover Interactions**: See animation tokens in action
-
-## Viewing the Catalog
-
-Open `token-catalog.html` in a browser:
-
-```bash
-# Using a local server
-python -m http.server 8000
-# Navigate to http://localhost:8000/docs/tokens/token-catalog.html
-```
+Design tokens are the visual design atoms of the Harmony Design System. They store visual design decisions such as colors, typography, spacing, and more.
 
 ## Token Categories
 
-1. **Colors** - Semantic color tokens for UI elements
-2. **Typography** - Font families, sizes, weights, line heights
-3. **Spacing** - Consistent spacing scale
-4. **Borders** - Border widths and radius values
-5. **Shadows** - Box shadow presets
-6. **Animations** - Timing and duration tokens
+### Colors
 
-## Integration
+#### Primary Scale
+The primary color scale (50-950) provides 11 shades for the main brand color. Use these for:
+- Primary actions and CTAs (500-600)
+- Hover states (400-500)
+- Active/pressed states (600-700)
+- Backgrounds and surfaces (50-100)
+- Text on light backgrounds (700-900)
 
-The token catalog automatically reads from:
-- `styles/design-tokens.css` - CSS custom properties
-- Runtime computed styles - Current token values
+See: [tokens/colors.json](../../tokens/colors.json)
 
-## Usage in Components
+#### Neutral/Gray Scale
+The neutral scale (50-950) provides 11 shades for achromatic colors. Use these for:
+- Surface backgrounds (50-100)
+- Borders and dividers (200-300)
+- Disabled states (300-400)
+- Secondary and body text (500-700)
+- Primary text and headings (800-950)
+- Maximum contrast elements (950)
 
-```javascript
-// Using tokens in JavaScript
-import { useToken } from '../../core/token-hook.js';
+The neutral scale is critical for establishing visual hierarchy and ensuring proper contrast ratios for accessibility.
 
-const primaryColor = useToken('color-primary');
-const baseSpacing = useToken('spacing-base');
-```
+See: [tokens/colors.json](../../tokens/colors.json)
 
-```css
-/* Using tokens in CSS */
-.my-component {
-  background: var(--color-background-primary);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
+## Token Structure
+
+Tokens follow the Design Tokens Community Group (DTCG) format:
+
+```json
+{
+  "tokenName": {
+    "value": "actual-value",
+    "type": "token-type",
+    "description": "human-readable description"
+  }
 }
 ```
 
-## Related Documentation
+## Usage
 
-- Main documentation: `DESIGN_SYSTEM.md#token-system`
-- Token provider: `core/token-provider.js`
-- Token hook: `core/token-hook.js`
-- Token schemas: `core/validation/token-schemas.js`
+### In JavaScript/Web Components
+
+```javascript
+import { getToken } from '../../core/token-hook.js';
+
+// Access color tokens
+const primaryColor = getToken('color.primary.500');
+const neutralText = getToken('color.neutral.700');
+```
+
+### In CSS Custom Properties
+
+Tokens are automatically transformed to CSS custom properties:
+
+```css
+.my-component {
+  background-color: var(--color-primary-500);
+  color: var(--color-neutral-900);
+  border-color: var(--color-neutral-200);
+}
+```
+
+## Token Transformation Pipeline
+
+1. Source tokens defined in JSON (DTCG format)
+2. Style Dictionary transforms tokens to multiple formats
+3. CSS custom properties generated for runtime
+4. TypeScript declarations generated for type safety
+5. Documentation automatically generated
+
+See: [scripts/build-tokens.js](../../scripts/build-tokens.js)
+
+## Visual Catalog
+
+Interactive token catalog with live previews:
+- [Token Catalog](./token-catalog.html)
+
+## Token-Component Matrix
+
+Documentation showing which components use which tokens:
+- [Token-Component Matrix](./token-component-matrix.js)
