@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadow Tokens - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      color: #1a1a1a;
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    h2 {
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 0.5rem;
+    }
+
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin: 2rem 0;
+      padding: 2rem 0;
+    }
+
+    .token-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .shadow-sample {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #666;
+      transition: transform 0.2s ease;
+    }
+
+    .shadow-sample:hover {
+      transform: translateY(-2px);
+    }
+
+    .token-info {
+      text-align: center;
+    }
+
+    .token-name {
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 0.25rem;
+    }
+
+    .token-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #666;
+      background: #f8f8f8;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .usage-section {
+      background: #f8f9fa;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+    }
+
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    .guidelines {
+      background: #e8f4f8;
+      border-left: 4px solid #3498db;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+
+    .guidelines h3 {
+      color: #2980b9;
+      margin-bottom: 0.5rem;
+    }
+
+    .guidelines ul {
+      margin-left: 1.5rem;
+    }
+
+    .guidelines li {
+      margin: 0.5rem 0;
+    }
+
+    .interactive-demo {
+      background: #f0f0f0;
+      padding: 2rem;
+      border-radius: 8px;
+      margin: 2rem 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .demo-card {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .demo-card:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Shadow Tokens</h1>
+    <p class="subtitle">Elevation levels for visual hierarchy and depth</p>
+
+    <section>
+      <h2>Token Scale</h2>
+      <p>Shadow tokens create visual hierarchy through elevation. Higher elevation levels indicate more importance or interactivity.</p>
+      
+      <div class="token-grid" id="shadowGrid"></div>
+    </section>
+
+    <section class="guidelines">
+      <h3>Usage Guidelines</h3>
+      <ul>
+        <li><strong>none:</strong> Flat elements, on-surface components, disabled states</li>
+        <li><strong>sm:</strong> Subtle elevation for cards at rest, list items</li>
+        <li><strong>default:</strong> Standard elevation for buttons, cards, interactive elements</li>
+        <li><strong>md:</strong> Raised elements like dropdowns, popovers, tooltips</li>
+        <li><strong>lg:</strong> Modal dialogs, drawers, prominent overlays</li>
+        <li><strong>xl:</strong> Critical notifications, alerts, top-level modals</li>
+      </ul>
+    </section>
+
+    <section class="usage-section">
+      <h2>Code Usage</h2>
+      
+      <h3>JavaScript Import</h3>
+      <div class="code-block">import { SHADOW_TOKENS, applyShadowTokens } from './tokens/shadow.js';
+
+// Apply to element
+element.style.boxShadow = SHADOW_TOKENS.default;
+
+// Apply as CSS custom properties
+applyShadowTokens(document.documentElement);</div>
+
+      <h3>CSS Custom Properties</h3>
+      <div class="code-block">.card {
+  box-shadow: var(--shadow-default);
+}
+
+.modal {
+  box-shadow: var(--shadow-lg);
+}
+
+.button:hover {
+  box-shadow: var(--shadow-md);
+}</div>
+    </section>
+
+    <section class="interactive-demo">
+      <h2>Interactive Demo</h2>
+      <p>Hover over cards to see elevation changes</p>
+      <div class="demo-card" id="demoCard" style="box-shadow: var(--shadow-default);">
+        Hover to see shadow change
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { SHADOW_TOKENS, applyShadowTokens } from '../../tokens/shadow.js';
+
+    // Apply shadow tokens as CSS variables
+    applyShadowTokens(document.documentElement);
+
+    // Render shadow token grid
+    const shadowGrid = document.getElementById('shadowGrid');
+    
+    Object.entries(SHADOW_TOKENS).forEach(([name, value]) => {
+      const card = document.createElement('div');
+      card.className = 'token-card';
+      
+      const sample = document.createElement('div');
+      sample.className = 'shadow-sample';
+      sample.style.boxShadow = value;
+      sample.textContent = name;
+      
+      const info = document.createElement('div');
+      info.className = 'token-info';
+      
+      const tokenName = document.createElement('div');
+      tokenName.className = 'token-name';
+      tokenName.textContent = name;
+      
+      const tokenValue = document.createElement('div');
+      tokenValue.className = 'token-value';
+      tokenValue.textContent = value;
+      
+      info.appendChild(tokenName);
+      info.appendChild(tokenValue);
+      card.appendChild(sample);
+      card.appendChild(info);
+      shadowGrid.appendChild(card);
+    });
+
+    // Interactive demo
+    const demoCard = document.getElementById('demoCard');
+    const shadowLevels = ['sm', 'default', 'md', 'lg', 'xl'];
+    let currentLevel = 1;
+
+    demoCard.addEventListener('mouseenter', () => {
+      currentLevel = Math.min(currentLevel + 1, shadowLevels.length - 1);
+      demoCard.style.boxShadow = SHADOW_TOKENS[shadowLevels[currentLevel]];
+    });
+
+    demoCard.addEventListener('mouseleave', () => {
+      currentLevel = 1;
+      demoCard.style.boxShadow = SHADOW_TOKENS.default;
+    });
+  </script>
+</body>
+</html>
