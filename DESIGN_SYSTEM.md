@@ -463,3 +463,149 @@ Storybook configuration follows Harmony performance budgets:
 
 See [.storybook/example.stories.js](../.storybook/example.stories.js) for a complete example demonstrating theme support and accessibility best practices.
 
+
+## Storybook Configuration
+
+### Overview
+
+Harmony Design System uses Storybook 8 for component development, documentation, and testing. The configuration includes Vite builder for fast development and dark mode support for theme testing.
+
+**Location**: .storybook/
+
+### Key Features
+
+1. **Storybook 8**: Latest version with improved performance and developer experience
+2. **Vite Builder**: Fast Hot Module Replacement (HMR) and optimized builds
+3. **Dark Mode**: Theme switching support via \ddon-themes\
+4. **Accessibility Testing**: Built-in a11y checks with \ddon-a11y\
+5. **Web Components Support**: Native custom element rendering
+6. **Interactive Controls**: Live editing of component props
+7. **Responsive Viewports**: Test components at mobile, tablet, and desktop sizes
+
+### Configuration Files
+
+- **main.js**: Main configuration (stories, addons, framework setup)
+- **preview.js**: Preview environment (decorators, parameters, theme support)
+- **manager.js**: Storybook UI customization (theme, branding)
+- **vite.config.js**: Custom Vite configuration for optimal Web Components support
+- **preview-head.html**: Global HTML resources (fonts, meta tags, CSS variables)
+
+### Running Storybook
+
+\\\ash
+# Start development server
+cd .storybook
+npm run storybook
+
+# Build static version
+npm run build-storybook
+\\\
+
+Storybook runs at http://localhost:6006
+
+### Writing Stories
+
+Stories are co-located with components:
+
+\\\
+components/my-component/
+  my-component.js          # Component implementation
+  my-component.stories.js  # Storybook stories
+  my-component.test.html   # Browser tests
+\\\
+
+**Example story structure**:
+
+\\\javascript
+export default {
+  title: 'Components/MyComponent',
+  tags: ['autodocs']
+};
+
+export const Default = {
+  render: (args) => createMyComponent(args),
+  args: { prop: 'value' }
+};
+\\\
+
+### Dark Mode Support
+
+Components should use CSS custom properties for theme support:
+
+\\\css
+.my-component {
+  background: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+\\\
+
+Toggle theme using toolbar in Storybook UI. Themes are defined in \preview-head.html\:
+
+- **Light theme**: \:root\ (default)
+- **Dark theme**: \.theme-dark\ class
+
+### Addons
+
+Installed addons provide rich development features:
+
+- **essentials**: Controls, actions, viewport, docs, toolbars
+- **links**: Navigate between related stories
+- **interactions**: Test user interactions and component behavior
+- **a11y**: Automated accessibility testing (WCAG compliance)
+- **themes**: Dark/light mode switching
+- **styling**: CSS and styling utilities
+
+### Performance Considerations
+
+Storybook configuration follows Harmony performance budgets:
+
+1. **Fast HMR**: Vite builder provides sub-100ms updates
+2. **Selective Optimization**: Only build tools are pre-bundled
+3. **No Runtime Dependencies**: Stories use vanilla JS (no npm imports in component code)
+4. **Lazy Loading**: Stories load on-demand
+
+### Integration Points
+
+Storybook integrates with Harmony architecture:
+
+- **Design Tokens**: Loads from \	okens/design-tokens.css\
+- **Global Styles**: Imports from \styles/global.css\
+- **Web Components**: Native shadow DOM support
+- **EventBus**: Available for interactive stories (use \../core/event-bus.js\)
+- **Quality Gates**: Stories can be tested in CI pipeline
+
+### Best Practices
+
+1. **Co-locate Stories**: Keep \.stories.js\ files next to component implementation
+2. **Use Autodocs**: Tag stories with \'autodocs'\ for automatic documentation
+3. **Test All States**: Create stories for default, hover, focus, disabled, error states
+4. **Accessibility**: Use a11y addon to catch issues early
+5. **Responsive Testing**: Test components in mobile, tablet, desktop viewports
+6. **Performance**: Monitor render times using browser DevTools (target: 16ms)
+
+### Example Story
+
+See \.storybook/example.stories.js\ for a complete example demonstrating:
+
+- Multiple story variants (Primary, Success, Warning, Error)
+- Interactive controls with argTypes
+- Dark mode support
+- Proper documentation
+
+### Troubleshooting
+
+**Stories not loading**: Check story paths in \main.js\ match your file structure
+
+**Dark mode not working**: Ensure CSS custom properties are defined and components use them
+
+**Slow performance**: Check \ite.config.js\ - exclude source files from optimization
+
+### Related Files
+
+- Configuration: [.storybook/main.js](.storybook/main.js)
+- Preview: [.storybook/preview.js](.storybook/preview.js)
+- Theme: [.storybook/manager.js](.storybook/manager.js)
+- Example: [.storybook/example.stories.js](.storybook/example.stories.js)
+- README: [.storybook/README.md](.storybook/README.md)
+
