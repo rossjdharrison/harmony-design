@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Design-Implementation Validator Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-component {
+      padding: 1rem;
+      margin: 1rem 0;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .test-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .test-button:hover {
+      background: #0056b3;
+    }
+
+    .test-button:focus {
+      outline: 2px solid #80bdff;
+      outline-offset: 2px;
+    }
+
+    .test-button:active {
+      background: #004085;
+    }
+
+    .test-button:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .validation-report {
+      margin-top: 2rem;
+    }
+
+    .validation-report h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .stat .label {
+      display: block;
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat .value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .stat .value.passed {
+      color: #28a745;
+    }
+
+    .stat .value.failed {
+      color: #dc3545;
+    }
+
+    .results {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .result {
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+    }
+
+    .result.passed {
+      border-color: #28a745;
+      background: #f8fff9;
+    }
+
+    .result.failed {
+      border-color: #dc3545;
+      background: #fff8f8;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .result-header .status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .result.passed .status {
+      background: #28a745;
+      color: white;
+    }
+
+    .result.failed .status {
+      background: #dc3545;
+      color: white;
+    }
+
+    .result-details {
+      font-size: 0.875rem;
+      color: #666;
+    }
+
+    .differences {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #fff3cd;
+      border-radius: 4px;
+    }
+
+    .differences ul {
+      margin: 0.5rem 0 0 0;
+      padding-left: 1.5rem;
+    }
+
+    .meta {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .controls button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: #f8f9fa;
+    }
+
+    .log {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.875rem;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 1rem;
+    }
+
+    .log-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .log-entry.error {
+      color: #dc3545;
+    }
+
+    .log-entry.success {
+      color: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <h1>Design-Implementation Validator Test</h1>
+
+  <div class="test-section">
+    <h2>Test Components</h2>
+    <div id="test-components">
+      <div class="test-component">
+        <button class="test-button" id="test-button-1">Test Button</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Validation Controls</h2>
+    <div class="controls">
+      <button id="register-spec">Register Design Spec</button>
+      <button id="capture-baseline">Capture Baseline</button>
+      <button id="validate-component">Validate Component</button>
+      <button id="validate-all-states">Validate All States</button>
+      <button id="generate-report">Generate Report</button>
+      <button id="export-results">Export Results</button>
+      <button id="clear-history">Clear History</button>
+    </div>
+    <div id="log" class="log"></div>
+  </div>
+
+  <div class="test-section">
+    <div id="report-container"></div>
+  </div>
+
+  <script type="module">
+    import { DesignImplementationValidator } from './design-implementation-validator.js';
+
+    const validator = new DesignImplementationValidator();
+    const logContainer = document.getElementById('log');
+    const reportContainer = document.getElementById('report-container');
+    const testButton = document.getElementById('test-button-1');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+      console.log(message);
+    }
+
+    // Register design spec
+    document.getElementById('register-spec').addEventListener('click', () => {
+      validator.registerDesignSpec('test-button', {
+        expectedStyles: {
+          'background-color': 'rgb(0, 123, 255)',
+          'color': 'rgb(255, 255, 255)',
+          'border-radius': '4px',
+          'padding': '8px 16px'
+        },
+        expectedDimensions: {
+          widthTolerance: 5,
+          heightTolerance: 5
+        },
+        states: ['default', 'hover', 'focus', 'active', 'disabled']
+      });
+      log('Design spec registered for test-button', 'success');
+    });
+
+    // Capture baseline
+    document.getElementById('capture-baseline').addEventListener('click', async () => {
+      try {
+        log('Capturing baseline...');
+        await validator.captureBaseline(testButton, 'test-button', 'default');
+        log('Baseline captured successfully', 'success');
+      } catch (error) {
+        log(`Error capturing baseline: ${error.message}`, 'error');
+      }
+    });
+
+    // Validate component
+    document.getElementById('validate-component').addEventListener('click', async () => {
+      try {
+        log('Validating component...');
+        const result = await validator.validateComponent(testButton, 'test-button', 'default');
+        
+        if (result.passed) {
+          log(`Validation PASSED (similarity: ${(result.similarity * 100).toFixed(2)}%)`, 'success');
+        } else {
+          log(`Validation FAILED: ${result.differences.join(', ')}`, 'error');
+        }
+      } catch (error) {
+        log(`Error validating component: ${error.message}`, 'error');
+      }
+    });
+
+    // Validate all states
+    document.getElementById('validate-all-states').addEventListener('click', async () => {
+      try {
+        log('Validating all states...');
+        const results = await validator.validateAllStates(testButton, 'test-button');
+        
+        const passed = results.filter(r => r.passed).length;
+        log(`Validated ${results.length} states: ${passed} passed, ${results.length - passed} failed`, 
+            passed === results.length ? 'success' : 'error');
+      } catch (error) {
+        log(`Error validating all states: ${error.message}`, 'error');
+      }
+    });
+
+    // Generate report
+    document.getElementById('generate-report').addEventListener('click', () => {
+      try {
+        const html = validator.generateReport();
+        reportContainer.innerHTML = html;
+        log('Report generated', 'success');
+      } catch (error) {
+        log(`Error generating report: ${error.message}`, 'error');
+      }
+    });
+
+    // Export results
+    document.getElementById('export-results').addEventListener('click', () => {
+      try {
+        const json = validator.exportResults();
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `validation-results-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        log('Results exported', 'success');
+      } catch (error) {
+        log(`Error exporting results: ${error.message}`, 'error');
+      }
+    });
+
+    // Clear history
+    document.getElementById('clear-history').addEventListener('click', () => {
+      validator.clearHistory();
+      reportContainer.innerHTML = '';
+      log('History cleared', 'success');
+    });
+
+    log('Design-Implementation Validator initialized');
+    log('Click "Register Design Spec" to begin');
+  </script>
+</body>
+</html>
