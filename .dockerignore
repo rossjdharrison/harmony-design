@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# Node modules (will be installed in container)
+node_modules
+package-lock.json
+
+# Rust build artifacts
+target
+Cargo.lock
+
+# Documentation backups
+docs-backup-*
+
+# Reports
+reports
+
+# Test artifacts
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp

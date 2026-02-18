@@ -1,0 +1,57 @@
+# Harmony Design System - Docker Compose Configuration
+# Provides orchestrated development environment
+
+version: '3.8'
+
+services:
+  # Main development environment
+  harmony-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: harmony-design-dev
+    volumes:
+      # Mount workspace for live development
+      - .:/workspace
+      # Persistent cargo cache for faster rebuilds
+      - cargo-cache:/root/.cargo/registry
+      - cargo-git:/root/.cargo/git
+      # Persistent target directory for faster rebuilds
+      - target-cache:/workspace/target
+    ports:
+      # Main dev server
+      - "8080:8080"
+      # Storybook
+      - "8081:8081"
+      # Test server
+      - "8082:8082"
+    environment:
+      - RUST_BACKTRACE=1
+      - WASM_BINDGEN_TEST_TIMEOUT=120
+      - NODE_ENV=development
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    command: /bin/bash
+
+  # Optional: Standalone test server
+  test-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: python-builder
+    container_name: harmony-test-server
+    volumes:
+      - .:/workspace
+    ports:
+      - "8082:8082"
+    working_dir: /workspace
+    command: python3 -m pytest --verbose
+    profiles:
+      - testing
+
+volumes:
+  cargo-cache:
+  cargo-git:
+  target-cache:

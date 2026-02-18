@@ -1,291 +1,361 @@
 # Harmony Design System
 
-A comprehensive design system for building audio production interfaces with consistent visual language and behavior.
+A complete design system for building audio production interfaces with consistent, accessible components.
 
-## Overview
+## Quick Start
 
-The Harmony Design System provides design tokens, UI components, and patterns for creating professional audio production tools. It follows atomic design principles and emphasizes performance, accessibility, and consistency.
+### Development Environment
 
-## Design Tokens
+The Harmony Design System provides a Docker-based development environment for consistent builds across all platforms.
 
-Design tokens are the visual design atoms of the system. They define colors, spacing, typography, and other fundamental visual properties.
+**Prerequisites:**
+- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
+- Git
 
-### Color Palette
+**Setup:**
 
-The system uses a carefully crafted color palette with semantic meaning:
+```bash
+# Clone the repository
+git clone <repository-url>
+cd harmony-design
 
-- **Primary colors**: Main brand colors for key interactive elements
-- **Accent colors**: Blue, green, red, yellow for status and feedback
-- **Alpha variants**: Transparency levels for overlays and layering
+# Build the development container
+./scripts/docker-dev.sh build        # Linux/Mac
+.\scripts\docker-dev.ps1 build       # Windows
 
-See implementation: [tokens/colors.js](./tokens/colors.js)  
-Interactive demo: [docs/tokens/accent-colors.html](./docs/tokens/accent-colors.html)
+# Start the development environment
+./scripts/docker-dev.sh start        # Linux/Mac
+.\scripts\docker-dev.ps1 start       # Windows
 
-### Spacing Scale
+# Open a shell in the container
+./scripts/docker-dev.sh shell        # Linux/Mac
+.\scripts\docker-dev.ps1 shell       # Windows
+```
 
-A consistent spacing system based on a 4px base unit (0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24).
+**What's Included:**
+- Rust toolchain with wasm-pack for WASM compilation
+- Node.js 20.x LTS (build tools only, not runtime)
+- Python 3.11 (test servers and build scripts only)
+- Chrome (for UI component testing per policy #10)
+- All system dependencies pre-configured
 
-See implementation: [tokens/spacing.js](./tokens/spacing.js)
+**Common Commands:**
 
-### Typography
+```bash
+# Build WASM modules
+./scripts/docker-dev.sh build-wasm
 
-#### Font Size Scale
-Eight-step scale from xs (10px) to 3xl (32px) for hierarchical text sizing.
+# Run Rust tests
+./scripts/docker-dev.sh test
 
-See implementation: [tokens/font-size.js](./tokens/font-size.js)  
-Interactive demo: [docs/tokens/font-size-scale.html](./docs/tokens/font-size-scale.html)
+# Run Chrome UI tests
+./scripts/docker-dev.sh test-chrome
 
-#### Font Weight
-Three weights for emphasis: regular (400), medium (500), semibold (600).
+# Clean build artifacts
+./scripts/docker-dev.sh clean
 
-See implementation: [tokens/font-weight.js](./tokens/font-weight.js)  
-Interactive demo: [docs/tokens/font-weight.html](./docs/tokens/font-weight.html)
+# View logs
+./scripts/docker-dev.sh logs
+```
 
-#### Line Height
-Three options for text density: tight (1.2), normal (1.5), relaxed (1.8).
+**Volume Mounts:**
+- Project files are mounted at `/workspace` for live development
+- Cargo cache is persisted for faster rebuilds
+- Target directory is cached between container restarts
 
-See implementation: [tokens/line-height.js](./tokens/line-height.js)  
-Interactive demo: [docs/tokens/line-height.html](./docs/tokens/line-height.html)
+See [Dockerfile](./Dockerfile) and [docker-compose.yml](./docker-compose.yml) for configuration details.
 
-#### Letter Spacing
-Three tracking options: tight (-0.02em), normal (0), loose (0.05em).
+### Manual Setup (Without Docker)
 
-See implementation: [tokens/letter-spacing.js](./tokens/letter-spacing.js)  
-Interactive demo: [docs/tokens/letter-spacing.html](./docs/tokens/letter-spacing.html)
+If you prefer not to use Docker, install these tools manually:
 
-### Border Tokens
+1. **Rust** (1.70+): Install from [rustup.rs](https://rustup.rs)
+2. **wasm-pack**: Install with `cargo install wasm-pack`
+3. **Node.js** (20.x LTS): For build tools only
+4. **Python** (3.11+): For test servers only
+5. **Chrome**: Required for UI component testing
 
-#### Border Radius
-Six levels from none (0) to 2xl (16px) for varying corner roundness.
+## Architecture Overview
 
-See implementation: [tokens/border-radius.js](./tokens/border-radius.js)  
-Interactive demo: [docs/tokens/border-radius.html](./docs/tokens/border-radius.html)
+Harmony uses a layered architecture:
 
-#### Border Width
-Four widths: none (0), thin (1px), default (2px), thick (4px).
+**Core Layer (Rust → WASM):**
+- Bounded contexts: Component lifecycle, state management
+- Graph engine: Audio processing graph
+- Schemas: Type definitions and validation
 
-See implementation: [tokens/border-width.js](./tokens/border-width.js)
+**UI Layer (Vanilla JS/HTML/CSS):**
+- Web Components with Shadow DOM
+- Event-driven communication via EventBus
+- Token-based theming system
 
-### Shadow Tokens
+**Key Principles:**
+1. **No Runtime Dependencies**: Zero npm packages in production code
+2. **No Frameworks**: Pure Web Components, no React/Vue/Leptos
+3. **Event-Driven**: UI publishes events, bounded contexts handle logic
+4. **Performance First**: 16ms render budget, 10ms audio latency
 
-Six elevation levels (none, sm, default, md, lg, xl) create visual hierarchy through depth and layering. Shadows use multiple layers for realistic depth perception.
+See [Architecture Decisions](./docs/architecture-decisions.md) for detailed rationale.
 
-**Usage guidelines:**
-- **none**: Flat elements, on-surface components, disabled states
-- **sm**: Subtle elevation for cards at rest, list items
-- **default**: Standard elevation for buttons, cards, interactive elements
-- **md**: Raised elements like dropdowns, popovers, tooltips
-- **lg**: Modal dialogs, drawers, prominent overlays
-- **xl**: Critical notifications, alerts, top-level modals
+## Component Hierarchy
 
-See implementation: [tokens/shadow.js](./tokens/shadow.js)  
-Interactive demo: [docs/tokens/shadow.html](./docs/tokens/shadow.html)
+Harmony follows Atomic Design principles:
 
-### Text Color Tokens
+**Primitives** (Atoms):
+- Basic controls: buttons, sliders, toggles
+- Pure presentation, minimal logic
+- Example: [harmony-toggle](./controls/harmony-toggle/harmony-toggle.js)
 
-Text color tokens provide semantic naming for text colors across different UI contexts and themes. These tokens automatically adapt between light and dark themes while maintaining proper contrast ratios.
+**Molecules**:
+- Composed from primitives
+- Single responsibility
+- Example: [harmony-fader](./components/controls/harmony-fader.js)
 
-**Token Reference:** `tokens/text-color-tokens.js`
-**Visual Documentation:** `docs/tokens/text-color.html`
+**Organisms**:
+- Complex, feature-complete components
+- Example: [transport-bar](./components/composites/transport-bar/transport-bar.js)
 
-#### Available Tokens
+**Templates**:
+- Page-level layouts
+- Combine organisms into workflows
 
-- **text-primary**: Primary text color for body copy, headings, and main content
-  - Light: gb(17, 24, 39) (near-black for maximum readability)
-  - Dark: gb(249, 250, 251) (near-white for dark backgrounds)
+See [Atomic Design Hierarchy](./docs/atomic-design-hierarchy.md) for the complete component tree.
 
-- **text-secondary**: Secondary text color for supporting content and labels
-  - Light: gb(75, 85, 99) (medium gray for hierarchy)
-  - Dark: gb(209, 213, 219) (light gray maintaining contrast)
+## Token System
 
-- **text-tertiary**: Tertiary text color for placeholder text and hints
-  - Light: gb(156, 163, 175) (lighter gray for minimal emphasis)
-  - Dark: gb(107, 114, 128) (medium gray for subtle content)
+Design tokens define the visual language of Harmony:
 
-- **text-disabled**: Disabled text color for inactive content
-  - Light: gb(209, 213, 219) (very light gray indicating unavailability)
-  - Dark: gb(75, 85, 99) (darker gray for disabled state)
+**Token Categories:**
+- **Primitive Tokens**: Raw values (colors, spacing, typography)
+- **Semantic Tokens**: Context-aware mappings (primary-color, spacing-medium)
+- **Component Tokens**: Component-specific overrides
 
-- **text-inverse**: Inverse text color for contrasting backgrounds
-  - Light: gb(255, 255, 255) (white text on dark backgrounds)
-  - Dark: gb(17, 24, 39) (dark text on light backgrounds in dark mode)
+**Usage:**
 
-#### Usage in CSS
+```javascript
+import { TokenProvider } from './core/token-provider.js';
 
-`css
-.heading {
-  color: var(--text-primary);
-}
+// Access tokens in JavaScript
+const provider = new TokenProvider();
+const primaryColor = provider.getToken('color-primary');
 
-.label {
-  color: var(--text-secondary);
-}
+// Tokens are available as CSS custom properties
+// See styles/tokens.css
+```
 
-.placeholder {
-  color: var(--text-tertiary);
-}
+**Files:**
+- [Primitive Tokens](./styles/tokens.css)
+- [Dark Theme](./styles/theme-dark.css)
+- [Light Theme](./styles/theme-light.css)
+- [Token Provider](./core/token-provider.js)
 
-.disabled {
-  color: var(--text-disabled);
-}
+## Event System
 
-.button-text {
-  color: var(--text-inverse);
-}
-`
+All communication happens through the EventBus:
 
-#### Usage in JavaScript
+**Pattern:**
+1. UI component publishes event
+2. EventBus validates and routes
+3. Bounded context handles command
+4. Bounded context publishes result
+5. UI subscribes to result
 
-`javascript
-import { TEXT_COLOR_TOKENS, getTextColor, applyTextColorTokens } from './tokens/text-color-tokens.js';
+**Example:**
 
-// Get specific color value
-const primaryColor = getTextColor('text-primary', 'light');
-element.style.color = primaryColor;
+```javascript
+import { EventBus } from './core/event-bus.js';
 
-// Apply all tokens to document
-applyTextColorTokens('dark');
+// Publish command
+EventBus.publish('transport.play', { timestamp: Date.now() });
 
-// Validate token name
-import { isValidTextColorToken } from './tokens/text-color-tokens.js';
-if (isValidTextColorToken('text-primary')) {
-  // Token exists
-}
-`
+// Subscribe to result
+EventBus.subscribe('playback.started', (data) => {
+  console.log('Playback started:', data);
+});
+```
 
-#### Accessibility Considerations
+**Debugging:**
+- EventBusComponent is available on every page (Ctrl+Shift+E)
+- All events are logged with context
+- Validation failures include detailed error messages
 
-All text color tokens are designed to meet WCAG 2.1 Level AA contrast requirements:
-- Primary text: 7:1 contrast ratio (AAA)
-- Secondary text: 4.5:1 contrast ratio (AA)
-- Tertiary text: Use for non-critical content only
-- Disabled text: Intentionally lower contrast to indicate unavailability
-- Inverse text: Verified contrast on common background colors
+See [Event Bus](./core/event-bus.js) and [Event Schemas](./core/validation/event-schemas.js).
 
-#### Theme Adaptation
+## Development Workflow
 
-Text color tokens automatically adapt when theme changes. The system ensures:
-1. Consistent semantic meaning across themes
-2. Proper contrast ratios in both light and dark modes
-3. Smooth transitions between theme states
-4. Predictable behavior in mixed-theme contexts
+### 1. Schema Changes
 
+When changing Rust behavior:
 
+```bash
+# 1. Navigate to schemas
+cd harmony-schemas
 
-## Components
+# 2. Modify schema definition
+vim src/component_lifecycle.rs
 
-Components are built using Web Components with shadow DOM for encapsulation.
+# 3. Run codegen
+cargo build
 
-### Primitives
+# 4. Verify compilation
+cargo test
 
-Basic building blocks like buttons, inputs, and labels.
+# 5. Commit schema AND generated code together
+git add .
+git commit -m "feat: update component lifecycle schema"
+```
 
-### Molecules
+**Important**: CI fails if schema changed but generated code is stale (policy #6).
 
-Combinations of primitives like labeled inputs and button groups.
+### 2. UI Component Development
 
-### Organisms
+```bash
+# 1. Create component file
+touch components/controls/my-component.js
 
-Complex components like transport bars and mixer channels.
+# 2. Implement with Shadow DOM
+# See existing components for patterns
 
-See implementations: [components/](./components/)
+# 3. Create test file
+touch components/controls/my-component.test.html
 
-## Architecture
+# 4. Test in Chrome (MANDATORY per policy #10)
+# Verify ALL states: default, hover, focus, active, disabled
 
-### Event-Driven Communication
+# 5. Update documentation
+vim DESIGN_SYSTEM.md
+```
 
-Components communicate through an event bus rather than direct coupling. This enables loose coupling and testability.
+### 3. WASM Module Development
 
-See implementation: [core/event-bus.js](./core/event-bus.js)
+```bash
+# 1. Modify Rust code in bounded-contexts/
+vim bounded-contexts/component-lifecycle/src/lib.rs
 
-### Token System
+# 2. Build WASM
+cd bounded-contexts/component-lifecycle
+wasm-pack build --target web
 
-Design tokens are applied through CSS custom properties, allowing runtime theming and easy updates.
+# 3. Test in browser
+# Import from pkg/ directory
+```
 
-See implementation: [core/token-provider.js](./core/token-provider.js)
+## Performance Budgets
 
-### Validation
+All code must meet these targets:
 
-Component schemas ensure type safety and consistent APIs.
+**Render Performance:**
+- Maximum 16ms per frame (60fps)
+- GPU-accelerated animations where possible
+- Use Chrome DevTools Performance panel to verify
 
-See implementation: [core/validation/](./core/validation/)
+**Memory:**
+- Maximum 50MB WASM heap
+- Monitor with Chrome Task Manager
 
-## Performance
+**Load Time:**
+- Maximum 200ms initial load
+- Lazy-load non-critical components
 
-The system adheres to strict performance budgets:
+**Audio Latency:**
+- Maximum 10ms end-to-end
+- WebGPU + WASM dual implementation required
 
-- **Render Budget**: 16ms per frame (60fps)
-- **Memory Budget**: 50MB WASM heap
-- **Load Budget**: 200ms initial load
-- **Audio Latency**: 10ms end-to-end
-
-## Getting Started
-
-1. Include the token provider in your HTML
-2. Import required components
-3. Use design tokens via CSS custom properties
-4. Follow component patterns and guidelines
-
-## Development
-
-All code uses vanilla JavaScript, HTML, and CSS. No frameworks or runtime dependencies.
-
-See development tools: [components/dev-tools/](./components/dev-tools/)
+See [Performance Budget](./docs/performance/performance-budget.md) and [Memoization Strategy](./docs/performance/memoization-strategy.md).
 
 ## Testing
 
-Components must be tested in Chrome before completion, verifying all states (default, hover, focus, active, disabled).
+### Unit Tests (Rust)
 
-See test pages: [test-pages/](./test-pages/)
-
-### Surface State Tokens
-
-Surface state tokens define interactive state variations for surface elements. These tokens provide consistent visual feedback across all interactive components in the system.
-
-**Location:** 	okens/surface-state.css  
-**Documentation:** [Surface State Tokens Demo](docs/tokens/surface-state.html)
-
-**Available Tokens:**
-
-- **--surface-hover**: Applied when cursor hovers over interactive elements (opacity: 0.08)
-- **--surface-active**: Applied during click/press interaction (opacity: 0.12)
-- **--surface-selected**: Applied to selected or currently active items (opacity: 0.16)
-- **--surface-disabled**: Applied to non-interactive or disabled elements (opacity: 0.02)
-- **--surface-disabled-text**: Text color for disabled elements (opacity: 0.38)
-
-**Theme Support:**
-
-All surface state tokens have light and dark theme variants that automatically adapt based on the data-theme attribute.
-
-**Usage Example:**
-
-```css
-.button {
-  background: transparent;
-  transition: background 0.2s ease;
-}
-
-.button:hover {
-  background: var(--surface-hover);
-}
-
-.button:active {
-  background: var(--surface-active);
-}
-
-.button[aria-selected="true"] {
-  background: var(--surface-selected);
-}
-
-.button:disabled {
-  background: var(--surface-disabled);
-  color: var(--surface-disabled-text);
-}
+```bash
+cd harmony-schemas
+cargo test
 ```
 
-**Design Principles:**
+### Integration Tests (JavaScript)
 
-1. **Progressive Feedback**: States increase in visual prominence from hover ? active ? selected
-2. **Subtlety**: Hover states are subtle to avoid distraction
-3. **Clarity**: Selected states are clearly visible but not overwhelming
-4. **Accessibility**: Disabled states reduce prominence while maintaining readability
+Open test HTML files in Chrome:
+- [harmony-toggle.test.html](./controls/harmony-toggle/harmony-toggle.test.html)
+- [harmony-fader.test.html](./components/controls/harmony-fader.test.html)
+- [transport-bar.test.html](./components/composites/transport-bar/transport-bar.test.html)
+
+### Performance Tests
+
+Use Chrome DevTools:
+1. Open Performance panel
+2. Record interaction
+3. Verify 60fps (no frames over 16ms)
+4. Check memory usage
+
+## CI/CD
+
+GitHub Actions runs on every PR:
+
+**Quality Gates:**
+1. Rust tests (`cargo test`)
+2. WASM build (`wasm-pack build`)
+3. Bundle size check (enforces performance budget)
+4. Lint and format checks
+
+**Preview Deployments:**
+- Vercel deploys preview on every PR
+- Test components in production-like environment
+
+See [CI Build Pipeline](./.github/workflows/ci-build.yml) and [Bundle Size Check](./.github/workflows/bundle-size-check.yml).
+
+## Contributing
+
+1. Create feature branch from `main`
+2. Implement changes following policies
+3. Test in Chrome (UI components)
+4. Update DESIGN_SYSTEM.md (MANDATORY per policy #19)
+5. Commit with conventional commits format
+6. Push to remote (MANDATORY per policy #20)
+7. Open PR
+
+**Blocked Tasks:**
+If you cannot complete a task, create a report in `reports/blocked/{task_id}.md` (policy #18).
+
+## File Organization
+
+```
+harmony-design/
+├── bounded-contexts/     # Rust bounded contexts (WASM)
+├── components/           # UI components (Web Components)
+├── controls/             # Primitive controls
+├── core/                 # Core utilities (EventBus, TokenProvider)
+├── docs/                 # Technical documentation
+├── scripts/              # Build and dev scripts
+├── styles/               # CSS tokens and themes
+├── tests/                # Test files
+├── Dockerfile            # Development environment
+├── docker-compose.yml    # Container orchestration
+└── DESIGN_SYSTEM.md      # This file
+```
+
+## Key Policies
+
+These rules apply to every task:
+
+1. **No Runtime Dependencies**: npm packages for build tools only
+2. **No Frameworks**: Pure Web Components
+3. **Event-Driven**: UI publishes, BCs handle
+4. **Chrome Testing**: All UI components tested in Chrome
+5. **Documentation**: DESIGN_SYSTEM.md updated with every task
+6. **Git Push**: Changes pushed before new tasks
+7. **Performance**: Meet render/memory/load budgets
+8. **Schema-First**: Codegen from schemas, don't edit Rust directly
+
+See full policy list in task documentation.
+
+## Support
+
+- **Documentation**: This file and [docs/](./docs/)
+- **Code Examples**: See existing components
+- **Debugging**: EventBusComponent (Ctrl+Shift+E)
+- **Issues**: Check [reports/blocked/](./reports/blocked/)
+
+---
+
+**Version**: 1.0.0  
+**Last Updated**: 2025-01-15
