@@ -359,3 +359,107 @@ See full policy list in task documentation.
 
 **Version**: 1.0.0  
 **Last Updated**: 2025-01-15
+## Storybook Configuration
+
+The Harmony Design System uses Storybook 8 for component development, documentation, and testing.
+
+### Setup
+
+Storybook is configured in the .storybook/ directory with:
+
+- **Vite Builder**: Fast HMR and optimized production builds
+- **Dark Mode**: Theme switching via `@storybook/addon-themes`
+- **Accessibility Testing**: Automated checks with axe-playwright
+- **Web Components**: Native support for custom elements
+
+### Quick Start
+
+```bash
+# Start Storybook dev server
+npm run storybook
+
+# Build static Storybook
+npm run build-storybook
+
+# Run accessibility tests
+npm run test-storybook
+```
+
+### Writing Stories
+
+Stories follow this pattern:
+
+```javascript
+// components/my-component/my-component.stories.js
+export default {
+  title: 'Components/MyComponent',
+  tags: ['autodocs'],
+};
+
+export const Default = () => {
+  const element = document.createElement('my-component');
+  return element;
+};
+```
+
+### Theme Support
+
+Storybook provides automatic theme switching between light and dark modes. Components should use CSS variables for theming:
+
+- `--color-background`: Main background color
+- `--color-surface`: Surface/card background
+- `--color-text`: Primary text color
+- `--color-text-secondary`: Secondary text color
+- `--color-border`: Border color
+- `--color-primary`: Primary brand color
+- `--color-primary-hover`: Primary hover state
+
+Example usage:
+
+```javascript
+button.style.backgroundColor = 'var(--color-primary)';
+button.style.color = 'white';
+```
+
+### Accessibility Testing
+
+All stories are automatically tested for WCAG 2.1 AA compliance. The a11y addon checks:
+
+- Color contrast ratios
+- ARIA attributes
+- Keyboard navigation
+- Focus management
+- Semantic HTML
+
+To disable a11y testing for a specific story:
+
+```javascript
+MyStory.parameters = {
+  a11y: {
+    disable: true,
+  },
+};
+```
+
+### Performance Targets
+
+Storybook configuration follows Harmony performance budgets:
+
+- Dev server start: <3s
+- HMR update: <100ms
+- Story render: <16ms (60fps target)
+- Production build: <30s
+
+### Configuration Files
+
+- [.storybook/main.js](../.storybook/main.js): Main configuration
+- [.storybook/preview.js](../.storybook/preview.js): Preview decorators and parameters
+- [.storybook/manager.js](../.storybook/manager.js): Manager UI customization
+- [.storybook/vite.config.js](../.storybook/vite.config.js): Vite build configuration
+- [.storybook/preview-head.html](../.storybook/preview-head.html): Custom preview HTML
+- [.storybook/test-runner.js](../.storybook/test-runner.js): Test runner configuration
+
+### Example Stories
+
+See [.storybook/example.stories.js](../.storybook/example.stories.js) for a complete example demonstrating theme support and accessibility best practices.
+
