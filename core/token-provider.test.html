@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TokenProvider Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    
+    .test-result {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+    }
+    
+    .test-result.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .test-result.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+    
+    button:hover {
+      background: #f0f0f0;
+    }
+    
+    .themed-box {
+      padding: 2rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    #event-log {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+    
+    .event-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>TokenProvider Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Basic Theme Switching</h2>
+    <div class="controls">
+      <button id="set-light">Set Light Theme</button>
+      <button id="set-dark">Set Dark Theme</button>
+      <button id="set-custom">Set Custom Theme</button>
+    </div>
+    <div id="basic-results"></div>
+    
+    <harmony-token-provider id="provider" theme="light" persist>
+      <div class="themed-box" id="themed-content">
+        Current Theme: <span id="current-theme">-</span>
+      </div>
+    </harmony-token-provider>
+  </div>
+  
+  <div class="test-section">
+    <h2>Token Resolution</h2>
+    <div class="controls">
+      <button id="test-resolution">Test Token Resolution</button>
+      <button id="set-override">Set Override</button>
+      <button id="clear-override">Clear Override</button>
+    </div>
+    <div id="resolution-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Context Propagation</h2>
+    <div class="controls">
+      <button id="test-context">Test Context Access</button>
+    </div>
+    <div id="context-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Event Bus Integration</h2>
+    <div class="controls">
+      <button id="test-events">Test EventBus Commands</button>
+      <button id="clear-log">Clear Log</button>
+    </div>
+    <div id="event-log"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Performance Metrics</h2>
+    <div class="controls">
+      <button id="run-perf">Run Performance Test</button>
+    </div>
+    <div id="perf-results"></div>
+  </div>
+
+  <script type="module">
+    import { TokenProvider, findTokenProvider, getTokenContext } from './token-provider.js';
+    import { EventBus } from './event-bus.js';
+
+    const provider = document.getElementById('provider');
+    const eventBus = EventBus.getInstance();
+    const eventLog = document.getElementById('event-log');
+    
+    // Event logging
+    function logEvent(type, detail) {
+      const entry = document.createElement('div');
+      entry.className = 'event-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${type}: ${JSON.stringify(detail)}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+    }
+    
+    // Listen to all token-related events
+    provider.addEventListener('theme-changed', (e) => {
+      logEvent('theme-changed', e.detail);
+      document.getElementById('current-theme').textContent = e.detail.newTheme;
+    });
+    
+    provider.addEventListener('tokens-updated', (e) => {
+      logEvent('tokens-updated', e.detail);
+    });
+    
+    eventBus.subscribe('theme-changed', (event) => {
+      logEvent('EventBus: theme-changed', event.payload);
+    });
+    
+    eventBus.subscribe('token-override-set', (event) => {
+      logEvent('EventBus: token-override-set', event.payload);
+    });
+    
+    // Test helpers
+    function addResult(containerId, message, pass) {
+      const container = document.getElementById(containerId);
+      const result = document.createElement('div');
+      result.className = `test-result ${pass ? 'pass' : 'fail'}`;
+      result.textContent = `${pass ? '✓' : '✗'} ${message}`;
+      container.appendChild(result);
+    }
+    
+    function clearResults(containerId) {
+      document.getElementById(containerId).innerHTML = '';
+    }
+    
+    // Basic theme switching tests
+    document.getElementById('set-light').addEventListener('click', () => {
+      clearResults('basic-results');
+      provider.setAttribute('theme', 'light');
+      const context = provider.getContext();
+      addResult('basic-results', `Theme set to: ${context.theme}`, context.theme === 'light');
+    });
+    
+    document.getElementById('set-dark').addEventListener('click', () => {
+      clearResults('basic-results');
+      provider.setAttribute('theme', 'dark');
+      const context = provider.getContext();
+      addResult('basic-results', `Theme set to: ${context.theme}`, context.theme === 'dark');
+    });
+    
+    document.getElementById('set-custom').addEventListener('click', () => {
+      clearResults('basic-results');
+      provider.setAttribute('theme', 'custom');
+      const context = provider.getContext();
+      addResult('basic-results', `Theme set to: ${context.theme}`, context.theme === 'custom');
+    });
+    
+    // Token resolution tests
+    document.getElementById('test-resolution').addEventListener('click', () => {
+      clearResults('resolution-results');
+      const context = provider.getContext();
+      
+      // Test basic resolution
+      const token1 = context.getToken('color.primary.500', '#000');
+      addResult('resolution-results', `Token resolved: ${token1}`, token1 !== undefined);
+      
+      // Test fallback
+      const token2 = context.getToken('nonexistent.token', 'fallback');
+      addResult('resolution-results', `Fallback works: ${token2}`, token2 === 'fallback');
+    });
+    
+    document.getElementById('set-override').addEventListener('click', () => {
+      clearResults('resolution-results');
+      provider.setTokenOverride('color.primary.500', '#ff0000');
+      const context = provider.getContext();
+      const value = context.getToken('color.primary.500');
+      addResult('resolution-results', `Override set: ${value}`, value === '#ff0000');
+    });
+    
+    document.getElementById('clear-override').addEventListener('click', () => {
+      clearResults('resolution-results');
+      provider.clearTokenOverride('color.primary.500');
+      const context = provider.getContext();
+      const value = context.getToken('color.primary.500', 'default');
+      addResult('resolution-results', `Override cleared`, value !== '#ff0000');
+    });
+    
+    // Context propagation tests
+    document.getElementById('test-context').addEventListener('click', () => {
+      clearResults('context-results');
+      
+      const themedBox = document.getElementById('themed-content');
+      const foundProvider = findTokenProvider(themedBox);
+      addResult('context-results', 'Provider found from child', foundProvider === provider);
+      
+      const context = getTokenContext(themedBox);
+      addResult('context-results', 'Context accessible from child', context !== null);
+      addResult('context-results', `Context has theme: ${context?.theme}`, context?.theme !== undefined);
+      addResult('context-results', 'Context has getToken function', typeof context?.getToken === 'function');
+      addResult('context-results', 'Context has setTheme function', typeof context?.setTheme === 'function');
+    });
+    
+    // EventBus integration tests
+    document.getElementById('test-events').addEventListener('click', () => {
+      // Test theme change via EventBus
+      eventBus.publish({
+        type: 'set-theme',
+        source: 'test',
+        payload: { theme: 'dark' }
+      });
+      
+      setTimeout(() => {
+        // Test token override via EventBus
+        eventBus.publish({
+          type: 'set-token-override',
+          source: 'test',
+          payload: { tokenPath: 'test.token', value: 'test-value' }
+        });
+      }, 100);
+      
+      setTimeout(() => {
+        // Test clear override via EventBus
+        eventBus.publish({
+          type: 'clear-token-override',
+          source: 'test',
+          payload: { tokenPath: 'test.token' }
+        });
+      }, 200);
+    });
+    
+    document.getElementById('clear-log').addEventListener('click', () => {
+      eventLog.innerHTML = '';
+    });
+    
+    // Performance tests
+    document.getElementById('run-perf').addEventListener('click', () => {
+      clearResults('perf-results');
+      const context = provider.getContext();
+      
+      // Test token resolution performance
+      const iterations = 10000;
+      const start = performance.now();
+      
+      for (let i = 0; i < iterations; i++) {
+        context.getToken('color.primary.500', '#000');
+      }
+      
+      const end = performance.now();
+      const avgTime = (end - start) / iterations;
+      
+      addResult('perf-results', `${iterations} token resolutions in ${(end - start).toFixed(2)}ms`, true);
+      addResult('perf-results', `Average: ${avgTime.toFixed(4)}ms per resolution`, avgTime < 0.01);
+      
+      // Test theme switching performance
+      const themeStart = performance.now();
+      context.setTheme('dark');
+      context.setTheme('light');
+      const themeEnd = performance.now();
+      
+      addResult('perf-results', `Theme switch: ${(themeEnd - themeStart).toFixed(2)}ms`, (themeEnd - themeStart) < 16);
+    });
+    
+    // Initial state
+    document.getElementById('current-theme').textContent = provider.getContext().theme;
+    logEvent('initial', { theme: provider.getContext().theme });
+  </script>
+</body>
+</html>
