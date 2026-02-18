@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Hook Tests</title>
+  <style>
+    :root {
+      /* Light theme tokens */
+      --color-primary-500: #0066cc;
+      --color-secondary-500: #6b7280;
+      --spacing-sm: 8px;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+      --font-size-body: 16px;
+      --border-radius-md: 4px;
+    }
+
+    [data-theme="dark"] {
+      --color-primary-500: #3b82f6;
+      --color-secondary-500: #9ca3af;
+      --spacing-md: 16px; /* Same in both themes */
+    }
+
+    [data-theme="high-contrast"] {
+      --color-primary-500: #000000;
+      --color-secondary-500: #ffffff;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    .test-result.pass {
+      background-color: #d1fae5;
+      border-left: 4px solid #10b981;
+    }
+
+    .test-result.fail {
+      background-color: #fee2e2;
+      border-left: 4px solid #ef4444;
+    }
+
+    .demo-box {
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    button {
+      padding: 8px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #f3f4f6;
+    }
+
+    button.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+
+    .stats {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f9fafb;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Token Hook Tests</h1>
+  
+  <div class="theme-controls">
+    <button id="theme-light" class="active">Light Theme</button>
+    <button id="theme-dark">Dark Theme</button>
+    <button id="theme-high-contrast">High Contrast</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="test-results"></div>
+    <div id="test-stats" class="stats"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Live Demo: Reactive Token Updates</h2>
+    <div id="demo-box" class="demo-box">
+      This box uses reactive tokens. Switch themes to see it update!
+    </div>
+    <div id="demo-info"></div>
+  </div>
+
+  <script type="module">
+    import { EventBus } from './event-bus.js';
+    import { 
+      useToken, 
+      getTokens, 
+      getCurrentTheme, 
+      clearTokenCache,
+      getCachedTokens,
+      prefetchTokens,
+      __testing__ 
+    } from './token-hook.js';
+
+    const results = document.getElementById('test-results');
+    const stats = document.getElementById('test-stats');
+    let passCount = 0;
+    let failCount = 0;
+
+    function logResult(testName, passed, message = '') {
+      const div = document.createElement('div');
+      div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      div.textContent = `${passed ? '✓' : '✗'} ${testName}${message ? ': ' + message : ''}`;
+      results.appendChild(div);
+      
+      if (passed) passCount++;
+      else failCount++;
+    }
+
+    function updateStats() {
+      const total = passCount + failCount;
+      const percentage = total > 0 ? Math.round((passCount / total) * 100) : 0;
+      stats.innerHTML = `
+        <strong>Tests:</strong> ${total} total, ${passCount} passed, ${failCount} failed (${percentage}%)
+      `;
+    }
+
+    // Test 1: Basic token access
+    try {
+      const token = useToken('color.primary.500', { reactive: false });
+      const isValid = token.value && token.value.length > 0;
+      logResult('Basic token access', isValid, token.value);
+    } catch (e) {
+      logResult('Basic token access', false, e.message);
+    }
+
+    // Test 2: Token path to CSS var conversion
+    try {
+      const token = useToken('color.primary.500', { reactive: false });
+      const expected = '--color-primary-500';
+      const passed = token.cssVar === expected;
+      logResult('Token path to CSS var', passed, `${token.cssVar} === ${expected}`);
+    } catch (e) {
+      logResult('Token path to CSS var', false, e.message);
+    }
+
+    // Test 3: CSS var reference generation
+    try {
+      const token = useToken('spacing.md', { reactive: false });
+      const expected = 'var(--spacing-md)';
+      const passed = token.toVarReference() === expected;
+      logResult('CSS var reference', passed, token.toVarReference());
+    } catch (e) {
+      logResult('CSS var reference', false, e.message);
+    }
+
+    // Test 4: Multiple tokens access
+    try {
+      const tokens = getTokens(['color.primary.500', 'spacing.md', 'font-size-body']);
+      const passed = Object.keys(tokens).length === 3 && 
+                     tokens['color.primary.500'] && 
+                     tokens['spacing.md'] &&
+                     tokens['font-size-body'];
+      logResult('Multiple tokens access', passed, `Got ${Object.keys(tokens).length} tokens`);
+    } catch (e) {
+      logResult('Multiple tokens access', false, e.message);
+    }
+
+    // Test 5: Array token access
+    try {
+      const tokens = useToken(['spacing.sm', 'spacing.md', 'spacing.lg'], { reactive: false });
+      const passed = tokens.values.length === 3 && 
+                     tokens.get(0) && 
+                     tokens.get(1) && 
+                     tokens.get(2);
+      logResult('Array token access', passed, `Values: ${tokens.values.join(', ')}`);
+    } catch (e) {
+      logResult('Array token access', false, e.message);
+    }
+
+    // Test 6: Current theme detection
+    try {
+      const theme = getCurrentTheme();
+      const passed = theme === 'light' || theme === 'dark' || theme === 'high-contrast';
+      logResult('Current theme detection', passed, `Theme: ${theme}`);
+    } catch (e) {
+      logResult('Current theme detection', false, e.message);
+    }
+
+    // Test 7: Token caching
+    try {
+      clearTokenCache();
+      const token1 = useToken('color.primary.500', { reactive: false });
+      const cached = getCachedTokens();
+      const passed = cached['color.primary.500'] === token1.value;
+      logResult('Token caching', passed, `Cached: ${Object.keys(cached).length} tokens`);
+    } catch (e) {
+      logResult('Token caching', false, e.message);
+    }
+
+    // Test 8: Prefetch tokens
+    try {
+      clearTokenCache();
+      prefetchTokens(['spacing.sm', 'spacing.md', 'spacing.lg']);
+      const cached = getCachedTokens();
+      const passed = Object.keys(cached).length === 3;
+      logResult('Prefetch tokens', passed, `Prefetched ${Object.keys(cached).length} tokens`);
+    } catch (e) {
+      logResult('Prefetch tokens', false, e.message);
+    }
+
+    // Test 9: Reactive updates
+    let reactiveTestPassed = false;
+    try {
+      let updateCount = 0;
+      const token = useToken('color.primary.500', {
+        onChange: (newValue) => {
+          updateCount++;
+        }
+      });
+
+      // Simulate theme change
+      setTimeout(() => {
+        EventBus.publish({
+          type: 'ThemeChanged',
+          source: 'test',
+          payload: { theme: 'dark', previous: 'light' }
+        });
+
+        setTimeout(() => {
+          reactiveTestPassed = updateCount > 0;
+          logResult('Reactive updates', reactiveTestPassed, `Updates: ${updateCount}`);
+          token.unsubscribe();
+          updateStats();
+        }, 100);
+      }, 100);
+    } catch (e) {
+      logResult('Reactive updates', false, e.message);
+    }
+
+    // Test 10: Unsubscribe
+    try {
+      let updateCount = 0;
+      const token = useToken('color.secondary.500', {
+        onChange: () => { updateCount++; }
+      });
+      
+      token.unsubscribe();
+      
+      EventBus.publish({
+        type: 'ThemeChanged',
+        source: 'test',
+        payload: { theme: 'light', previous: 'dark' }
+      });
+
+      setTimeout(() => {
+        const passed = updateCount === 0;
+        logResult('Unsubscribe', passed, `Updates after unsubscribe: ${updateCount}`);
+        updateStats();
+      }, 100);
+    } catch (e) {
+      logResult('Unsubscribe', false, e.message);
+    }
+
+    // Update stats initially
+    setTimeout(() => updateStats(), 50);
+
+    // Live Demo: Reactive token updates
+    const demoBox = document.getElementById('demo-box');
+    const demoInfo = document.getElementById('demo-info');
+
+    const primaryColor = useToken('color.primary.500', {
+      onChange: (newValue) => {
+        demoBox.style.backgroundColor = newValue;
+        demoBox.style.color = 'white';
+        updateDemoInfo();
+      }
+    });
+
+    const spacing = useToken('spacing.md', {
+      onChange: (newValue) => {
+        demoBox.style.padding = newValue;
+        updateDemoInfo();
+      }
+    });
+
+    function updateDemoInfo() {
+      demoInfo.innerHTML = `
+        <p><strong>Current Theme:</strong> ${getCurrentTheme()}</p>
+        <p><strong>Primary Color:</strong> ${primaryColor.value}</p>
+        <p><strong>Spacing:</strong> ${spacing.value}</p>
+        <p><strong>CSS Vars:</strong> ${primaryColor.toCSSVar()}, ${spacing.toCSSVar()}</p>
+      `;
+    }
+
+    // Initialize demo
+    demoBox.style.backgroundColor = primaryColor.value;
+    demoBox.style.color = 'white';
+    demoBox.style.padding = spacing.value;
+    updateDemoInfo();
+
+    // Theme switching
+    const themeButtons = {
+      light: document.getElementById('theme-light'),
+      dark: document.getElementById('theme-dark'),
+      'high-contrast': document.getElementById('theme-high-contrast')
+    };
+
+    Object.entries(themeButtons).forEach(([theme, button]) => {
+      button.addEventListener('click', () => {
+        // Update UI
+        Object.values(themeButtons).forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+
+        // Update document theme
+        document.documentElement.setAttribute('data-theme', theme);
+
+        // Publish theme change event
+        EventBus.publish({
+          type: 'ThemeChanged',
+          source: 'user',
+          payload: { 
+            theme, 
+            previous: getCurrentTheme()
+          }
+        });
+
+        // Force theme update in testing module
+        __testing__.setCurrentTheme(theme);
+        clearTokenCache();
+      });
+    });
+
+    // Performance test
+    console.time('Token access performance');
+    for (let i = 0; i < 1000; i++) {
+      useToken('color.primary.500', { reactive: false });
+    }
+    console.timeEnd('Token access performance');
+
+    console.time('Cached token access');
+    for (let i = 0; i < 1000; i++) {
+      useToken('color.primary.500', { reactive: false });
+    }
+    console.timeEnd('Cached token access');
+  </script>
+</body>
+</html>
