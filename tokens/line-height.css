@@ -1,0 +1,28 @@
+/**
+ * Line Height Design Tokens - CSS Custom Properties
+ * 
+ * Unitless line height values for optimal typography.
+ * These tokens work with any font size.
+ * 
+ * @see tokens/line-height.js for JavaScript access
+ */
+
+:root {
+  /* Line Height Scale */
+  --line-height-tight: 1.2;    /* Headings, UI labels */
+  --line-height-normal: 1.5;   /* Body text, default */
+  --line-height-relaxed: 1.75; /* Long-form content */
+}
+
+/* Utility Classes */
+.line-height-tight {
+  line-height: var(--line-height-tight);
+}
+
+.line-height-normal {
+  line-height: var(--line-height-normal);
+}
+
+.line-height-relaxed {
+  line-height: var(--line-height-relaxed);
+}

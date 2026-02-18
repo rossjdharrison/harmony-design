@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Line Height Tokens - Harmony Design System</title>
+  <link rel="stylesheet" href="../../tokens/line-height.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #fafafa;
+    }
+
+    h1 {
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .token-grid {
+      display: grid;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .token-card {
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .token-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .token-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .token-value {
+      font-family: 'Courier New', monospace;
+      color: #0066cc;
+      font-size: 1rem;
+    }
+
+    .token-description {
+      color: #666;
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+
+    .example-box {
+      background: #f5f5f5;
+      padding: 1.5rem;
+      border-radius: 4px;
+      border-left: 4px solid #0066cc;
+    }
+
+    .example-text {
+      font-size: 16px;
+      color: #333;
+      margin: 0;
+    }
+
+    .use-cases {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .use-cases h3 {
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 0.5rem;
+    }
+
+    .use-cases ul {
+      margin: 0;
+      padding-left: 1.5rem;
+      color: #666;
+    }
+
+    .use-cases li {
+      margin-bottom: 0.25rem;
+    }
+
+    .comparison {
+      margin-top: 3rem;
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .comparison h2 {
+      margin-top: 0;
+      color: #1a1a1a;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .comparison-item {
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .comparison-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #1a1a1a;
+    }
+
+    .comparison-text {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .code-snippet {
+      background: #1a1a1a;
+      color: #f0f0f0;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+
+    .code-snippet .keyword {
+      color: #ff79c6;
+    }
+
+    .code-snippet .string {
+      color: #50fa7b;
+    }
+
+    .code-snippet .comment {
+      color: #6272a4;
+    }
+  </style>
+</head>
+<body>
+  <h1>Line Height Tokens</h1>
+  <p class="subtitle">Vertical spacing between lines of text for optimal readability</p>
+
+  <div class="token-grid">
+    <!-- Tight -->
+    <div class="token-card">
+      <div class="token-header">
+        <span class="token-name">Tight</span>
+        <span class="token-value">1.2</span>
+      </div>
+      <p class="token-description">
+        Compact line spacing for headings, UI labels, and space-constrained layouts. 
+        Creates visual density and emphasizes individual lines.
+      </p>
+      <div class="example-box">
+        <p class="example-text line-height-tight">
+          The quick brown fox jumps over the lazy dog. This text demonstrates tight line height 
+          with minimal vertical spacing between lines. Notice how the lines are closer together, 
+          making it ideal for headings and short-form content.
+        </p>
+      </div>
+      <div class="use-cases">
+        <h3>Best Used For</h3>
+        <ul>
+          <li>Headings (h1-h6)</li>
+          <li>Button labels</li>
+          <li>Navigation items</li>
+          <li>Compact UI elements</li>
+          <li>Data tables</li>
+        </ul>
+      </div>
+      <div class="code-snippet">
+<span class="comment">/* CSS */</span>
+<span class="keyword">line-height:</span> <span class="string">var(--line-height-tight)</span>;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">import</span> { LINE_HEIGHT } from <span class="string">'./tokens/line-height.js'</span>;
+element.style.lineHeight = LINE_HEIGHT.tight;
+      </div>
+    </div>
+
+    <!-- Normal -->
+    <div class="token-card">
+      <div class="token-header">
+        <span class="token-name">Normal</span>
+        <span class="token-value">1.5</span>
+      </div>
+      <p class="token-description">
+        Standard line spacing for body text and general content. Provides balanced readability 
+        without excessive vertical space. This is the default for most text.
+      </p>
+      <div class="example-box">
+        <p class="example-text line-height-normal">
+          The quick brown fox jumps over the lazy dog. This text demonstrates normal line height 
+          with standard vertical spacing between lines. This is the recommended default for most 
+          body text and provides comfortable reading.
+        </p>
+      </div>
+      <div class="use-cases">
+        <h3>Best Used For</h3>
+        <ul>
+          <li>Body text (paragraphs)</li>
+          <li>Form fields</li>
+          <li>Card content</li>
+          <li>List items</li>
+          <li>General UI text</li>
+        </ul>
+      </div>
+      <div class="code-snippet">
+<span class="comment">/* CSS */</span>
+<span class="keyword">line-height:</span> <span class="string">var(--line-height-normal)</span>;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">import</span> { LINE_HEIGHT } from <span class="string">'./tokens/line-height.js'</span>;
+element.style.lineHeight = LINE_HEIGHT.normal;
+      </div>
+    </div>
+
+    <!-- Relaxed -->
+    <div class="token-card">
+      <div class="token-header">
+        <span class="token-name">Relaxed</span>
+        <span class="token-value">1.75</span>
+      </div>
+      <p class="token-description">
+        Generous line spacing for long-form content and enhanced readability. Creates breathing 
+        room between lines, reducing eye strain during extended reading.
+      </p>
+      <div class="example-box">
+        <p class="example-text line-height-relaxed">
+          The quick brown fox jumps over the lazy dog. This text demonstrates relaxed line height 
+          with increased vertical spacing between lines. Notice the extra breathing room, which 
+          makes this ideal for articles and documentation.
+        </p>
+      </div>
+      <div class="use-cases">
+        <h3>Best Used For</h3>
+        <ul>
+          <li>Long-form articles</li>
+          <li>Documentation</li>
+          <li>Blog posts</li>
+          <li>Accessibility-focused content</li>
+          <li>Reading-intensive interfaces</li>
+        </ul>
+      </div>
+      <div class="code-snippet">
+<span class="comment">/* CSS */</span>
+<span class="keyword">line-height:</span> <span class="string">var(--line-height-relaxed)</span>;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">import</span> { LINE_HEIGHT } from <span class="string">'./tokens/line-height.js'</span>;
+element.style.lineHeight = LINE_HEIGHT.relaxed;
+      </div>
+    </div>
+  </div>
+
+  <!-- Side-by-Side Comparison -->
+  <div class="comparison">
+    <h2>Side-by-Side Comparison</h2>
+    <p style="color: #666; margin-bottom: 1.5rem;">
+      Same text content with different line heights to illustrate the visual impact
+    </p>
+    <div class="comparison-grid">
+      <div class="comparison-item">
+        <div class="comparison-label">Tight (1.2)</div>
+        <p class="comparison-text line-height-tight">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
+          tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Normal (1.5)</div>
+        <p class="comparison-text line-height-normal">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
+          tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+      </div>
+      <div class="comparison-item">
+        <div class="comparison-label">Relaxed (1.75)</div>
+        <p class="comparison-text line-height-relaxed">
+          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
+          tempor incididunt ut labore et dolore magna aliqua.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { LINE_HEIGHT, getLineHeight, applyLineHeight } from '../../tokens/line-height.js';
+    
+    // Log token values for debugging
+    console.log('Line Height Tokens:', LINE_HEIGHT);
+    
+    // Demonstrate programmatic access
+    console.log('Tight line height:', getLineHeight('tight'));
+    console.log('Normal line height:', getLineHeight('normal'));
+    console.log('Relaxed line height:', getLineHeight('relaxed'));
+  </script>
+</body>
+</html>
