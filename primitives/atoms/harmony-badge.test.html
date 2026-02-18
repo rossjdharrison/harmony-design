@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Badge - Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .test-group {
+      margin: 1.5rem 0;
+    }
+
+    .test-group h3 {
+      color: #666;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin: 0.5rem 0;
+    }
+
+    .label {
+      font-size: 0.875rem;
+      color: #666;
+      min-width: 120px;
+    }
+
+    .dark-bg {
+      background: #2c3e50;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    code {
+      background: #f0f0f0;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.875rem;
+    }
+
+    .performance-stats {
+      font-family: monospace;
+      font-size: 0.875rem;
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    .test-result {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+    }
+
+    .test-result.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .test-result.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏷️ Harmony Badge - Test Page</h1>
+
+  <div class="test-section">
+    <h2>Variant Colors</h2>
+    <div class="test-group">
+      <h3>All Variants (Medium Size)</h3>
+      <div class="badge-row">
+        <span class="label">Success:</span>
+        <harmony-badge variant="success">Active</harmony-badge>
+        <harmony-badge variant="success" icon="check">Verified</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Warning:</span>
+        <harmony-badge variant="warning">Pending</harmony-badge>
+        <harmony-badge variant="warning" icon="alert">Warning</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Error:</span>
+        <harmony-badge variant="error">Failed</harmony-badge>
+        <harmony-badge variant="error" icon="close">Error</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Info:</span>
+        <harmony-badge variant="info">New</harmony-badge>
+        <harmony-badge variant="info" icon="info">Info</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Neutral:</span>
+        <harmony-badge variant="neutral">Default</harmony-badge>
+        <harmony-badge variant="neutral" icon="dot">Neutral</harmony-badge>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Size Variants</h2>
+    <div class="test-group">
+      <h3>Small vs Medium</h3>
+      <div class="badge-row">
+        <span class="label">Small:</span>
+        <harmony-badge variant="success" size="small">Small</harmony-badge>
+        <harmony-badge variant="warning" size="small" icon="alert">Small</harmony-badge>
+        <harmony-badge variant="error" size="small" icon="close">Small</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Medium:</span>
+        <harmony-badge variant="success" size="medium">Medium</harmony-badge>
+        <harmony-badge variant="warning" size="medium" icon="alert">Medium</harmony-badge>
+        <harmony-badge variant="error" size="medium" icon="close">Medium</harmony-badge>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Icon Variants</h2>
+    <div class="test-group">
+      <h3>Available Icons</h3>
+      <div class="badge-row">
+        <harmony-badge variant="success" icon="check">Check</harmony-badge>
+        <harmony-badge variant="warning" icon="alert">Alert</harmony-badge>
+        <harmony-badge variant="info" icon="info">Info</harmony-badge>
+        <harmony-badge variant="error" icon="close">Close</harmony-badge>
+        <harmony-badge variant="neutral" icon="dot">Dot</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">No icon:</span>
+        <harmony-badge variant="success">Text Only</harmony-badge>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Use Cases</h2>
+    <div class="test-group">
+      <h3>Status Indicators</h3>
+      <div class="badge-row">
+        <span class="label">User Status:</span>
+        <harmony-badge variant="success" icon="dot" size="small">Online</harmony-badge>
+        <harmony-badge variant="warning" icon="dot" size="small">Away</harmony-badge>
+        <harmony-badge variant="neutral" icon="dot" size="small">Offline</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Task Status:</span>
+        <harmony-badge variant="success" icon="check">Complete</harmony-badge>
+        <harmony-badge variant="warning">In Progress</harmony-badge>
+        <harmony-badge variant="error" icon="close">Blocked</harmony-badge>
+      </div>
+      <div class="badge-row">
+        <span class="label">Notifications:</span>
+        <harmony-badge variant="error" size="small">3</harmony-badge>
+        <harmony-badge variant="info" size="small">New</harmony-badge>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Dark Background</h3>
+      <div class="dark-bg">
+        <div class="badge-row">
+          <harmony-badge variant="success" icon="check">Success</harmony-badge>
+          <harmony-badge variant="warning" icon="alert">Warning</harmony-badge>
+          <harmony-badge variant="error" icon="close">Error</harmony-badge>
+          <harmony-badge variant="info" icon="info">Info</harmony-badge>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Automated Tests</h2>
+    <div id="test-results"></div>
+    <div class="performance-stats" id="performance-stats"></div>
+  </div>
+
+  <script type="module">
+    import { HarmonyBadge } from './harmony-badge.js';
+
+    const testResults = document.getElementById('test-results');
+    const perfStats = document.getElementById('performance-stats');
+
+    /**
+     * Run automated tests
+     */
+    function runTests() {
+      const tests = [];
+
+      // Test 1: Component registration
+      tests.push({
+        name: 'Component is registered',
+        pass: customElements.get('harmony-badge') === HarmonyBadge
+      });
+
+      // Test 2: Default attributes
+      const badge1 = document.createElement('harmony-badge');
+      document.body.appendChild(badge1);
+      tests.push({
+        name: 'Default variant is neutral',
+        pass: badge1.variant === 'neutral'
+      });
+      tests.push({
+        name: 'Default size is medium',
+        pass: badge1.size === 'medium'
+      });
+
+      // Test 3: Variant attribute
+      badge1.variant = 'success';
+      tests.push({
+        name: 'Variant can be set programmatically',
+        pass: badge1.variant === 'success' && badge1.getAttribute('variant') === 'success'
+      });
+
+      // Test 4: Icon attribute
+      badge1.icon = 'check';
+      tests.push({
+        name: 'Icon can be set',
+        pass: badge1.icon === 'check' && badge1.getAttribute('icon') === 'check'
+      });
+
+      // Test 5: Size attribute
+      badge1.size = 'small';
+      tests.push({
+        name: 'Size can be set',
+        pass: badge1.size === 'small' && badge1.getAttribute('size') === 'small'
+      });
+
+      // Test 6: Shadow DOM
+      tests.push({
+        name: 'Uses shadow DOM',
+        pass: badge1.shadowRoot !== null
+      });
+
+      // Test 7: Invalid variant fallback
+      badge1.variant = 'invalid';
+      tests.push({
+        name: 'Invalid variant is ignored',
+        pass: badge1.variant === 'success' // Should keep previous valid value
+      });
+
+      document.body.removeChild(badge1);
+
+      // Render results
+      testResults.innerHTML = tests.map(test => `
+        <div class="test-result ${test.pass ? 'pass' : 'fail'}">
+          ${test.pass ? '✅' : '❌'} ${test.name}
+        </div>
+      `).join('');
+
+      const passCount = tests.filter(t => t.pass).length;
+      const totalCount = tests.length;
+      
+      return { passCount, totalCount };
+    }
+
+    /**
+     * Measure performance
+     */
+    function measurePerformance() {
+      const iterations = 100;
+      
+      // Test 1: Creation time
+      const createStart = performance.now();
+      for (let i = 0; i < iterations; i++) {
+        const badge = document.createElement('harmony-badge');
+        badge.variant = 'success';
+        badge.textContent = 'Test';
+      }
+      const createTime = performance.now() - createStart;
+
+      // Test 2: Render time
+      const badge = document.createElement('harmony-badge');
+      badge.variant = 'success';
+      badge.icon = 'check';
+      badge.textContent = 'Performance Test';
+      document.body.appendChild(badge);
+
+      const renderStart = performance.now();
+      badge.variant = 'error';
+      badge.icon = 'alert';
+      const renderTime = performance.now() - renderStart;
+
+      // Test 3: Memory estimate
+      const memoryEstimate = JSON.stringify(badge.shadowRoot.innerHTML).length;
+
+      document.body.removeChild(badge);
+
+      return {
+        avgCreateTime: (createTime / iterations).toFixed(3),
+        renderTime: renderTime.toFixed(3),
+        memoryEstimate: (memoryEstimate / 1024).toFixed(2)
+      };
+    }
+
+    // Run tests on load
+    window.addEventListener('load', () => {
+      const { passCount, totalCount } = runTests();
+      const perf = measurePerformance();
+
+      perfStats.innerHTML = `
+        <strong>Test Results:</strong> ${passCount}/${totalCount} passed<br>
+        <strong>Avg Creation Time:</strong> ${perf.avgCreateTime}ms (target: <1ms)<br>
+        <strong>Re-render Time:</strong> ${perf.renderTime}ms (target: <1ms)<br>
+        <strong>Memory per Instance:</strong> ~${perf.memoryEstimate}KB (target: <2KB)<br>
+        <strong>Performance Budget:</strong> ${parseFloat(perf.renderTime) < 1 ? '✅ PASS' : '⚠️ REVIEW'}
+      `;
+    });
+  </script>
+
+  <script type="module" src="./harmony-badge.js"></script>
+</body>
+</html>
