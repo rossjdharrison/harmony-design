@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Size Scale - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+      color: #1a1a1a;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+
+    .intro {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+
+    .scale-grid {
+      display: grid;
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+
+    .scale-item {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 24px;
+      background: #fafafa;
+      transition: all 0.2s ease;
+    }
+
+    .scale-item:hover {
+      border-color: #4A90E2;
+      box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+    }
+
+    .scale-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .scale-name {
+      font-weight: 600;
+      color: #4A90E2;
+      font-size: 14px;
+    }
+
+    .scale-value {
+      font-family: 'Courier New', monospace;
+      color: #666;
+      font-size: 12px;
+    }
+
+    .scale-sample {
+      margin-bottom: 12px;
+    }
+
+    .scale-usage {
+      font-size: 12px;
+      color: #888;
+      font-style: italic;
+    }
+
+    .code-section {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 24px;
+      border-radius: 4px;
+      margin-top: 40px;
+      overflow-x: auto;
+    }
+
+    .code-section h2 {
+      color: #fff;
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+
+    pre {
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .keyword { color: #569cd6; }
+    .string { color: #ce9178; }
+    .function { color: #dcdcaa; }
+    .comment { color: #6a9955; }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 40px;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .comparison-table th {
+      background: #f5f5f5;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .comparison-table td {
+      font-size: 14px;
+    }
+
+    .comparison-table .token-name {
+      font-family: 'Courier New', monospace;
+      color: #4A90E2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Font Size Scale</h1>
+    <p class="intro">
+      The Harmony Design System uses an 8-step font size scale optimized for UI design.
+      Each size includes carefully calculated line heights for optimal readability.
+      The scale ranges from 10px (xs) to 30px (3xl), providing flexibility for all typography needs.
+    </p>
+
+    <div class="scale-grid" id="scaleGrid"></div>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Size</th>
+          <th>Line Height</th>
+          <th>Ratio</th>
+          <th>Common Usage</th>
+        </tr>
+      </thead>
+      <tbody id="comparisonTable"></tbody>
+    </table>
+
+    <div class="code-section">
+      <h2>Usage Example</h2>
+      <pre><code><span class="comment">// Import typography tokens</span>
+<span class="keyword">import</span> { getFontSize, getTextStyle } <span class="keyword">from</span> <span class="string">'./tokens/typography.js'</span>;
+
+<span class="comment">// Get a single font size</span>
+<span class="keyword">const</span> headingSize = <span class="function">getFontSize</span>(<span class="string">'xl'</span>); <span class="comment">// '20px'</span>
+
+<span class="comment">// Get complete text style</span>
+<span class="keyword">const</span> headingStyle = <span class="function">getTextStyle</span>(<span class="string">'xl'</span>, <span class="string">'bold'</span>);
+<span class="comment">// { fontSize: '20px', lineHeight: '28px', fontWeight: '700', letterSpacing: '0' }</span>
+
+<span class="comment">// Apply to element</span>
+element.style.fontSize = <span class="function">getFontSize</span>(<span class="string">'base'</span>);
+
+<span class="comment">// Use in CSS custom properties</span>
+document.documentElement.style.setProperty(<span class="string">'--font-size-heading'</span>, <span class="function">getFontSize</span>(<span class="string">'2xl'</span>));</code></pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { typography, getFontSize, getLineHeight, getTextStyle } from '../../tokens/typography.js';
+
+    const sizes = [
+      { key: 'xs', usage: 'Captions, labels, helper text' },
+      { key: 'sm', usage: 'Secondary information, metadata' },
+      { key: 'base', usage: 'Body text, default UI text' },
+      { key: 'md', usage: 'Emphasized body text, small headings' },
+      { key: 'lg', usage: 'Subheadings, card titles' },
+      { key: 'xl', usage: 'Section headings, prominent labels' },
+      { key: '2xl', usage: 'Page section titles' },
+      { key: '3xl', usage: 'Page titles, hero text' }
+    ];
+
+    const scaleGrid = document.getElementById('scaleGrid');
+    const comparisonTable = document.getElementById('comparisonTable');
+
+    sizes.forEach(({ key, usage }) => {
+      const fontSize = getFontSize(key);
+      const lineHeight = getLineHeight(key);
+      const ratio = (parseFloat(lineHeight) / parseFloat(fontSize)).toFixed(2);
+
+      // Create scale item
+      const item = document.createElement('div');
+      item.className = 'scale-item';
+      item.innerHTML = `
+        <div class="scale-header">
+          <span class="scale-name">${key}</span>
+          <span class="scale-value">${fontSize} / ${lineHeight}</span>
+        </div>
+        <div class="scale-sample" style="font-size: ${fontSize}; line-height: ${lineHeight};">
+          The quick brown fox jumps over the lazy dog
+        </div>
+        <div class="scale-usage">${usage}</div>
+      `;
+      scaleGrid.appendChild(item);
+
+      // Create table row
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="token-name">${key}</td>
+        <td>${fontSize}</td>
+        <td>${lineHeight}</td>
+        <td>${ratio}</td>
+        <td>${usage}</td>
+      `;
+      comparisonTable.appendChild(row);
+    });
+  </script>
+</body>
+</html>

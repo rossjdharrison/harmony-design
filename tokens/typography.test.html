@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typography Tokens Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+    .test-result {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Typography Tokens Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="testResults"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Visual Verification</h2>
+    <div id="visualTests"></div>
+  </div>
+
+  <script type="module">
+    import { typography, getFontSize, getLineHeight, getTextStyle } from './typography.js';
+
+    const results = [];
+
+    function test(name, condition) {
+      const passed = condition();
+      results.push({ name, passed });
+      return passed;
+    }
+
+    // Test 1: Font size scale exists
+    test('Typography object exists', () => {
+      return typography !== undefined && typography !== null;
+    });
+
+    // Test 2: All font sizes are defined
+    test('All 8 font sizes defined', () => {
+      const sizes = ['xs', 'sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl'];
+      return sizes.every(size => typography.fontSize[size] !== undefined);
+    });
+
+    // Test 3: Font sizes have correct values
+    test('Font size xs = 10px', () => getFontSize('xs') === '10px');
+    test('Font size sm = 12px', () => getFontSize('sm') === '12px');
+    test('Font size base = 14px', () => getFontSize('base') === '14px');
+    test('Font size md = 16px', () => getFontSize('md') === '16px');
+    test('Font size lg = 18px', () => getFontSize('lg') === '18px');
+    test('Font size xl = 20px', () => getFontSize('xl') === '20px');
+    test('Font size 2xl = 24px', () => getFontSize('2xl') === '24px');
+    test('Font size 3xl = 30px', () => getFontSize('3xl') === '30px');
+
+    // Test 4: Line heights exist for all sizes
+    test('All line heights defined', () => {
+      const sizes = ['xs', 'sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl'];
+      return sizes.every(size => typography.lineHeight[size] !== undefined);
+    });
+
+    // Test 5: getLineHeight function works
+    test('getLineHeight returns correct value', () => {
+      return getLineHeight('base') === '20px';
+    });
+
+    // Test 6: Font weights are defined
+    test('Font weights defined', () => {
+      return typography.fontWeight.normal === '400' &&
+             typography.fontWeight.bold === '700';
+    });
+
+    // Test 7: Letter spacing is defined
+    test('Letter spacing defined', () => {
+      return typography.letterSpacing.normal === '0' &&
+             typography.letterSpacing.tight === '-0.02em';
+    });
+
+    // Test 8: getTextStyle returns complete object
+    test('getTextStyle returns complete style object', () => {
+      const style = getTextStyle('base', 'bold', 'normal');
+      return style.fontSize === '14px' &&
+             style.lineHeight === '20px' &&
+             style.fontWeight === '700' &&
+             style.letterSpacing === '0';
+    });
+
+    // Test 9: Invalid size returns base
+    test('Invalid size returns base fallback', () => {
+      return getFontSize('invalid') === getFontSize('base');
+    });
+
+    // Test 10: getTextStyle with defaults
+    test('getTextStyle works with defaults', () => {
+      const style = getTextStyle('md');
+      return style.fontWeight === '400' && style.letterSpacing === '0';
+    });
+
+    // Render results
+    const resultsDiv = document.getElementById('testResults');
+    results.forEach(({ name, passed }) => {
+      const div = document.createElement('div');
+      div.className = 'test-result';
+      div.innerHTML = `
+        <span class="${passed ? 'pass' : 'fail'}">${passed ? '✓ PASS' : '✗ FAIL'}</span>
+        ${name}
+      `;
+      resultsDiv.appendChild(div);
+    });
+
+    // Summary
+    const passCount = results.filter(r => r.passed).length;
+    const totalCount = results.length;
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'test-result';
+    summaryDiv.innerHTML = `
+      <strong>Summary: ${passCount}/${totalCount} tests passed</strong>
+      ${passCount === totalCount ? ' 🎉' : ''}
+    `;
+    resultsDiv.appendChild(summaryDiv);
+
+    // Visual tests
+    const visualDiv = document.getElementById('visualTests');
+    const sizes = ['xs', 'sm', 'base', 'md', 'lg', 'xl', '2xl', '3xl'];
+    
+    sizes.forEach(size => {
+      const style = getTextStyle(size);
+      const div = document.createElement('div');
+      div.style.fontSize = style.fontSize;
+      div.style.lineHeight = style.lineHeight;
+      div.style.marginBottom = '16px';
+      div.innerHTML = `
+        <strong>${size}</strong> (${style.fontSize}): The quick brown fox jumps over the lazy dog
+      `;
+      visualDiv.appendChild(div);
+    });
+  </script>
+</body>
+</html>
