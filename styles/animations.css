@@ -1,0 +1,476 @@
+/**
+ * CSS Animations: Keyframe Definitions
+ * 
+ * Standard transition keyframes for the Harmony Design System.
+ * Uses easing tokens defined in tokens/easing.js
+ * 
+ * Performance targets:
+ * - 60fps (16ms per frame)
+ * - GPU-accelerated transforms
+ * - Minimal layout thrashing
+ * 
+ * @see DESIGN_SYSTEM.md#animations
+ */
+
+/* ============================================
+   FADE ANIMATIONS
+   ============================================ */
+
+/**
+ * Fade In - Opacity 0 to 1
+ * Use for: Modal overlays, tooltips, notifications
+ */
+@keyframes harmony-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/**
+ * Fade Out - Opacity 1 to 0
+ * Use for: Dismissing overlays, hiding elements
+ */
+@keyframes harmony-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   SLIDE ANIMATIONS
+   ============================================ */
+
+/**
+ * Slide In from Top
+ * Use for: Dropdown menus, notifications from top
+ */
+@keyframes harmony-slide-in-top {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/**
+ * Slide In from Bottom
+ * Use for: Bottom sheets, toast notifications
+ */
+@keyframes harmony-slide-in-bottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/**
+ * Slide In from Left
+ * Use for: Side panels, drawers
+ */
+@keyframes harmony-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/**
+ * Slide In from Right
+ * Use for: Side panels, context menus
+ */
+@keyframes harmony-slide-in-right {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/**
+ * Slide Out to Top
+ * Use for: Dismissing dropdowns
+ */
+@keyframes harmony-slide-out-top {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/**
+ * Slide Out to Bottom
+ * Use for: Dismissing bottom sheets
+ */
+@keyframes harmony-slide-out-bottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+/**
+ * Slide Out to Left
+ * Use for: Dismissing left panels
+ */
+@keyframes harmony-slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+/**
+ * Slide Out to Right
+ * Use for: Dismissing right panels
+ */
+@keyframes harmony-slide-out-right {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   SCALE ANIMATIONS
+   ============================================ */
+
+/**
+ * Scale Up - Grow from center
+ * Use for: Modal dialogs, popups
+ */
+@keyframes harmony-scale-up {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/**
+ * Scale Down - Shrink to center
+ * Use for: Dismissing modals
+ */
+@keyframes harmony-scale-down {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+}
+
+/**
+ * Scale Bounce - Overshoot and settle
+ * Use for: Success confirmations, playful interactions
+ */
+@keyframes harmony-scale-bounce {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   ROTATION ANIMATIONS
+   ============================================ */
+
+/**
+ * Rotate 360 - Full rotation
+ * Use for: Loading spinners, refresh icons
+ */
+@keyframes harmony-rotate-360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/**
+ * Rotate -360 - Reverse rotation
+ * Use for: Alternative loading states
+ */
+@keyframes harmony-rotate-360-reverse {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* ============================================
+   PULSE ANIMATIONS
+   ============================================ */
+
+/**
+ * Pulse - Scale in and out
+ * Use for: Recording indicators, attention grabbers
+ */
+@keyframes harmony-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+/**
+ * Pulse Opacity - Fade in and out
+ * Use for: Loading states, awaiting input
+ */
+@keyframes harmony-pulse-opacity {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ============================================
+   SHAKE ANIMATIONS
+   ============================================ */
+
+/**
+ * Shake - Horizontal shake
+ * Use for: Form validation errors, invalid actions
+ */
+@keyframes harmony-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+/* ============================================
+   BOUNCE ANIMATIONS
+   ============================================ */
+
+/**
+ * Bounce - Vertical bounce
+ * Use for: Notifications, success confirmations
+ */
+@keyframes harmony-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-4px);
+  }
+}
+
+/* ============================================
+   SHIMMER ANIMATIONS
+   ============================================ */
+
+/**
+ * Shimmer - Loading skeleton effect
+ * Use for: Content placeholders, loading states
+ */
+@keyframes harmony-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ============================================
+   AUDIO-SPECIFIC ANIMATIONS
+   ============================================ */
+
+/**
+ * Level Meter - Audio level visualization
+ * Use for: VU meters, audio level indicators
+ */
+@keyframes harmony-level-meter {
+  0%, 100% {
+    transform: scaleY(0.1);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/**
+ * Waveform Pulse - Audio waveform effect
+ * Use for: Audio playback indicators
+ */
+@keyframes harmony-waveform-pulse {
+  0%, 100% {
+    transform: scaleY(0.5);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/**
+ * Animation utility classes that combine keyframes with timing
+ * Apply these classes directly to elements for common animations
+ */
+
+.harmony-animate-fade-in {
+  animation: harmony-fade-in var(--duration-normal, 200ms) var(--easing-standard, ease-out) forwards;
+}
+
+.harmony-animate-fade-out {
+  animation: harmony-fade-out var(--duration-normal, 200ms) var(--easing-standard, ease-in) forwards;
+}
+
+.harmony-animate-slide-in-top {
+  animation: harmony-slide-in-top var(--duration-normal, 200ms) var(--easing-decelerate, ease-out) forwards;
+}
+
+.harmony-animate-slide-in-bottom {
+  animation: harmony-slide-in-bottom var(--duration-normal, 200ms) var(--easing-decelerate, ease-out) forwards;
+}
+
+.harmony-animate-slide-in-left {
+  animation: harmony-slide-in-left var(--duration-normal, 200ms) var(--easing-decelerate, ease-out) forwards;
+}
+
+.harmony-animate-slide-in-right {
+  animation: harmony-slide-in-right var(--duration-normal, 200ms) var(--easing-decelerate, ease-out) forwards;
+}
+
+.harmony-animate-scale-up {
+  animation: harmony-scale-up var(--duration-normal, 200ms) var(--easing-standard, ease-out) forwards;
+}
+
+.harmony-animate-scale-down {
+  animation: harmony-scale-down var(--duration-fast, 150ms) var(--easing-standard, ease-in) forwards;
+}
+
+.harmony-animate-scale-bounce {
+  animation: harmony-scale-bounce var(--duration-slow, 300ms) var(--easing-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)) forwards;
+}
+
+.harmony-animate-rotate {
+  animation: harmony-rotate-360 var(--duration-slow, 1000ms) linear infinite;
+}
+
+.harmony-animate-pulse {
+  animation: harmony-pulse var(--duration-slow, 2000ms) var(--easing-standard, ease-in-out) infinite;
+}
+
+.harmony-animate-pulse-opacity {
+  animation: harmony-pulse-opacity var(--duration-slow, 2000ms) var(--easing-standard, ease-in-out) infinite;
+}
+
+.harmony-animate-shake {
+  animation: harmony-shake var(--duration-normal, 400ms) var(--easing-standard, ease-in-out);
+}
+
+.harmony-animate-bounce {
+  animation: harmony-bounce var(--duration-normal, 600ms) var(--easing-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
+}
+
+.harmony-animate-shimmer {
+  animation: harmony-shimmer var(--duration-slow, 2000ms) linear infinite;
+  background: linear-gradient(
+    90deg,
+    var(--surface-default, #1a1a1a) 0%,
+    var(--surface-hover, #2a2a2a) 50%,
+    var(--surface-default, #1a1a1a) 100%
+  );
+  background-size: 200% 100%;
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/**
+ * Force GPU acceleration for animated elements
+ * Apply to elements using animations for better performance
+ */
+.harmony-animate-gpu {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/**
+ * Disable animations for users who prefer reduced motion
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

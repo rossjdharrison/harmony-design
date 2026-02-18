@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Animations Test</title>
+  <link rel="stylesheet" href="../styles/animations.css">
+  <link rel="stylesheet" href="../styles/primitives.css">
+  <link rel="stylesheet" href="../styles/theme-light.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: var(--surface-default, #1a1a1a);
+      color: var(--text-primary, #ffffff);
+    }
+
+    .test-section {
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: var(--surface-raised, #2a2a2a);
+      border-radius: var(--radius-medium, 8px);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: var(--text-primary, #ffffff);
+    }
+
+    .animation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .animation-demo {
+      padding: 2rem;
+      background: var(--surface-default, #1a1a1a);
+      border: 1px solid var(--border-default, #3a3a3a);
+      border-radius: var(--radius-small, 4px);
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 200ms;
+    }
+
+    .animation-demo:hover {
+      border-color: var(--accent-primary, #00ff88);
+    }
+
+    .animation-demo-box {
+      width: 60px;
+      height: 60px;
+      margin: 1rem auto;
+      background: var(--accent-primary, #00ff88);
+      border-radius: var(--radius-small, 4px);
+    }
+
+    .animation-demo-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary, #a0a0a0);
+      margin-top: 0.5rem;
+    }
+
+    .controls {
+      margin-top: 1rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: var(--accent-primary, #00ff88);
+      color: var(--surface-default, #1a1a1a);
+      border: none;
+      border-radius: var(--radius-small, 4px);
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform 100ms, opacity 100ms;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--surface-hover, #2a2a2a);
+      border-top-color: var(--accent-primary, #00ff88);
+      border-radius: 50%;
+      margin: 1rem auto;
+    }
+
+    .level-meter-bar {
+      width: 100%;
+      height: 40px;
+      background: var(--accent-primary, #00ff88);
+      transform-origin: bottom;
+      border-radius: var(--radius-small, 4px);
+    }
+
+    .performance-info {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: var(--surface-sunken, #0a0a0a);
+      border-radius: var(--radius-small, 4px);
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Harmony Design System - Animation Tests</h1>
+  
+  <div class="test-section">
+    <h2>Fade Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo" data-animation="harmony-fade-in">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Fade In</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-fade-out">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Fade Out</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Slide Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo" data-animation="harmony-slide-in-top">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Slide In Top</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-slide-in-bottom">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Slide In Bottom</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-slide-in-left">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Slide In Left</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-slide-in-right">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Slide In Right</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Scale Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo" data-animation="harmony-scale-up">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Scale Up</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-scale-down">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Scale Down</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-scale-bounce">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Scale Bounce</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Rotation Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo">
+        <div class="spinner harmony-animate-gpu" style="animation: harmony-rotate-360 1s linear infinite;"></div>
+        <div class="animation-demo-label">Rotate 360</div>
+      </div>
+      <div class="animation-demo">
+        <div class="spinner harmony-animate-gpu" style="animation: harmony-rotate-360-reverse 1s linear infinite;"></div>
+        <div class="animation-demo-label">Rotate Reverse</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Pulse Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo">
+        <div class="animation-demo-box harmony-animate-gpu" style="animation: harmony-pulse 2s ease-in-out infinite;"></div>
+        <div class="animation-demo-label">Pulse</div>
+      </div>
+      <div class="animation-demo">
+        <div class="animation-demo-box harmony-animate-gpu" style="animation: harmony-pulse-opacity 2s ease-in-out infinite;"></div>
+        <div class="animation-demo-label">Pulse Opacity</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Shake & Bounce</h2>
+    <div class="animation-grid">
+      <div class="animation-demo" data-animation="harmony-shake">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Shake</div>
+      </div>
+      <div class="animation-demo" data-animation="harmony-bounce">
+        <div class="animation-demo-box harmony-animate-gpu"></div>
+        <div class="animation-demo-label">Bounce</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Audio-Specific Animations</h2>
+    <div class="animation-grid">
+      <div class="animation-demo">
+        <div class="level-meter-bar harmony-animate-gpu" style="animation: harmony-level-meter 0.5s ease-in-out infinite;"></div>
+        <div class="animation-demo-label">Level Meter</div>
+      </div>
+      <div class="animation-demo">
+        <div class="animation-demo-box harmony-animate-gpu" style="animation: harmony-waveform-pulse 1s ease-in-out infinite;"></div>
+        <div class="animation-demo-label">Waveform Pulse</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Shimmer Effect</h2>
+    <div class="animation-demo harmony-animate-shimmer" style="height: 100px;">
+      <div class="animation-demo-label" style="padding-top: 2rem;">Loading...</div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Testing</h2>
+    <div class="controls">
+      <button id="start-performance-test">Start Performance Test</button>
+      <button id="stop-performance-test">Stop Performance Test</button>
+      <button id="measure-fps">Measure FPS</button>
+    </div>
+    <div class="performance-info" id="performance-results">
+      Click "Start Performance Test" to animate 50 elements simultaneously and measure performance.
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Animation test page controller
+     * Tests all keyframe animations and measures performance
+     */
+
+    // Click to trigger animations
+    document.querySelectorAll('.animation-demo[data-animation]').forEach(demo => {
+      demo.addEventListener('click', () => {
+        const box = demo.querySelector('.animation-demo-box');
+        const animationName = demo.dataset.animation;
+        
+        // Reset animation
+        box.style.animation = 'none';
+        box.offsetHeight; // Trigger reflow
+        
+        // Apply animation
+        box.style.animation = `${animationName} 400ms var(--easing-standard, ease-out) forwards`;
+        
+        // Reset after animation
+        setTimeout(() => {
+          box.style.animation = 'none';
+        }, 400);
+      });
+    });
+
+    // Performance testing
+    let performanceTestRunning = false;
+    let performanceTestElements = [];
+
+    document.getElementById('start-performance-test').addEventListener('click', () => {
+      if (performanceTestRunning) return;
+      
+      performanceTestRunning = true;
+      const container = document.getElementById('performance-results');
+      container.innerHTML = 'Running performance test...<br>Animating 50 elements...';
+      
+      // Create 50 animated elements
+      const testContainer = document.createElement('div');
+      testContainer.style.cssText = 'display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 1rem;';
+      
+      for (let i = 0; i < 50; i++) {
+        const box = document.createElement('div');
+        box.style.cssText = `
+          width: 20px;
+          height: 20px;
+          background: var(--accent-primary, #00ff88);
+          border-radius: 2px;
+        `;
+        box.classList.add('harmony-animate-gpu');
+        
+        // Randomize animations
+        const animations = ['harmony-pulse', 'harmony-scale-up', 'harmony-rotate-360', 'harmony-fade-in'];
+        const randomAnim = animations[Math.floor(Math.random() * animations.length)];
+        box.style.animation = `${randomAnim} ${Math.random() * 2 + 1}s ease-in-out infinite`;
+        
+        testContainer.appendChild(box);
+        performanceTestElements.push(box);
+      }
+      
+      container.appendChild(testContainer);
+      
+      // Start FPS monitoring
+      let frameCount = 0;
+      let lastTime = performance.now();
+      
+      function countFrames() {
+        if (!performanceTestRunning) return;
+        
+        frameCount++;
+        const currentTime = performance.now();
+        const elapsed = currentTime - lastTime;
+        
+        if (elapsed >= 1000) {
+          const fps = Math.round((frameCount * 1000) / elapsed);
+          container.querySelector('div').textContent = 
+            `Performance Test Running\nFPS: ${fps} (Target: 60fps)\nElements: 50\nStatus: ${fps >= 55 ? '✓ PASS' : '⚠ BELOW TARGET'}`;
+          frameCount = 0;
+          lastTime = currentTime;
+        }
+        
+        requestAnimationFrame(countFrames);
+      }
+      
+      requestAnimationFrame(countFrames);
+    });
+
+    document.getElementById('stop-performance-test').addEventListener('click', () => {
+      performanceTestRunning = false;
+      performanceTestElements.forEach(el => el.remove());
+      performanceTestElements = [];
+      document.getElementById('performance-results').innerHTML = 'Performance test stopped.';
+    });
+
+    document.getElementById('measure-fps').addEventListener('click', () => {
+      const results = document.getElementById('performance-results');
+      results.innerHTML = 'Measuring FPS for 3 seconds...';
+      
+      let frameCount = 0;
+      const startTime = performance.now();
+      
+      function measureFrame() {
+        frameCount++;
+        const elapsed = performance.now() - startTime;
+        
+        if (elapsed < 3000) {
+          requestAnimationFrame(measureFrame);
+        } else {
+          const avgFps = Math.round((frameCount * 1000) / elapsed);
+          results.innerHTML = `
+            FPS Measurement Complete<br>
+            Average FPS: ${avgFps}<br>
+            Target: 60fps<br>
+            Status: ${avgFps >= 55 ? '✓ PASS - Performance target met' : '⚠ BELOW TARGET - Optimization needed'}<br>
+            Frames: ${frameCount}<br>
+            Duration: ${Math.round(elapsed)}ms
+          `;
+        }
+      }
+      
+      requestAnimationFrame(measureFrame);
+    });
+
+    // Log initial page load time
+    window.addEventListener('load', () => {
+      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+      console.log(`Page load time: ${loadTime}ms (Target: <200ms)`);
+      if (loadTime > 200) {
+        console.warn('⚠ Load time exceeds 200ms budget');
+      }
+    });
+  </script>
+</body>
+</html>
