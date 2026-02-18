@@ -1,0 +1,83 @@
+/**
+ * Surface State Tokens
+ * 
+ * Defines interactive state variations for surface elements.
+ * These tokens provide consistent state feedback across all surface-based components.
+ * 
+ * @module tokens/surface-state
+ * @see {@link ../../DESIGN_SYSTEM.md#surface-state-tokens}
+ */
+
+:root {
+  /* Surface Hover State
+   * Applied when cursor hovers over interactive surface elements
+   * Provides subtle feedback to indicate interactivity
+   */
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  --surface-hover-light: rgba(0, 0, 0, 0.04);
+  --surface-hover-opacity: 0.08;
+
+  /* Surface Active State
+   * Applied during click/press interaction
+   * Stronger visual feedback than hover
+   */
+  --surface-active: rgba(255, 255, 255, 0.12);
+  --surface-active-light: rgba(0, 0, 0, 0.08);
+  --surface-active-opacity: 0.12;
+
+  /* Surface Selected State
+   * Applied to selected or currently active items
+   * Persistent state indication
+   */
+  --surface-selected: rgba(255, 255, 255, 0.16);
+  --surface-selected-light: rgba(0, 0, 0, 0.12);
+  --surface-selected-opacity: 0.16;
+
+  /* Surface Disabled State
+   * Applied to non-interactive or disabled surface elements
+   * Reduces visual prominence
+   */
+  --surface-disabled: rgba(255, 255, 255, 0.02);
+  --surface-disabled-light: rgba(0, 0, 0, 0.02);
+  --surface-disabled-opacity: 0.02;
+  --surface-disabled-text: rgba(255, 255, 255, 0.38);
+  --surface-disabled-text-light: rgba(0, 0, 0, 0.38);
+}
+
+/* Theme-aware surface state tokens */
+[data-theme="light"] {
+  --surface-hover: var(--surface-hover-light);
+  --surface-active: var(--surface-active-light);
+  --surface-selected: var(--surface-selected-light);
+  --surface-disabled: var(--surface-disabled-light);
+  --surface-disabled-text: var(--surface-disabled-text-light);
+}
+
+[data-theme="dark"] {
+  /* Use default (dark) values */
+}
+
+/**
+ * Usage Examples:
+ * 
+ * .button {
+ *   background: transparent;
+ * }
+ * 
+ * .button:hover {
+ *   background: var(--surface-hover);
+ * }
+ * 
+ * .button:active {
+ *   background: var(--surface-active);
+ * }
+ * 
+ * .button[aria-selected="true"] {
+ *   background: var(--surface-selected);
+ * }
+ * 
+ * .button:disabled {
+ *   background: var(--surface-disabled);
+ *   color: var(--surface-disabled-text);
+ * }
+ */
