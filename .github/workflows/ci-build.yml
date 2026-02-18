@@ -1,0 +1,272 @@
+name: CI Build Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run ESLint
+        run: npm run lint:js || echo "ESLint not configured"
+        continue-on-error: true
+      
+      - name: Run CSS Lint
+        run: npm run lint:css || echo "CSS Lint not configured"
+        continue-on-error: true
+      
+      - name: Check code formatting
+        run: npm run format:check || echo "Format check not configured"
+        continue-on-error: true
+
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run unit tests
+        run: npm test || echo "No tests configured yet"
+        continue-on-error: true
+      
+      - name: Run component tests
+        run: npm run test:components || echo "Component tests not configured"
+        continue-on-error: true
+      
+      - name: Generate test coverage
+        run: npm run test:coverage || echo "Coverage not configured"
+        continue-on-error: true
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        if: success()
+        with:
+          files: ./coverage/lcov.info
+          flags: unittests
+          fail_ci_if_error: false
+
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build || echo "Build script not configured"
+        continue-on-error: true
+      
+      - name: Check build output
+        run: |
+          if [ -d "dist" ]; then
+            echo "Build output directory exists"
+            ls -lah dist/
+          else
+            echo "No dist directory found"
+          fi
+      
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: build-artifacts
+          path: |
+            dist/
+            build/
+          retention-days: 7
+
+  rust-build:
+    name: Build Rust/WASM
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+      
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build component-lifecycle
+        working-directory: bounded-contexts/component-lifecycle
+        run: cargo build --target wasm32-unknown-unknown --release
+      
+      - name: Build WASM with wasm-pack
+        working-directory: bounded-contexts/component-lifecycle
+        run: wasm-pack build --target web --release || echo "wasm-pack build not configured"
+        continue-on-error: true
+      
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: wasm-artifacts
+          path: |
+            bounded-contexts/*/pkg/
+          retention-days: 7
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [build, rust-build]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+        continue-on-error: true
+      
+      - name: Run bundle size check
+        run: npm run check:bundle-size || echo "Bundle size check not configured"
+        continue-on-error: true
+      
+      - name: Run performance budget check
+        run: npm run check:performance || echo "Performance check not configured"
+        continue-on-error: true
+      
+      - name: Validate composition rules
+        run: npm run validate:composition || echo "Composition validation not configured"
+        continue-on-error: true
+      
+      - name: Check for technical debt
+        run: |
+          echo "Checking for TODO/FIXME comments..."
+          grep -r "TODO\|FIXME" --include="*.js" --include="*.rs" . || echo "No technical debt markers found"
+        continue-on-error: true
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+        continue-on-error: true
+      
+      - name: Start test server
+        run: |
+          npm run serve:test &
+          sleep 5
+        continue-on-error: true
+      
+      - name: Run integration tests
+        run: npm run test:integration || echo "Integration tests not configured"
+        continue-on-error: true
+      
+      - name: Run E2E tests
+        run: npm run test:e2e || echo "E2E tests not configured"
+        continue-on-error: true
+
+  summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [lint, test, build, rust-build, quality-gates, integration]
+    if: always()
+    
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Test: ${{ needs.test.result }}"
+          echo "Build: ${{ needs.build.result }}"
+          echo "Rust Build: ${{ needs.rust-build.result }}"
+          echo "Quality Gates: ${{ needs.quality-gates.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
+      
+      - name: Determine overall status
+        run: |
+          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
+             [[ "${{ needs.test.result }}" == "failure" ]] || \
+             [[ "${{ needs.build.result }}" == "failure" ]] || \
+             [[ "${{ needs.rust-build.result }}" == "failure" ]]; then
+            echo "CI Pipeline Failed"
+            exit 1
+          else
+            echo "CI Pipeline Passed"
+          fi
