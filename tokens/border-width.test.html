@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Border Width Tokens - Test Suite</title>
+  <style>
+    :root {
+      --border-width-none: 0px;
+      --border-width-thin: 1px;
+      --border-width-default: 2px;
+      --border-width-thick: 3px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .visual-test {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .border-sample {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .border-box {
+      width: 100px;
+      height: 100px;
+      background: #f9f9f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #666;
+      border-style: solid;
+      border-color: #2196F3;
+    }
+
+    .border-none { border-width: var(--border-width-none); }
+    .border-thin { border-width: var(--border-width-thin); }
+    .border-default { border-width: var(--border-width-default); }
+    .border-thick { border-width: var(--border-width-thick); }
+
+    .label {
+      font-weight: 600;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .value {
+      font-family: 'Courier New', monospace;
+      color: #888;
+      font-size: 12px;
+    }
+
+    .test-results {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+    }
+
+    .test-pass {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    .test-fail {
+      color: #f44336;
+      font-weight: bold;
+    }
+
+    .interactive-test {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+
+    .interactive-box {
+      width: 200px;
+      height: 100px;
+      background: white;
+      border: var(--border-width-default) solid #2196F3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1rem 0;
+      transition: border-width 0.2s ease;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #f5f5f5;
+    }
+
+    button.active {
+      background: #2196F3;
+      color: white;
+      border-color: #2196F3;
+    }
+  </style>
+</head>
+<body>
+  <h1>Border Width Tokens - Test Suite</h1>
+
+  <div class="test-section">
+    <h2>Visual Reference</h2>
+    <p>Visual representation of all border width tokens:</p>
+    <div class="visual-test">
+      <div class="border-sample">
+        <div class="border-box border-none">none</div>
+        <div class="label">none</div>
+        <div class="value">0px</div>
+      </div>
+      <div class="border-sample">
+        <div class="border-box border-thin">thin</div>
+        <div class="label">thin</div>
+        <div class="value">1px</div>
+      </div>
+      <div class="border-sample">
+        <div class="border-box border-default">default</div>
+        <div class="label">default</div>
+        <div class="value">2px</div>
+      </div>
+      <div class="border-sample">
+        <div class="border-box border-thick">thick</div>
+        <div class="label">thick</div>
+        <div class="value">3px</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Interactive Test</h2>
+    <p>Click buttons to change border width:</p>
+    <div class="interactive-test">
+      <div id="interactive-box" class="interactive-box">
+        Interactive Border
+      </div>
+      <div class="control-group">
+        <button data-width="none">None (0px)</button>
+        <button data-width="thin">Thin (1px)</button>
+        <button data-width="default" class="active">Default (2px)</button>
+        <button data-width="thick">Thick (3px)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>API Tests</h2>
+    <div id="test-results" class="test-results">Running tests...</div>
+  </div>
+
+  <script type="module">
+    import { 
+      borderWidth, 
+      borderWidthVars,
+      generateBorderWidthCSS,
+      getBorderWidth,
+      getBorderWidthVar,
+      isValidBorderWidth
+    } from './border-width.js';
+
+    // Test runner
+    const results = [];
+
+    function test(name, fn) {
+      try {
+        fn();
+        results.push(`<div class="test-pass">✓ ${name}</div>`);
+      } catch (error) {
+        results.push(`<div class="test-fail">✗ ${name}: ${error.message}</div>`);
+      }
+    }
+
+    function assertEqual(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(`${message}: expected "${expected}", got "${actual}"`);
+      }
+    }
+
+    function assertThrows(fn, message) {
+      try {
+        fn();
+        throw new Error(`${message}: expected error but none was thrown`);
+      } catch (error) {
+        if (error.message.includes('expected error')) {
+          throw error;
+        }
+        // Error was thrown as expected
+      }
+    }
+
+    // Run tests
+    test('borderWidth object has correct values', () => {
+      assertEqual(borderWidth.none, '0px', 'none value');
+      assertEqual(borderWidth.thin, '1px', 'thin value');
+      assertEqual(borderWidth.default, '2px', 'default value');
+      assertEqual(borderWidth.thick, '3px', 'thick value');
+    });
+
+    test('borderWidthVars has correct CSS variable names', () => {
+      assertEqual(borderWidthVars.none, '--border-width-none', 'none var');
+      assertEqual(borderWidthVars.thin, '--border-width-thin', 'thin var');
+      assertEqual(borderWidthVars.default, '--border-width-default', 'default var');
+      assertEqual(borderWidthVars.thick, '--border-width-thick', 'thick var');
+    });
+
+    test('getBorderWidth returns correct values', () => {
+      assertEqual(getBorderWidth('none'), '0px', 'get none');
+      assertEqual(getBorderWidth('thin'), '1px', 'get thin');
+      assertEqual(getBorderWidth('default'), '2px', 'get default');
+      assertEqual(getBorderWidth('thick'), '3px', 'get thick');
+    });
+
+    test('getBorderWidth throws on invalid token', () => {
+      assertThrows(() => getBorderWidth('invalid'), 'invalid token');
+      assertThrows(() => getBorderWidth(''), 'empty token');
+    });
+
+    test('getBorderWidthVar returns correct CSS var references', () => {
+      assertEqual(getBorderWidthVar('none'), 'var(--border-width-none)', 'var none');
+      assertEqual(getBorderWidthVar('thin'), 'var(--border-width-thin)', 'var thin');
+      assertEqual(getBorderWidthVar('default'), 'var(--border-width-default)', 'var default');
+      assertEqual(getBorderWidthVar('thick'), 'var(--border-width-thick)', 'var thick');
+    });
+
+    test('getBorderWidthVar throws on invalid token', () => {
+      assertThrows(() => getBorderWidthVar('invalid'), 'invalid var token');
+    });
+
+    test('isValidBorderWidth validates correctly', () => {
+      assertEqual(isValidBorderWidth('0px'), true, '0px valid');
+      assertEqual(isValidBorderWidth('1px'), true, '1px valid');
+      assertEqual(isValidBorderWidth('2px'), true, '2px valid');
+      assertEqual(isValidBorderWidth('3px'), true, '3px valid');
+      assertEqual(isValidBorderWidth('4px'), false, '4px invalid');
+      assertEqual(isValidBorderWidth('10px'), false, '10px invalid');
+    });
+
+    test('generateBorderWidthCSS produces valid CSS', () => {
+      const css = generateBorderWidthCSS();
+      assertEqual(css.includes('--border-width-none: 0px'), true, 'contains none');
+      assertEqual(css.includes('--border-width-thin: 1px'), true, 'contains thin');
+      assertEqual(css.includes('--border-width-default: 2px'), true, 'contains default');
+      assertEqual(css.includes('--border-width-thick: 3px'), true, 'contains thick');
+    });
+
+    // Display results
+    document.getElementById('test-results').innerHTML = results.join('');
+
+    // Interactive demo
+    const interactiveBox = document.getElementById('interactive-box');
+    const buttons = document.querySelectorAll('.control-group button');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        const width = button.dataset.width;
+        
+        // Update active button
+        buttons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Update box border width
+        interactiveBox.style.borderWidth = getBorderWidthVar(width);
+      });
+    });
+  </script>
+</body>
+</html>
