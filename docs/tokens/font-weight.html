@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Weight Tokens - Harmony Design System</title>
+  <link rel="stylesheet" href="../../styles/tokens-font-weight.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 2rem;
+      background: #fafafa;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 1rem;
+    }
+
+    .intro {
+      background: #f0f7ff;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+      border-left: 4px solid #0066cc;
+    }
+
+    .intro p {
+      margin-bottom: 0.75rem;
+    }
+
+    .intro p:last-child {
+      margin-bottom: 0;
+    }
+
+    .token-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .token-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+
+    .token-card:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .token-header {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .token-name {
+      font-family: 'Courier New', monospace;
+      font-size: 0.95rem;
+      color: #0066cc;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .token-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .token-preview {
+      padding: 2rem;
+      background: white;
+    }
+
+    .preview-text {
+      font-size: 24px;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+
+    .preview-samples {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .preview-sample {
+      font-size: 14px;
+      color: #333;
+    }
+
+    .usage-section {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 6px;
+      margin-bottom: 2rem;
+    }
+
+    .usage-section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+
+    .code-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .guidelines {
+      background: #fff9e6;
+      padding: 1.5rem;
+      border-radius: 6px;
+      border-left: 4px solid #ffc107;
+    }
+
+    .guidelines h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+
+    .guidelines ul {
+      margin-left: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .guidelines li {
+      margin-bottom: 0.5rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .comparison-table th {
+      background: #f5f5f5;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .comparison-table td:first-child {
+      font-family: 'Courier New', monospace;
+      color: #0066cc;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Font Weight Tokens</h1>
+    <p class="subtitle">Typography weight scale for the Harmony Design System</p>
+
+    <div class="intro">
+      <p><strong>Purpose:</strong> Font weight tokens provide consistent typographic hierarchy and emphasis across the design system.</p>
+      <p><strong>Scale:</strong> Four carefully chosen weights from regular (400) to bold (700) that work well across different font families and display contexts.</p>
+      <p><strong>Implementation:</strong> CSS custom properties defined in <code>styles/tokens-font-weight.css</code></p>
+    </div>
+
+    <div class="token-grid">
+      <!-- Regular -->
+      <div class="token-card">
+        <div class="token-header">
+          <div class="token-name">--font-weight-regular</div>
+          <div class="token-value">400</div>
+        </div>
+        <div class="token-preview">
+          <div class="preview-text" style="font-weight: var(--font-weight-regular);">
+            The quick brown fox jumps over the lazy dog
+          </div>
+          <div class="preview-samples">
+            <div class="preview-sample" style="font-weight: var(--font-weight-regular);">
+              Default body text, paragraphs, most UI elements
+            </div>
+            <div class="preview-sample" style="font-weight: var(--font-weight-regular);">
+              Use for: Body copy, form labels, button text (default state)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medium -->
+      <div class="token-card">
+        <div class="token-header">
+          <div class="token-name">--font-weight-medium</div>
+          <div class="token-value">500</div>
+        </div>
+        <div class="token-preview">
+          <div class="preview-text" style="font-weight: var(--font-weight-medium);">
+            The quick brown fox jumps over the lazy dog
+          </div>
+          <div class="preview-samples">
+            <div class="preview-sample" style="font-weight: var(--font-weight-medium);">
+              Subtle emphasis, secondary headings, navigation items
+            </div>
+            <div class="preview-sample" style="font-weight: var(--font-weight-medium);">
+              Use for: Subheadings, active nav items, emphasized labels
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Semibold -->
+      <div class="token-card">
+        <div class="token-header">
+          <div class="token-name">--font-weight-semibold</div>
+          <div class="token-value">600</div>
+        </div>
+        <div class="token-preview">
+          <div class="preview-text" style="font-weight: var(--font-weight-semibold);">
+            The quick brown fox jumps over the lazy dog
+          </div>
+          <div class="preview-samples">
+            <div class="preview-sample" style="font-weight: var(--font-weight-semibold);">
+              Strong emphasis, primary headings, important UI elements
+            </div>
+            <div class="preview-sample" style="font-weight: var(--font-weight-semibold);">
+              Use for: Section headings, primary buttons, key metrics
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bold -->
+      <div class="token-card">
+        <div class="token-header">
+          <div class="token-name">--font-weight-bold</div>
+          <div class="token-value">700</div>
+        </div>
+        <div class="token-preview">
+          <div class="preview-text" style="font-weight: var(--font-weight-bold);">
+            The quick brown fox jumps over the lazy dog
+          </div>
+          <div class="preview-samples">
+            <div class="preview-sample" style="font-weight: var(--font-weight-bold);">
+              Maximum emphasis, critical labels, page titles
+            </div>
+            <div class="preview-sample" style="font-weight: var(--font-weight-bold);">
+              Use for: Page titles, critical alerts, strong emphasis
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="usage-section">
+      <h2>Usage Examples</h2>
+      
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">CSS Custom Properties</h3>
+      <div class="code-block">
+.component-title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.body-text {
+  font-weight: var(--font-weight-regular);
+}
+
+.emphasis {
+  font-weight: var(--font-weight-medium);
+}
+      </div>
+
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">Utility Classes</h3>
+      <div class="code-block">
+&lt;h1 class="font-weight-bold"&gt;Page Title&lt;/h1&gt;
+&lt;h2 class="font-weight-semibold"&gt;Section Heading&lt;/h2&gt;
+&lt;p class="font-weight-regular"&gt;Body text&lt;/p&gt;
+&lt;span class="font-weight-medium"&gt;Emphasized text&lt;/span&gt;
+      </div>
+
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">Web Components</h3>
+      <div class="code-block">
+class HarmonyButton extends HTMLElement {
+  connectedCallback() {
+    this.shadowRoot.querySelector('button').style.fontWeight = 
+      'var(--font-weight-medium)';
+  }
+}
+      </div>
+    </div>
+
+    <div class="guidelines">
+      <h2>Design Guidelines</h2>
+      
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">When to Use Each Weight</h3>
+      <ul>
+        <li><strong>Regular (400):</strong> Default for all body text, form inputs, and standard UI elements</li>
+        <li><strong>Medium (500):</strong> Subtle emphasis within paragraphs, active states, secondary headings</li>
+        <li><strong>Semibold (600):</strong> Primary headings, important buttons, key information</li>
+        <li><strong>Bold (700):</strong> Page titles, critical alerts, maximum emphasis (use sparingly)</li>
+      </ul>
+
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">Best Practices</h3>
+      <ul>
+        <li>Maintain clear hierarchy: Use only 2-3 weights per page to avoid visual confusion</li>
+        <li>Consider readability: Heavier weights work better at larger sizes</li>
+        <li>Test across fonts: Not all typefaces support all weights equally well</li>
+        <li>Avoid extremes: 400-700 range provides sufficient contrast without compromising legibility</li>
+        <li>Combine with size: Weight and size work together to create hierarchy</li>
+      </ul>
+
+      <h3 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">Accessibility</h3>
+      <ul>
+        <li>Font weight alone should not convey critical information (combine with color, size, or labels)</li>
+        <li>Ensure sufficient contrast between weights for clear visual hierarchy</li>
+        <li>Test readability at different zoom levels and screen resolutions</li>
+        <li>Consider dyslexic users: Avoid very light or very heavy weights for body text</li>
+      </ul>
+
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Value</th>
+            <th>Common Use Cases</th>
+            <th>Avoid For</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>--font-weight-regular</td>
+            <td>400</td>
+            <td>Body text, form fields, descriptions</td>
+            <td>Page titles, critical alerts</td>
+          </tr>
+          <tr>
+            <td>--font-weight-medium</td>
+            <td>500</td>
+            <td>Subheadings, emphasized text, nav items</td>
+            <td>Long paragraphs, small text</td>
+          </tr>
+          <tr>
+            <td>--font-weight-semibold</td>
+            <td>600</td>
+            <td>Section headings, buttons, key metrics</td>
+            <td>Body text, fine print</td>
+          </tr>
+          <tr>
+            <td>--font-weight-bold</td>
+            <td>700</td>
+            <td>Page titles, critical labels, strong emphasis</td>
+            <td>Body text, overuse in UI</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
