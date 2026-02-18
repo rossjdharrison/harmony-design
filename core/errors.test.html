@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Classes Test - Harmony Design System</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    
+    h1 {
+      color: #00d9ff;
+      border-bottom: 2px solid #00d9ff;
+      padding-bottom: 0.5rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border-left: 4px solid #00d9ff;
+    }
+    
+    .test-case {
+      margin: 1rem 0;
+      padding: 0.75rem;
+      background: #0f0f0f;
+      border-radius: 4px;
+    }
+    
+    .test-case.pass {
+      border-left: 3px solid #00ff88;
+    }
+    
+    .test-case.fail {
+      border-left: 3px solid #ff0055;
+    }
+    
+    .test-name {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .test-result {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      color: #b0b0b0;
+    }
+    
+    .error-display {
+      background: #2a0000;
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.5rem;
+      color: #ff6b6b;
+    }
+    
+    .summary {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: #1a1a1a;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid #00d9ff;
+      min-width: 200px;
+    }
+    
+    .summary-stat {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Error Classes Test Suite</h1>
+  
+  <div class="summary" id="summary">
+    <h3 style="margin-top: 0; color: #00d9ff;">Test Summary</h3>
+    <div class="summary-stat">
+      <span>Total:</span>
+      <span id="total-tests">0</span>
+    </div>
+    <div class="summary-stat">
+      <span style="color: #00ff88;">Passed:</span>
+      <span id="passed-tests" style="color: #00ff88;">0</span>
+    </div>
+    <div class="summary-stat">
+      <span style="color: #ff0055;">Failed:</span>
+      <span id="failed-tests" style="color: #ff0055;">0</span>
+    </div>
+  </div>
+  
+  <div id="test-results"></div>
+
+  <script type="module">
+    import {
+      AudioError,
+      GraphError,
+      ValidationError,
+      HarmonyError,
+      createErrorFromCode,
+      ErrorCodes
+    } from './errors.js';
+
+    const results = document.getElementById('test-results');
+    let totalTests = 0;
+    let passedTests = 0;
+    let failedTests = 0;
+
+    function updateSummary() {
+      document.getElementById('total-tests').textContent = totalTests;
+      document.getElementById('passed-tests').textContent = passedTests;
+      document.getElementById('failed-tests').textContent = failedTests;
+    }
+
+    function createTestSection(title) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      section.innerHTML = `<h2>${title}</h2>`;
+      results.appendChild(section);
+      return section;
+    }
+
+    function runTest(section, name, testFn) {
+      totalTests++;
+      const testCase = document.createElement('div');
+      testCase.className = 'test-case';
+      
+      const testName = document.createElement('div');
+      testName.className = 'test-name';
+      testName.textContent = name;
+      testCase.appendChild(testName);
+      
+      const testResult = document.createElement('div');
+      testResult.className = 'test-result';
+      
+      try {
+        const result = testFn();
+        testCase.classList.add('pass');
+        testResult.textContent = `✓ PASS\n${result || ''}`;
+        passedTests++;
+      } catch (error) {
+        testCase.classList.add('fail');
+        testResult.textContent = `✗ FAIL`;
+        
+        const errorDisplay = document.createElement('div');
+        errorDisplay.className = 'error-display';
+        errorDisplay.textContent = error.message;
+        testCase.appendChild(errorDisplay);
+        
+        failedTests++;
+      }
+      
+      testCase.appendChild(testResult);
+      section.appendChild(testCase);
+      updateSummary();
+    }
+
+    // AudioError Tests
+    const audioSection = createTestSection('AudioError Tests');
+
+    runTest(audioSection, 'AudioError basic construction', () => {
+      const error = new AudioError('Test audio error', {
+        nodeType: 'AudioContext',
+        sampleRate: 48000
+      });
+      
+      if (error.name !== 'AudioError') throw new Error('Wrong name');
+      if (error.message !== 'Test audio error') throw new Error('Wrong message');
+      if (error.context.subsystem !== 'audio') throw new Error('Wrong subsystem');
+      if (error.context.nodeType !== 'AudioContext') throw new Error('Wrong nodeType');
+      
+      return 'AudioError constructed with correct properties';
+    });
+
+    runTest(audioSection, 'AudioError latency violation detection', () => {
+      const error = new AudioError('Latency exceeded', {
+        latency: 15,
+        bufferSize: 512
+      });
+      
+      if (!error.isLatencyViolation()) {
+        throw new Error('Should detect latency violation');
+      }
+      
+      const okError = new AudioError('Normal latency', { latency: 5 });
+      if (okError.isLatencyViolation()) {
+        throw new Error('Should not detect violation for 5ms');
+      }
+      
+      return 'Latency violation detection works correctly';
+    });
+
+    runTest(audioSection, 'AudioError recoverability check', () => {
+      const recoverable = new AudioError('Buffer issue', {
+        errorType: 'buffer-allocation'
+      });
+      
+      if (!recoverable.isRecoverable()) {
+        throw new Error('Buffer allocation should be recoverable');
+      }
+      
+      const fatal = new AudioError('Fatal error', {
+        errorType: 'hardware-failure'
+      });
+      
+      if (fatal.isRecoverable()) {
+        throw new Error('Hardware failure should not be recoverable');
+      }
+      
+      return 'Recoverability detection works correctly';
+    });
+
+    runTest(audioSection, 'AudioError serialization', () => {
+      const error = new AudioError('Serialization test', {
+        nodeType: 'Oscillator',
+        sampleRate: 44100
+      });
+      
+      const json = error.toJSON();
+      
+      if (json.name !== 'AudioError') throw new Error('Wrong name in JSON');
+      if (json.context.nodeType !== 'Oscillator') throw new Error('Context not serialized');
+      if (!json.timestamp) throw new Error('Missing timestamp');
+      if (!json.stack) throw new Error('Missing stack trace');
+      
+      return JSON.stringify(json, null, 2);
+    });
+
+    // GraphError Tests
+    const graphSection = createTestSection('GraphError Tests');
+
+    runTest(graphSection, 'GraphError basic construction', () => {
+      const error = new GraphError('Test graph error', {
+        nodeId: 'node-a',
+        relatedNodeId: 'node-b',
+        edgeType: 'parent'
+      });
+      
+      if (error.name !== 'GraphError') throw new Error('Wrong name');
+      if (error.context.subsystem !== 'graph') throw new Error('Wrong subsystem');
+      if (error.context.nodeId !== 'node-a') throw new Error('Wrong nodeId');
+      
+      return 'GraphError constructed with correct properties';
+    });
+
+    runTest(graphSection, 'GraphError cycle detection', () => {
+      const cycleError = new GraphError('Cycle detected', {
+        cycleDetected: true,
+        graphPath: ['A', 'B', 'C', 'A']
+      });
+      
+      if (!cycleError.isCycleError()) {
+        throw new Error('Should detect cycle');
+      }
+      
+      const path = cycleError.getCyclePath();
+      if (!path || path.length !== 4) {
+        throw new Error('Wrong cycle path');
+      }
+      
+      return `Cycle path: ${path.join(' → ')}`;
+    });
+
+    runTest(graphSection, 'GraphError missing edge detection', () => {
+      const error = new GraphError('Missing edge', {
+        errorType: 'missing-edge',
+        nodeId: 'component-a',
+        edgeType: 'parent'
+      });
+      
+      if (!error.isMissingEdgeError()) {
+        throw new Error('Should detect missing edge');
+      }
+      
+      return 'Missing edge detection works correctly';
+    });
+
+    runTest(graphSection, 'GraphError with complex path', () => {
+      const error = new GraphError('Invalid traversal', {
+        graphPath: ['root', 'child1', 'child2', 'leaf'],
+        nodeId: 'leaf',
+        relatedNodeId: 'root'
+      });
+      
+      const json = error.toJSON();
+      if (!json.context.graphPath) throw new Error('Path not serialized');
+      if (json.context.graphPath.length !== 4) throw new Error('Wrong path length');
+      
+      return `Path: ${json.context.graphPath.join(' → ')}`;
+    });
+
+    // ValidationError Tests
+    const validationSection = createTestSection('ValidationError Tests');
+
+    runTest(validationSection, 'ValidationError basic construction', () => {
+      const error = new ValidationError('Test validation error', {
+        schemaId: 'TestSchema',
+        fieldPath: 'user.email',
+        expectedType: 'string',
+        actualValue: 123
+      });
+      
+      if (error.name !== 'ValidationError') throw new Error('Wrong name');
+      if (error.context.subsystem !== 'validation') throw new Error('Wrong subsystem');
+      if (error.getFieldPath() !== 'user.email') throw new Error('Wrong field path');
+      
+      return 'ValidationError constructed correctly';
+    });
+
+    runTest(validationSection, 'ValidationError type mismatch detection', () => {
+      const error = new ValidationError('Type mismatch', {
+        constraint: 'type',
+        expectedType: 'number',
+        actualValue: 'string'
+      });
+      
+      if (!error.isTypeMismatch()) {
+        throw new Error('Should detect type mismatch');
+      }
+      
+      return 'Type mismatch detection works correctly';
+    });
+
+    runTest(validationSection, 'ValidationError required field detection', () => {
+      const error = new ValidationError('Required field missing', {
+        constraint: 'required',
+        fieldPath: 'payload.data'
+      });
+      
+      if (!error.isRequiredFieldError()) {
+        throw new Error('Should detect required field error');
+      }
+      
+      return 'Required field detection works correctly';
+    });
+
+    runTest(validationSection, 'ValidationError multiple errors', () => {
+      const error = new ValidationError('Multiple validation errors', {
+        validationErrors: [
+          { field: 'name', error: 'required' },
+          { field: 'age', error: 'type' },
+          { field: 'email', error: 'format' }
+        ]
+      });
+      
+      const errors = error.getValidationErrors();
+      if (errors.length !== 3) throw new Error('Wrong error count');
+      
+      return `Found ${errors.length} validation errors:\n${JSON.stringify(errors, null, 2)}`;
+    });
+
+    // Error Code Tests
+    const errorCodeSection = createTestSection('Error Code Tests');
+
+    runTest(errorCodeSection, 'createErrorFromCode - AudioError', () => {
+      const error = createErrorFromCode(
+        ErrorCodes.AUDIO_CONTEXT_INIT_FAILED,
+        'Context init failed',
+        { sampleRate: 48000 }
+      );
+      
+      if (!(error instanceof AudioError)) {
+        throw new Error('Should create AudioError');
+      }
+      
+      if (error.context.errorCode !== ErrorCodes.AUDIO_CONTEXT_INIT_FAILED) {
+        throw new Error('Error code not set');
+      }
+      
+      return `Created ${error.name} with code ${error.context.errorCode}`;
+    });
+
+    runTest(errorCodeSection, 'createErrorFromCode - GraphError', () => {
+      const error = createErrorFromCode(
+        ErrorCodes.GRAPH_CYCLE_DETECTED,
+        'Cycle found',
+        { cycleDetected: true }
+      );
+      
+      if (!(error instanceof GraphError)) {
+        throw new Error('Should create GraphError');
+      }
+      
+      return `Created ${error.name} with code ${error.context.errorCode}`;
+    });
+
+    runTest(errorCodeSection, 'createErrorFromCode - ValidationError', () => {
+      const error = createErrorFromCode(
+        ErrorCodes.VALIDATION_SCHEMA_FAILED,
+        'Schema validation failed',
+        { schemaId: 'TestSchema' }
+      );
+      
+      if (!(error instanceof ValidationError)) {
+        throw new Error('Should create ValidationError');
+      }
+      
+      return `Created ${error.name} with code ${error.context.errorCode}`;
+    });
+
+    runTest(errorCodeSection, 'ErrorCodes constants exist', () => {
+      const expectedCodes = [
+        'AUDIO_CONTEXT_INIT_FAILED',
+        'GRAPH_CYCLE_DETECTED',
+        'VALIDATION_SCHEMA_FAILED'
+      ];
+      
+      for (const code of expectedCodes) {
+        if (!ErrorCodes[code]) {
+          throw new Error(`Missing error code: ${code}`);
+        }
+      }
+      
+      return `All ${expectedCodes.length} expected error codes exist`;
+    });
+
+    // Inheritance Tests
+    const inheritanceSection = createTestSection('Inheritance Tests');
+
+    runTest(inheritanceSection, 'All errors extend HarmonyError', () => {
+      const audio = new AudioError('test');
+      const graph = new GraphError('test');
+      const validation = new ValidationError('test');
+      
+      if (!(audio instanceof HarmonyError)) throw new Error('AudioError not HarmonyError');
+      if (!(graph instanceof HarmonyError)) throw new Error('GraphError not HarmonyError');
+      if (!(validation instanceof HarmonyError)) throw new Error('ValidationError not HarmonyError');
+      
+      return 'All error types extend HarmonyError';
+    });
+
+    runTest(inheritanceSection, 'All errors extend Error', () => {
+      const audio = new AudioError('test');
+      const graph = new GraphError('test');
+      const validation = new ValidationError('test');
+      
+      if (!(audio instanceof Error)) throw new Error('AudioError not Error');
+      if (!(graph instanceof Error)) throw new Error('GraphError not Error');
+      if (!(validation instanceof Error)) throw new Error('ValidationError not Error');
+      
+      return 'All error types extend native Error';
+    });
+
+    runTest(inheritanceSection, 'Stack traces are captured', () => {
+      const error = new AudioError('Stack test');
+      
+      if (!error.stack) throw new Error('No stack trace');
+      if (!error.stack.includes('AudioError')) throw new Error('Wrong error in stack');
+      
+      return 'Stack traces captured correctly';
+    });
+
+    // Serialization Tests
+    const serializationSection = createTestSection('Serialization Tests');
+
+    runTest(serializationSection, 'Round-trip serialization', () => {
+      const original = new ValidationError('Original error', {
+        schemaId: 'TestSchema',
+        fieldPath: 'test.field',
+        expectedType: 'string'
+      });
+      
+      const json = original.toJSON();
+      const restored = ValidationError.fromJSON(json);
+      
+      if (restored.message !== original.message) throw new Error('Message not preserved');
+      if (restored.context.schemaId !== original.context.schemaId) throw new Error('Context not preserved');
+      if (restored.timestamp !== original.timestamp) throw new Error('Timestamp not preserved');
+      
+      return 'Round-trip serialization successful';
+    });
+
+    runTest(serializationSection, 'JSON contains all required fields', () => {
+      const error = new GraphError('Test', {
+        nodeId: 'test-node',
+        cycleDetected: true
+      });
+      
+      const json = error.toJSON();
+      
+      const required = ['name', 'message', 'context', 'timestamp', 'stack'];
+      for (const field of required) {
+        if (!(field in json)) throw new Error(`Missing field: ${field}`);
+      }
+      
+      return `All required fields present: ${required.join(', ')}`;
+    });
+
+    console.log('All tests completed');
+    console.log(`Total: ${totalTests}, Passed: ${passedTests}, Failed: ${failedTests}`);
+  </script>
+</body>
+</html>
