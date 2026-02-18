@@ -1,0 +1,98 @@
+{
+  "budgets": {
+    "core": {
+      "event-bus.js": {
+        "maxSize": "8kb",
+        "description": "Core event bus implementation"
+      },
+      "token-provider.js": {
+        "maxSize": "6kb",
+        "description": "Design token provider"
+      },
+      "token-hook.js": {
+        "maxSize": "4kb",
+        "description": "Token hook for components"
+      },
+      "reactive-propagation.js": {
+        "maxSize": "10kb",
+        "description": "Reactive state propagation"
+      },
+      "focus-tracker.js": {
+        "maxSize": "5kb",
+        "description": "Focus management system"
+      }
+    },
+    "validation": {
+      "core/validation/zod-lite.js": {
+        "maxSize": "12kb",
+        "description": "Lightweight validation library"
+      },
+      "core/validation/component-schemas.js": {
+        "maxSize": "8kb",
+        "description": "Component validation schemas"
+      },
+      "core/validation/event-schemas.js": {
+        "maxSize": "8kb",
+        "description": "Event validation schemas"
+      },
+      "core/validation/token-schemas.js": {
+        "maxSize": "6kb",
+        "description": "Token validation schemas"
+      }
+    },
+    "components": {
+      "controls/harmony-toggle/harmony-toggle.js": {
+        "maxSize": "15kb",
+        "description": "Toggle control component"
+      },
+      "controls/harmony-fader.js": {
+        "maxSize": "20kb",
+        "description": "Fader control component"
+      },
+      "components/theme-switcher/theme-switcher.js": {
+        "maxSize": "12kb",
+        "description": "Theme switcher component"
+      },
+      "components/composites/clip/clip.js": {
+        "maxSize": "25kb",
+        "description": "Audio clip composite component"
+      },
+      "components/composites/transport-bar/transport-bar.js": {
+        "maxSize": "20kb",
+        "description": "Transport bar composite component"
+      }
+    },
+    "wasm": {
+      "harmony-dev/workers/*.wasm": {
+        "maxSize": "500kb",
+        "description": "WASM modules for audio processing",
+        "memoryBudget": "50MB"
+      }
+    },
+    "total": {
+      "initialLoad": {
+        "maxSize": "150kb",
+        "maxTime": "200ms",
+        "description": "Total initial page load bundle (core + critical components)"
+      },
+      "fullBundle": {
+        "maxSize": "500kb",
+        "description": "Total bundle size including all components"
+      }
+    }
+  },
+  "thresholds": {
+    "error": 1.0,
+    "warning": 0.9
+  },
+  "compression": "gzip",
+  "ignorePatterns": [
+    "*.test.js",
+    "*.test.html",
+    "*.stories.js",
+    "demo-*.html",
+    "test-pages/**",
+    "docs/**",
+    "reports/**"
+  ]
+}

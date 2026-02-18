@@ -1,0 +1,92 @@
+name: Bundle Size Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'core/**/*.js'
+      - 'components/**/*.js'
+      - 'controls/**/*.js'
+      - 'harmony-dev/workers/**/*.wasm'
+      - 'performance/bundle-size-config.json'
+      - 'scripts/check-bundle-size.js'
+  push:
+    branches: [main]
+
+jobs:
+  check-bundle-size:
+    name: Check Bundle Size Limits
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          # Only install what's needed for the size check script
+          npm init -y
+          echo "Bundle size check uses Node.js built-in modules only"
+      
+      - name: Run bundle size check
+        id: size_check
+        run: |
+          node scripts/check-bundle-size.js
+        continue-on-error: true
+      
+      - name: Generate size report
+        if: always()
+        run: |
+          mkdir -p reports/bundle-size
+          node scripts/check-bundle-size.js > reports/bundle-size/report-${{ github.sha }}.txt 2>&1 || true
+      
+      - name: Upload bundle size report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: bundle-size-report
+          path: reports/bundle-size/
+          retention-days: 30
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = `reports/bundle-size/report-${{ github.sha }}.txt`;
+            
+            if (!fs.existsSync(reportPath)) {
+              console.log('No report file found');
+              return;
+            }
+            
+            const report = fs.readFileSync(reportPath, 'utf8');
+            const body = `## 📦 Bundle Size Check Results\n\n\`\`\`\n${report}\n\`\`\``;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Fail if budget exceeded
+        if: steps.size_check.outcome == 'failure'
+        run: |
+          echo "❌ Bundle size check failed - budgets exceeded"
+          echo "Please review the report above and reduce bundle sizes"
+          exit 1
+      
+      - name: Success summary
+        if: steps.size_check.outcome == 'success'
+        run: |
+          echo "✅ All bundle sizes within budget"
+          echo "Performance budgets enforced successfully"
