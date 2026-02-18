@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Color Tokens - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      padding: 2rem;
+      background: #fafafa;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: rgb(17, 24, 39);
+    }
+
+    .subtitle {
+      color: rgb(107, 114, 128);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .controls {
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 6px;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .theme-toggle {
+      padding: 0.5rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .theme-toggle:hover {
+      background: #f3f4f6;
+    }
+
+    .token-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .token-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .token-header {
+      padding: 1rem;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .token-name {
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+      font-size: 1rem;
+      color: rgb(17, 24, 39);
+    }
+
+    .token-description {
+      font-size: 0.875rem;
+      color: rgb(107, 114, 128);
+      margin-top: 0.25rem;
+    }
+
+    .token-body {
+      padding: 1.5rem;
+    }
+
+    .token-samples {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .sample-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 200px;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+    }
+
+    .sample-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgb(75, 85, 99);
+    }
+
+    .sample-text {
+      font-size: 1rem;
+    }
+
+    .sample-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: rgb(107, 114, 128);
+      text-align: right;
+    }
+
+    .usage-section {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid #e5e7eb;
+    }
+
+    .usage-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: rgb(17, 24, 39);
+    }
+
+    .code-block {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 1rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .code-comment {
+      color: #9ca3af;
+    }
+
+    .code-keyword {
+      color: #c084fc;
+    }
+
+    .code-string {
+      color: #86efac;
+    }
+
+    .code-function {
+      color: #60a5fa;
+    }
+
+    .background-demos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .bg-demo {
+      padding: 2rem;
+      border-radius: 6px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .bg-demo.dark {
+      background: rgb(31, 41, 55);
+    }
+
+    .bg-demo.light {
+      background: rgb(249, 250, 251);
+    }
+
+    .bg-demo.accent {
+      background: rgb(59, 130, 246);
+    }
+
+    .demo-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Dark theme styles */
+    body.dark-theme {
+      background: #111827;
+    }
+
+    body.dark-theme .container {
+      background: #1f2937;
+      color: #f9fafb;
+    }
+
+    body.dark-theme h1 {
+      color: rgb(249, 250, 251);
+    }
+
+    body.dark-theme .subtitle {
+      color: rgb(156, 163, 175);
+    }
+
+    body.dark-theme .controls {
+      background: #111827;
+    }
+
+    body.dark-theme .theme-toggle {
+      background: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+
+    body.dark-theme .theme-toggle:hover {
+      background: #4b5563;
+    }
+
+    body.dark-theme .token-card {
+      border-color: #374151;
+    }
+
+    body.dark-theme .token-header {
+      background: #111827;
+      border-color: #374151;
+    }
+
+    body.dark-theme .token-name {
+      color: rgb(249, 250, 251);
+    }
+
+    body.dark-theme .token-description {
+      color: rgb(156, 163, 175);
+    }
+
+    body.dark-theme .sample-row {
+      border-color: #374151;
+      background: #111827;
+    }
+
+    body.dark-theme .sample-label {
+      color: rgb(209, 213, 219);
+    }
+
+    body.dark-theme .sample-value {
+      color: rgb(156, 163, 175);
+    }
+
+    body.dark-theme .usage-section {
+      border-color: #374151;
+    }
+
+    body.dark-theme .usage-section h2 {
+      color: rgb(249, 250, 251);
+    }
+
+    body.dark-theme .bg-demo.light {
+      background: rgb(31, 41, 55);
+    }
+
+    body.dark-theme .bg-demo.dark {
+      background: rgb(249, 250, 251);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Text Color Tokens</h1>
+    <p class="subtitle">Semantic color tokens for text elements across the design system</p>
+
+    <div class="controls">
+      <button class="theme-toggle" id="themeToggle">Switch to Dark Theme</button>
+      <span style="color: rgb(107, 114, 128); font-size: 0.875rem;">
+        Toggle to see how text colors adapt to different themes
+      </span>
+    </div>
+
+    <div class="token-grid" id="tokenGrid"></div>
+
+    <div class="usage-section">
+      <h2>Usage Examples</h2>
+      
+      <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: inherit;">CSS Custom Properties</h3>
+      <div class="code-block">
+<span class="code-comment">/* Apply text colors using CSS variables */</span>
+<span class="code-keyword">.heading</span> {
+  <span class="code-keyword">color</span>: <span class="code-function">var</span>(<span class="code-string">--text-primary</span>);
+}
+
+<span class="code-keyword">.label</span> {
+  <span class="code-keyword">color</span>: <span class="code-function">var</span>(<span class="code-string">--text-secondary</span>);
+}
+
+<span class="code-keyword">.placeholder</span> {
+  <span class="code-keyword">color</span>: <span class="code-function">var</span>(<span class="code-string">--text-tertiary</span>);
+}
+
+<span class="code-keyword">.disabled</span> {
+  <span class="code-keyword">color</span>: <span class="code-function">var</span>(<span class="code-string">--text-disabled</span>);
+}
+
+<span class="code-keyword">.button-text</span> {
+  <span class="code-keyword">color</span>: <span class="code-function">var</span>(<span class="code-string">--text-inverse</span>);
+}
+      </div>
+
+      <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: inherit;">JavaScript API</h3>
+      <div class="code-block">
+<span class="code-keyword">import</span> { TEXT_COLOR_TOKENS, getTextColor } <span class="code-keyword">from</span> <span class="code-string">'./tokens/text-color-tokens.js'</span>;
+
+<span class="code-comment">// Get color value for current theme</span>
+<span class="code-keyword">const</span> primaryColor = <span class="code-function">getTextColor</span>(<span class="code-string">'text-primary'</span>, <span class="code-string">'light'</span>);
+element.style.color = primaryColor;
+
+<span class="code-comment">// Apply all tokens to document</span>
+<span class="code-keyword">import</span> { applyTextColorTokens } <span class="code-keyword">from</span> <span class="code-string">'./tokens/text-color-tokens.js'</span>;
+<span class="code-function">applyTextColorTokens</span>(<span class="code-string">'dark'</span>);
+      </div>
+
+      <h3 style="margin-top: 1.5rem; margin-bottom: 0.5rem; color: inherit;">Background Context Examples</h3>
+      <div class="background-demos">
+        <div class="bg-demo light">
+          <div class="demo-title" style="color: var(--text-primary);">Light Background</div>
+          <p style="color: var(--text-primary); margin-bottom: 0.5rem;">Primary text on light background</p>
+          <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Secondary text for labels</p>
+          <p style="color: var(--text-tertiary); margin-bottom: 0.5rem;">Tertiary text for hints</p>
+          <p style="color: var(--text-disabled);">Disabled text state</p>
+        </div>
+
+        <div class="bg-demo dark">
+          <div class="demo-title" style="color: var(--text-inverse);">Dark Background</div>
+          <p style="color: var(--text-inverse); margin-bottom: 0.5rem;">Inverse text on dark background</p>
+          <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Secondary maintains contrast</p>
+          <p style="color: var(--text-tertiary); margin-bottom: 0.5rem;">Tertiary remains subtle</p>
+          <p style="color: var(--text-disabled);">Disabled adapts to context</p>
+        </div>
+
+        <div class="bg-demo accent">
+          <div class="demo-title" style="color: var(--text-inverse);">Accent Background</div>
+          <p style="color: var(--text-inverse); margin-bottom: 0.5rem;">Inverse text ensures readability</p>
+          <p style="color: var(--text-inverse); opacity: 0.8; margin-bottom: 0.5rem;">Use opacity for hierarchy</p>
+          <p style="color: var(--text-inverse); opacity: 0.6;">Subtle text on colored backgrounds</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { TEXT_COLOR_TOKENS, applyTextColorTokens } from '../../tokens/text-color-tokens.js';
+
+    let currentTheme = 'light';
+
+    // Apply initial theme
+    applyTextColorTokens(currentTheme);
+
+    // Render token cards
+    function renderTokens() {
+      const grid = document.getElementById('tokenGrid');
+      grid.innerHTML = '';
+
+      Object.entries(TEXT_COLOR_TOKENS).forEach(([key, token]) => {
+        const card = document.createElement('div');
+        card.className = 'token-card';
+        
+        const lightColor = token.light;
+        const darkColor = token.dark;
+        const currentColor = token[currentTheme];
+
+        card.innerHTML = `
+          <div class="token-header">
+            <div class="token-name">${key}</div>
+            <div class="token-description">${token.description}</div>
+          </div>
+          <div class="token-body">
+            <div class="token-samples">
+              <div class="sample-row">
+                <div class="sample-label">Current</div>
+                <div class="sample-text" style="color: ${currentColor};">
+                  The quick brown fox jumps over the lazy dog
+                </div>
+                <div class="sample-value">${currentColor}</div>
+              </div>
+              <div class="sample-row">
+                <div class="sample-label">Light Theme</div>
+                <div class="sample-text" style="color: ${lightColor};">
+                  The quick brown fox jumps over the lazy dog
+                </div>
+                <div class="sample-value">${lightColor}</div>
+              </div>
+              <div class="sample-row">
+                <div class="sample-label">Dark Theme</div>
+                <div class="sample-text" style="color: ${darkColor}; background: rgb(31, 41, 55); padding: 0.5rem; border-radius: 4px;">
+                  The quick brown fox jumps over the lazy dog
+                </div>
+                <div class="sample-value">${darkColor}</div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+    }
+
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.body.classList.toggle('dark-theme');
+      applyTextColorTokens(currentTheme);
+      themeToggle.textContent = `Switch to ${currentTheme === 'light' ? 'Dark' : 'Light'} Theme`;
+      renderTokens();
+    });
+
+    // Initial render
+    renderTokens();
+  </script>
+</body>
+</html>
