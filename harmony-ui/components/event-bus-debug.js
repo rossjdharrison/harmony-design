@@ -1,6 +1,6 @@
 /**
  * @fileoverview EventBus debug component for monitoring event flow.
- * See: /harmony-design/docs/architecture/event-bus-pattern.md
+ * See: /harmony-design/DESIGN_SYSTEM.md#event-system
  * 
  * Policy: Must be available on every page via Ctrl+Shift+E
  * 

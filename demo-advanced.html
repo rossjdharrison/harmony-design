@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmony Design System - Advanced Components Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #333;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        h1::before {
+            content: '⚡ ';
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            border-left: 4px solid #667eea;
+            padding-left: 1rem;
+        }
+
+        .demo-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-label {
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .component-showcase {
+            background: #0a0a0a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .transport-showcase {
+            background: #0a0a0a;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-box {
+            background: #0a0a0a;
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .info-box code {
+            background: #2a2a2a;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #667eea;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        .event-log {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .event-item {
+            background: #1a1a1a;
+            border-left: 3px solid #667eea;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .event-type {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .event-detail {
+            color: #888;
+            white-space: pre-wrap;
+            font-size: 0.8rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .metric-label {
+            color: #888;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value {
+            color: #667eea;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .theme-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        /* Custom component styles */
+        hds-button {
+            cursor: pointer;
+        }
+
+        harmony-toggle {
+            cursor: pointer;
+        }
+
+        harmony-transport-bar {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Harmony Design System</h1>
+            <p class="subtitle">Advanced Components Demo - Composite & Control Components</p>
+        </header>
+
+        <!-- TransportBar Composite -->
+        <section class="section">
+            <h2 class="section-title">Composite: TransportBar</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">DAW-Style Transport Controls</div>
+                <div class="transport-showcase">
+                    <harmony-transport-bar id="mainTransport" position="00:00:000" bpm="120"></harmony-transport-bar>
+                    
+                    <div class="status-bar">
+                        <div class="status-item">
+                            <span class="status-label">State:</span>
+                            <span class="status-value" id="transportState">Stopped</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Position:</span>
+                            <span class="status-value" id="transportPosition">00:00:000</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">BPM:</span>
+                            <span class="status-value" id="transportBPM">120</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Recording:</span>
+                            <span class="status-value" id="transportRec">OFF</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Component Path:</strong> <code>components/composites/transport-bar/transport-bar.js</code><br>
+                <strong>Events:</strong> <code>transport-play</code>, <code>transport-pause</code>, <code>transport-stop</code>, <code>transport-record</code><br>
+                <strong>Features:</strong> Keyboard shortcuts (Space = play/pause, R = record), Position display, BPM control
+            </div>
+        </section>
+
+        <!-- Theme Switcher -->
+        <section class="section">
+            <h2 class="section-title">Component: Theme Switcher</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">Theme Toggle</div>
+                <div class="theme-controls">
+                    <theme-switcher id="themeSwitcher" variant="toggle"></theme-switcher>
+                    <span class="status-label">Current Theme:</span>
+                    <span class="status-value" id="currentTheme">Dark</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Component Path:</strong> <code>components/theme-switcher/theme-switcher.js</code><br>
+                <strong>Events:</strong> <code>theme-change-requested</code><br>
+                <strong>Variants:</strong> toggle, dropdown
+            </div>
+        </section>
+
+        <!-- Toggle Controls Grid -->
+        <section class="section">
+            <h2 class="section-title">Control: Harmony Toggle - Channel Strip</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">Multi-Channel Controls</div>
+                <div class="demo-grid">
+                    <div class="component-showcase">
+                        <h4 style="color: #888; margin-bottom: 1rem;">Channel 1</h4>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <harmony-toggle id="ch1-rec" label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle id="ch1-mute" label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle id="ch1-solo" label="S" variant="primary"></harmony-toggle>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value" id="ch1-status">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="component-showcase">
+                        <h4 style="color: #888; margin-bottom: 1rem;">Channel 2</h4>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <harmony-toggle id="ch2-rec" label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle id="ch2-mute" label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle id="ch2-solo" label="S" variant="primary"></harmony-toggle>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value" id="ch2-status">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="component-showcase">
+                        <h4 style="color: #888; margin-bottom: 1rem;">Channel 3</h4>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <harmony-toggle id="ch3-rec" label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle id="ch3-mute" label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle id="ch3-solo" label="S" variant="primary"></harmony-toggle>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value" id="ch3-status">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="component-showcase">
+                        <h4 style="color: #888; margin-bottom: 1rem;">Channel 4</h4>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <harmony-toggle id="ch4-rec" label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle id="ch4-mute" label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle id="ch4-solo" label="S" variant="primary"></harmony-toggle>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Status:</span>
+                            <span class="status-value" id="ch4-status">Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Architecture:</strong> Multi-channel mixer interface pattern<br>
+                <strong>Use Case:</strong> Recording/mixing console channel controls
+            </div>
+        </section>
+
+        <!-- Event System Monitor -->
+        <section class="section">
+            <h2 class="section-title">Event System Monitor</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">Recent Events (EventBus Pattern)</div>
+                <div class="event-log" id="eventLog">
+                    <div style="text-align: center; color: #666; padding: 2rem;">
+                        Interact with components above to see events...
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Architecture:</strong> All components communicate through EventBus<br>
+                <strong>Pattern:</strong> Event-driven, decoupled component architecture<br>
+                <strong>Shortcut:</strong> Press <code>Ctrl+Shift+E</code> to open full EventBus debugger
+            </div>
+        </section>
+
+        <!-- Performance Metrics -->
+        <section class="section">
+            <h2 class="section-title">Performance Metrics</h2>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Components</div>
+                    <div class="metric-value" id="componentCount">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Events Published</div>
+                    <div class="metric-value" id="eventCount">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Budget</div>
+                    <div class="metric-value">16ms/frame ✓</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Load Components -->
+    <script type="module" src="./components/composites/transport-bar/transport-bar.js"></script>
+    <script type="module" src="./components/theme-switcher/theme-switcher.js"></script>
+    <script type="module" src="./controls/harmony-toggle/harmony-toggle.js"></script>
+
+    <!-- Demo Script -->
+    <script type="module">
+        let eventCounter = 0;
+        const eventLog = document.getElementById('eventLog');
+        const eventCountEl = document.getElementById('eventCount');
+        
+        function logEvent(type, detail) {
+            eventCounter++;
+            eventCountEl.textContent = eventCounter;
+            
+            // Clear placeholder
+            if (eventLog.querySelector('[style*="text-align"]')) {
+                eventLog.innerHTML = '';
+            }
+            
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.innerHTML = `
+                <div class="event-type">${type}</div>
+                <div class="event-detail">${JSON.stringify(detail, null, 2)}</div>
+            `;
+            
+            eventLog.insertBefore(eventItem, eventLog.firstChild);
+            
+            // Keep only last 15 events
+            while (eventLog.children.length > 15) {
+                eventLog.removeChild(eventLog.lastChild);
+            }
+        }
+
+        // Listen to transport events
+        document.addEventListener('transport-play', (e) => {
+            logEvent('transport-play', { timestamp: e.detail.timestamp });
+            document.getElementById('transportState').textContent = 'Playing';
+            document.getElementById('transportState').style.color = '#4caf50';
+        });
+
+        document.addEventListener('transport-pause', (e) => {
+            logEvent('transport-pause', { timestamp: e.detail.timestamp });
+            document.getElementById('transportState').textContent = 'Paused';
+            document.getElementById('transportState').style.color = '#ff9800';
+        });
+
+        document.addEventListener('transport-stop', (e) => {
+            logEvent('transport-stop', { timestamp: e.detail.timestamp });
+            document.getElementById('transportState').textContent = 'Stopped';
+            document.getElementById('transportState').style.color = '#666';
+            document.getElementById('transportPosition').textContent = '00:00:000';
+        });
+
+        document.addEventListener('transport-record', (e) => {
+            logEvent('transport-record', { 
+                recording: e.detail.recording,
+                timestamp: e.detail.timestamp 
+            });
+            document.getElementById('transportRec').textContent = e.detail.recording ? 'ON' : 'OFF';
+            document.getElementById('transportRec').style.color = e.detail.recording ? '#f44336' : '#666';
+        });
+
+        // Listen to theme events
+        document.addEventListener('theme-change-requested', (e) => {
+            logEvent('theme-change-requested', { theme: e.detail.theme });
+            document.getElementById('currentTheme').textContent = e.detail.theme === 'dark' ? 'Dark' : 'Light';
+        });
+
+        // Listen to toggle events
+        document.addEventListener('harmony-toggle-changed', (e) => {
+            const componentId = e.target.id;
+            
+            logEvent('harmony-toggle-changed', {
+                label: e.detail.label,
+                pressed: e.detail.pressed,
+                componentId: componentId
+            });
+
+            // Update channel status
+            const match = componentId.match(/ch(\d+)-(rec|mute|solo)/);
+            if (match) {
+                const [, channel, type] = match;
+                const statusEl = document.getElementById(`ch${channel}-status`);
+                
+                if (type === 'rec' && e.detail.pressed) {
+                    statusEl.textContent = 'Recording';
+                    statusEl.style.color = '#f44336';
+                } else if (type === 'mute' && e.detail.pressed) {
+                    statusEl.textContent = 'Muted';
+                    statusEl.style.color = '#ff9800';
+                } else if (type === 'solo' && e.detail.pressed) {
+                    statusEl.textContent = 'Solo';
+                    statusEl.style.color = '#4caf50';
+                } else {
+                    // Check if any toggle is still pressed
+                    const rec = document.getElementById(`ch${channel}-rec`);
+                    const mute = document.getElementById(`ch${channel}-mute`);
+                    const solo = document.getElementById(`ch${channel}-solo`);
+                    
+                    if (!rec?.pressed && !mute?.pressed && !solo?.pressed) {
+                        statusEl.textContent = 'Ready';
+                        statusEl.style.color = '#667eea';
+                    }
+                }
+            }
+        });
+
+        // Count components
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const transports = document.querySelectorAll('harmony-transport-bar').length;
+                const themes = document.querySelectorAll('theme-switcher').length;
+                const toggles = document.querySelectorAll('harmony-toggle').length;
+                document.getElementById('componentCount').textContent = transports + themes + toggles;
+            }, 100);
+        });
+
+        // Simulate position updates when playing
+        let positionInterval = null;
+        let currentPosition = 0; // in milliseconds
+
+        document.addEventListener('transport-play', () => {
+            if (!positionInterval) {
+                positionInterval = setInterval(() => {
+                    currentPosition += 100; // Increment by 100ms
+                    const minutes = Math.floor(currentPosition / 60000);
+                    const seconds = Math.floor((currentPosition % 60000) / 1000);
+                    const millis = currentPosition % 1000;
+                    const pos = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(millis).padStart(3, '0')}`;
+                    document.getElementById('transportPosition').textContent = pos;
+                }, 100);
+            }
+        });
+
+        document.addEventListener('transport-pause', () => {
+            if (positionInterval) {
+                clearInterval(positionInterval);
+                positionInterval = null;
+            }
+        });
+
+        document.addEventListener('transport-stop', () => {
+            if (positionInterval) {
+                clearInterval(positionInterval);
+                positionInterval = null;
+            }
+            currentPosition = 0;
+        });
+
+        console.log('🎵 Harmony Design System - Advanced Demo Ready');
+        console.log('📚 Featured Components: TransportBar, ThemeSwitcher, Multi-Channel Toggles');
+    </script>
+</body>
+</html>

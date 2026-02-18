@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Design System Cascade Demonstration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0e0e0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .cascade-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .layer-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .layer-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .layer-card:hover {
+            border-color: rgba(102, 126, 234, 0.5);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .layer-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .layer-title {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .layer-subtitle {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .component-showcase {
+            background: #0a0a0a;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-bottom: 1rem;
+        }
+
+        .demo-label {
+            color: #888;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .buttons-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .change-indicator {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .change-indicator h4 {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .change-indicator ul {
+            list-style: none;
+            font-size: 0.85rem;
+            color: #aaa;
+        }
+
+        .change-indicator li {
+            padding: 0.25rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .change-indicator li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #667eea;
+        }
+
+        .flow-arrow {
+            text-align: center;
+            font-size: 3rem;
+            color: #667eea;
+            margin: 2rem 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .code-block {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+
+        .code-block .keyword {
+            color: #667eea;
+        }
+
+        .code-block .value {
+            color: #4caf50;
+        }
+
+        .impact-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+
+        .impact-title {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+
+        harmony-toggle {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Design System Cascade</h1>
+            <p class="subtitle">
+                Demonstrating how a <span class="highlight">single primitive change</span> 
+                propagates through the entire system
+            </p>
+        </header>
+
+        <div class="cascade-grid">
+            <!-- Layer 1: Primitives -->
+            <div class="layer-card">
+                <div class="layer-number">1</div>
+                <h2 class="layer-title">Primitives</h2>
+                <p class="layer-subtitle">Foundation Layer</p>
+                
+                <div class="component-showcase">
+                    <div class="demo-label">hds-button (Modified)</div>
+                    <div class="buttons-row">
+                        <hds-button variant="primary">Primary</hds-button>
+                        <hds-button variant="secondary">Secondary</hds-button>
+                        <hds-button variant="tertiary">Tertiary</hds-button>
+                    </div>
+                    <div class="buttons-row">
+                        <hds-button variant="primary" size="small">Small</hds-button>
+                        <hds-button variant="primary" size="large">Large</hds-button>
+                    </div>
+                </div>
+
+                <div class="change-indicator">
+                    <h4>✨ Changes Applied:</h4>
+                    <ul>
+                        <li>Border radius: 4px → 8px</li>
+                        <li>Added purple glow on hover</li>
+                        <li>Enhanced box-shadows</li>
+                        <li>Improved transitions</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+<span class="keyword">border-radius:</span> <span class="value">8px</span>;
+<span class="keyword">box-shadow:</span> <span class="value">0 2px 8px rgba(0,0,0,0.1),
+             0 0 0 1px rgba(102,126,234,0)</span>;
+                </div>
+            </div>
+
+            <!-- Layer 2: Controls -->
+            <div class="layer-card">
+                <div class="layer-number">2</div>
+                <h2 class="layer-title">Controls</h2>
+                <p class="layer-subtitle">Wraps Primitives</p>
+                
+                <div class="component-showcase">
+                    <div class="demo-label">harmony-toggle (Uses hds-button)</div>
+                    <div class="buttons-row">
+                        <harmony-toggle id="rec1" label="R" variant="danger"></harmony-toggle>
+                        <harmony-toggle id="mute1" label="M" variant="secondary"></harmony-toggle>
+                        <harmony-toggle id="solo1" label="S" variant="primary"></harmony-toggle>
+                    </div>
+                    <div class="demo-label" style="margin-top: 1rem;">Different sizes</div>
+                    <div class="buttons-row">
+                        <harmony-toggle label="REC" variant="danger" size="large"></harmony-toggle>
+                        <harmony-toggle label="ARM" variant="primary" size="small"></harmony-toggle>
+                    </div>
+                </div>
+
+                <div class="change-indicator">
+                    <h4>🔄 Inherited Changes:</h4>
+                    <ul>
+                        <li>Rounded corners from primitive</li>
+                        <li>Glow effect from primitive</li>
+                        <li>Shadow enhancements</li>
+                        <li>No code changes needed!</li>
+                    </ul>
+                </div>
+
+                <div class="code-block">
+<span class="keyword">// harmony-toggle.js</span>
+// Uses &lt;hds-button&gt; internally
+// Automatically inherits all changes!
+                </div>
+            </div>
+
+            <!-- Layer 3: Composites -->
+            <div class="layer-card">
+                <div class="layer-number">3</div>
+                <h2 class="layer-title">Composites</h2>
+                <p class="layer-subtitle">Assembles Controls</p>
+                
+                <div class="component-showcase">
+                    <div class="demo-label">Channel Strip (Uses harmony-toggles)</div>
+                    <div style="background: #000; padding: 1rem; border-radius: 6px;">
+                        <div style="color: #666; font-size: 0.75rem; margin-bottom: 0.5rem;">CHANNEL 1</div>
+                        <div class="buttons-row">
+                            <harmony-toggle label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle label="S" variant="primary"></harmony-toggle>
+                        </div>
+                    </div>
+                    <div style="background: #000; padding: 1rem; border-radius: 6px; margin-top: 0.5rem;">
+                        <div style="color: #666; font-size: 0.75rem; margin-bottom: 0.5rem;">CHANNEL 2</div>
+                        <div class="buttons-row">
+                            <harmony-toggle label="R" variant="danger"></harmony-toggle>
+                            <harmony-toggle label="M" variant="secondary"></harmony-toggle>
+                            <harmony-toggle label="S" variant="primary"></harmony-toggle>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="change-indicator">
+                    <h4>🎯 Cascade Complete:</h4>
+                    <ul>
+                        <li>All buttons updated globally</li>
+                        <li>Consistent visual language</li>
+                        <li>Zero composite changes</li>
+                        <li>Single source of truth</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="flow-arrow">↓ ↓ ↓</div>
+
+        <div class="impact-section">
+            <h2 class="impact-title">📊 System-Wide Impact</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">1</div>
+                    <div class="stat-label">File Modified</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Components Updated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Layers Affected</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Visual Consistency</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(102,126,234,0.1); border-radius: 8px; border-left: 4px solid #667eea;">
+                <h3 style="color: #667eea; margin-bottom: 1rem;">🏗️ Architecture Benefits:</h3>
+                <ul style="list-style: none; color: #aaa; line-height: 2;">
+                    <li>✓ <strong style="color: #e0e0e0;">Single Source of Truth</strong> - Change once, apply everywhere</li>
+                    <li>✓ <strong style="color: #e0e0e0;">Automatic Propagation</strong> - No manual updates needed</li>
+                    <li>✓ <strong style="color: #e0e0e0;">Guaranteed Consistency</strong> - All buttons look identical</li>
+                    <li>✓ <strong style="color: #e0e0e0;">Maintainability</strong> - Future changes are equally simple</li>
+                    <li>✓ <strong style="color: #e0e0e0;">Scalability</strong> - Works across infinite composites</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Components -->
+    <script type="module" src="./primitives/button/hds-button.js"></script>
+    <script type="module" src="./controls/harmony-toggle/harmony-toggle.js"></script>
+
+    <script>
+        console.log('🎨 Design System Cascade Demonstration');
+        console.log('Modified: primitives/button/hds-button.js');
+        console.log('Impact: All controls and composites automatically updated');
+    </script>
+</body>
+</html>

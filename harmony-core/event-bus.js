@@ -1,6 +1,6 @@
 /**
  * @fileoverview EventBus implementation for decoupling UI components from Bounded Contexts.
- * See: /harmony-design/docs/architecture/event-bus-pattern.md
+ * See: /harmony-design/DESIGN_SYSTEM.md#event-system
  * 
  * @module harmony-core/event-bus
  */

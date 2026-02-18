@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmony Design System - Component Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #888;
+        }
+
+        .section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .demo-group {
+            margin-bottom: 2rem;
+        }
+
+        .demo-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .demo-label {
+            font-size: 0.9rem;
+            color: #888;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .event-log {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+
+        .event-item {
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #1a1a1a;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .event-type {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .event-detail {
+            color: #888;
+            margin-top: 0.25rem;
+        }
+
+        code {
+            background: #0a0a0a;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            border: 1px solid #333;
+        }
+
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-box strong {
+            color: #667eea;
+        }
+
+        /* Custom component styles */
+        hds-button {
+            cursor: pointer;
+        }
+
+        harmony-toggle {
+            cursor: pointer;
+        }
+
+        .status-bar {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-label {
+            color: #888;
+            font-size: 0.85rem;
+        }
+
+        .status-value {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .event-item {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ Harmony Design System</h1>
+            <p class="subtitle">Event-driven Web Components • Performance-first • Accessibility by default</p>
+        </header>
+
+        <!-- Button Components Section -->
+        <section class="section">
+            <h2 class="section-title">Primitive: Button Component</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">Variants</div>
+                <div class="demo-buttons">
+                    <hds-button variant="primary">Primary Button</hds-button>
+                    <hds-button variant="secondary">Secondary Button</hds-button>
+                    <hds-button variant="tertiary">Tertiary Button</hds-button>
+                </div>
+            </div>
+
+            <div class="demo-group">
+                <div class="demo-label">Sizes</div>
+                <div class="demo-buttons">
+                    <hds-button size="small">Small</hds-button>
+                    <hds-button size="medium">Medium</hds-button>
+                    <hds-button size="large">Large</hds-button>
+                </div>
+            </div>
+
+            <div class="demo-group">
+                <div class="demo-label">Toggle Mode</div>
+                <div class="demo-buttons">
+                    <hds-button mode="toggle" id="muteBtn">🔇 Mute</hds-button>
+                    <hds-button mode="toggle" variant="secondary" id="soloBtn">🎯 Solo</hds-button>
+                    <hds-button mode="toggle" variant="tertiary" id="bypassBtn">↻ Bypass</hds-button>
+                </div>
+            </div>
+
+            <div class="demo-group">
+                <div class="demo-label">States</div>
+                <div class="demo-buttons">
+                    <hds-button disabled>Disabled</hds-button>
+                    <hds-button mode="toggle" pressed>Pressed Toggle</hds-button>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Component Path:</strong> <code>primitives/button/hds-button.js</code><br>
+                <strong>Events:</strong> <code>button-press</code>, <code>button-release</code>, <code>button-toggle</code>
+            </div>
+        </section>
+
+        <!-- Toggle Controls Section -->
+        <section class="section">
+            <h2 class="section-title">Control: Harmony Toggle</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">DAW-style Controls</div>
+                <div class="demo-buttons">
+                    <harmony-toggle id="rec" label="R" variant="danger"></harmony-toggle>
+                    <harmony-toggle id="mute2" label="M" variant="secondary"></harmony-toggle>
+                    <harmony-toggle id="solo2" label="S" variant="primary"></harmony-toggle>
+                    <harmony-toggle id="arm" label="ARM" variant="secondary" size="large"></harmony-toggle>
+                </div>
+            </div>
+
+            <div class="demo-group">
+                <div class="demo-label">Status Display</div>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Record:</span>
+                        <span class="status-value" id="recStatus">OFF</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Mute:</span>
+                        <span class="status-value" id="muteStatus">OFF</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Solo:</span>
+                        <span class="status-value" id="soloStatus">OFF</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Component Path:</strong> <code>controls/harmony-toggle/harmony-toggle.js</code><br>
+                <strong>Events:</strong> <code>harmony-toggle-changed</code>
+            </div>
+        </section>
+
+        <!-- Event System Demo -->
+        <section class="section">
+            <h2 class="section-title">Event System Monitor</h2>
+            
+            <div class="demo-group">
+                <div class="demo-label">Recent Events (EventBus Pattern)</div>
+                <div class="event-log" id="eventLog">
+                    <div style="color: #888; text-align: center; padding: 2rem;">
+                        Interact with components above to see events...
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <strong>Architecture:</strong> All components communicate through EventBus<br>
+                <strong>Shortcut:</strong> Press <code>Ctrl+Shift+E</code> to open full EventBus debugger
+            </div>
+        </section>
+
+        <!-- Performance Metrics -->
+        <section class="section">
+            <h2 class="section-title">Performance Metrics</h2>
+            
+            <div class="demo-grid">
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Components:</span>
+                        <span class="status-value" id="componentCount">0</span>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Events Published:</span>
+                        <span class="status-value" id="eventCount">0</span>
+                    </div>
+                </div>
+                <div class="status-bar">
+                    <div class="status-item">
+                        <span class="status-label">Budget:</span>
+                        <span class="status-value">16ms/frame ✓</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Load Components -->
+    <script type="module" src="./primitives/button/hds-button.js"></script>
+    <script type="module" src="./controls/harmony-toggle/harmony-toggle.js"></script>
+
+    <!-- Demo Script -->
+    <script type="module">
+        let eventCounter = 0;
+        const eventLog = document.getElementById('eventLog');
+        const eventCountEl = document.getElementById('eventCount');
+        
+        function logEvent(type, detail) {
+            eventCounter++;
+            eventCountEl.textContent = eventCounter;
+            
+            // Clear placeholder
+            if (eventLog.querySelector('[style*="text-align"]')) {
+                eventLog.innerHTML = '';
+            }
+            
+            const eventItem = document.createElement('div');
+            eventItem.className = 'event-item';
+            eventItem.innerHTML = `
+                <div class="event-type">${type}</div>
+                <div class="event-detail">${JSON.stringify(detail, null, 2)}</div>
+            `;
+            
+            eventLog.insertBefore(eventItem, eventLog.firstChild);
+            
+            // Keep only last 10 events
+            while (eventLog.children.length > 10) {
+                eventLog.removeChild(eventLog.lastChild);
+            }
+        }
+
+        // Listen to all button events
+        document.addEventListener('button-press', (e) => {
+            logEvent('button-press', { target: e.target.textContent });
+        });
+
+        document.addEventListener('button-release', (e) => {
+            logEvent('button-release', { target: e.target.textContent });
+        });
+
+        document.addEventListener('button-toggle', (e) => {
+            logEvent('button-toggle', { 
+                target: e.target.textContent,
+                pressed: e.detail.pressed 
+            });
+        });
+
+        // Listen to toggle events
+        document.addEventListener('harmony-toggle-changed', (e) => {
+            const componentId = e.target.id;
+            
+            logEvent('harmony-toggle-changed', {
+                label: e.detail.label,
+                pressed: e.detail.pressed,
+                componentId: componentId
+            });
+
+            // Update status displays
+            if (componentId === 'rec') {
+                document.getElementById('recStatus').textContent = e.detail.pressed ? 'ON' : 'OFF';
+                document.getElementById('recStatus').style.color = e.detail.pressed ? '#f44336' : '#666';
+            }
+            if (componentId === 'mute2') {
+                document.getElementById('muteStatus').textContent = e.detail.pressed ? 'ON' : 'OFF';
+                document.getElementById('muteStatus').style.color = e.detail.pressed ? '#ff9800' : '#666';
+            }
+            if (componentId === 'solo2') {
+                document.getElementById('soloStatus').textContent = e.detail.pressed ? 'ON' : 'OFF';
+                document.getElementById('soloStatus').style.color = e.detail.pressed ? '#4caf50' : '#666';
+            }
+        });
+
+        // Count components
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const buttons = document.querySelectorAll('hds-button').length;
+                const toggles = document.querySelectorAll('harmony-toggle').length;
+                document.getElementById('componentCount').textContent = buttons + toggles;
+            }, 100);
+        });
+
+        console.log('🎵 Harmony Design System Demo Ready');
+        console.log('📚 Press Ctrl+Shift+E to open EventBus debugger');
+    </script>
+</body>
+</html>
