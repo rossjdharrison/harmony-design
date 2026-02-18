@@ -29,23 +29,21 @@ jobs:
         with:
           node-version: '18'
       
-      - name: Install dependencies
-        run: |
-          # Only install what's needed for the size check script
-          npm init -y
-          echo "Bundle size check uses Node.js built-in modules only"
+      # check-bundle-size.cjs uses require() (CommonJS). The .cjs extension
+      # ensures Node.js treats it as CJS even with package.json "type":"module".
+      # No npm install needed — only Node.js built-in modules (fs, zlib, path).
       
       - name: Run bundle size check
         id: size_check
         run: |
-          node scripts/check-bundle-size.js
+          node scripts/check-bundle-size.cjs
         continue-on-error: true
       
       - name: Generate size report
         if: always()
         run: |
           mkdir -p reports/bundle-size
-          node scripts/check-bundle-size.js > reports/bundle-size/report-${{ github.sha }}.txt 2>&1 || true
+          node scripts/check-bundle-size.cjs > reports/bundle-size/report-${{ github.sha }}.txt 2>&1 || true
       
       - name: Upload bundle size report
         if: always()

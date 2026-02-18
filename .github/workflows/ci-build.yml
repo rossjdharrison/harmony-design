@@ -136,9 +136,18 @@ jobs:
           }
           walk('.');
 
+          // Browser-only API patterns — these tests require a DOM and cannot run in Node.js.
+          const DOM_APIS = /\bdocument\b|\bwindow\b|\bHTMLElement\b|\bcustomElements\b|\bnavigator\.(?!userAgent)/;
+
           console.log(`Found ${tests.length} test file(s)`);
-          let passed = 0, failed = 0;
+          let passed = 0, failed = 0, skipped = 0;
           for (const t of tests) {
+            const src = fs.readFileSync(t, 'utf8');
+            if (DOM_APIS.test(src)) {
+              console.log('SKIP (browser-only):', t);
+              skipped++;
+              continue;
+            }
             try {
               execSync(`node "${t}"`, { stdio: 'inherit' });
               console.log('PASS', t);
@@ -148,7 +157,7 @@ jobs:
               failed++;
             }
           }
-          console.log(`\nResults: ${passed} passed, ${failed} failed`);
+          console.log(`\nResults: ${passed} passed, ${failed} failed, ${skipped} skipped (browser-only)`);
           if (failed > 0) process.exit(1);
           EOF
 
@@ -240,7 +249,7 @@ jobs:
           node-version: '18'
 
       - name: Run bundle size check
-        run: node scripts/check-bundle-size.js || echo "Bundle size check not blocking"
+        run: node scripts/check-bundle-size.cjs || echo "Bundle size check not blocking"
         continue-on-error: true
 
       - name: Check for technical debt markers
