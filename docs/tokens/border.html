@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Border Tokens - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.6;
+      padding: 2rem;
+      background: hsl(0, 0%, 98%);
+      color: hsl(0, 0%, 10%);
+    }
+
+    [data-theme="dark"] body {
+      background: hsl(220, 15%, 10%);
+      color: hsl(0, 0%, 95%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: hsl(220, 90%, 55%);
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      margin: 2rem 0 1rem;
+      border-bottom: 2px solid var(--border-default);
+      padding-bottom: 0.5rem;
+    }
+
+    .intro {
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+      color: hsl(0, 0%, 30%);
+    }
+
+    [data-theme="dark"] .intro {
+      color: hsl(0, 0%, 70%);
+    }
+
+    .token-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+
+    .token-card {
+      background: white;
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .token-card {
+      background: hsl(220, 15%, 15%);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .token-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: hsl(220, 90%, 55%);
+    }
+
+    .token-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: hsl(280, 70%, 50%);
+      margin-bottom: 1rem;
+    }
+
+    .token-description {
+      margin-bottom: 1rem;
+      color: hsl(0, 0%, 40%);
+    }
+
+    [data-theme="dark"] .token-description {
+      color: hsl(0, 0%, 65%);
+    }
+
+    .border-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .border-sample {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: hsl(0, 0%, 98%);
+      border-radius: 4px;
+      font-size: 0.875rem;
+      color: hsl(0, 0%, 40%);
+    }
+
+    [data-theme="dark"] .border-sample {
+      background: hsl(220, 15%, 12%);
+      color: hsl(0, 0%, 65%);
+    }
+
+    .border-sample.thin {
+      border: 1px solid currentColor;
+    }
+
+    .border-sample.default {
+      border: 2px solid currentColor;
+    }
+
+    .border-sample.thick {
+      border: 4px solid currentColor;
+    }
+
+    .usage-example {
+      background: hsl(220, 15%, 95%);
+      border: 1px solid var(--border-default);
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      overflow-x: auto;
+    }
+
+    [data-theme="dark"] .usage-example {
+      background: hsl(220, 15%, 12%);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 0.5rem 1rem;
+      background: hsl(220, 90%, 55%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-toggle:hover {
+      background: hsl(220, 90%, 50%);
+    }
+
+    .guidelines {
+      background: hsl(200, 90%, 95%);
+      border-left: 4px solid hsl(200, 90%, 55%);
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] .guidelines {
+      background: hsl(200, 30%, 15%);
+      border-left-color: hsl(200, 70%, 50%);
+    }
+
+    .guidelines h3 {
+      margin-bottom: 0.5rem;
+      color: hsl(200, 90%, 35%);
+    }
+
+    [data-theme="dark"] .guidelines h3 {
+      color: hsl(200, 70%, 60%);
+    }
+
+    .guidelines ul {
+      margin-left: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+
+  <div class="container">
+    <h1>Border Tokens</h1>
+    <p class="intro">
+      Semantic border colors for consistent UI element styling. These tokens provide
+      appropriate contrast and visual hierarchy across light and dark themes.
+    </p>
+
+    <div class="guidelines">
+      <h3>Usage Guidelines</h3>
+      <ul>
+        <li><strong>border-default:</strong> Use for standard borders on cards, inputs, and containers</li>
+        <li><strong>border-subtle:</strong> Use for dividers and low-emphasis boundaries</li>
+        <li><strong>border-strong:</strong> Use for emphasized elements or active states</li>
+        <li><strong>border-focus:</strong> Use for focus indicators (keyboard navigation)</li>
+      </ul>
+    </div>
+
+    <h2>Border Tokens</h2>
+    <div class="token-grid">
+      <!-- border-default -->
+      <div class="token-card">
+        <div class="token-name">border-default</div>
+        <div class="token-value">var(--border-default)</div>
+        <div class="token-description">
+          Standard border for most UI elements. Provides clear separation without being too prominent.
+        </div>
+        <div class="border-preview">
+          <div class="border-sample thin" style="border-color: var(--border-default)">1px</div>
+          <div class="border-sample default" style="border-color: var(--border-default)">2px</div>
+          <div class="border-sample thick" style="border-color: var(--border-default)">4px</div>
+        </div>
+      </div>
+
+      <!-- border-subtle -->
+      <div class="token-card">
+        <div class="token-name">border-subtle</div>
+        <div class="token-value">var(--border-subtle)</div>
+        <div class="token-description">
+          Subtle border for less emphasis. Use for dividers, section separators, and background elements.
+        </div>
+        <div class="border-preview">
+          <div class="border-sample thin" style="border-color: var(--border-subtle)">1px</div>
+          <div class="border-sample default" style="border-color: var(--border-subtle)">2px</div>
+          <div class="border-sample thick" style="border-color: var(--border-subtle)">4px</div>
+        </div>
+      </div>
+
+      <!-- border-strong -->
+      <div class="token-card">
+        <div class="token-name">border-strong</div>
+        <div class="token-value">var(--border-strong)</div>
+        <div class="token-description">
+          Strong border for emphasis. Use for active states, selected elements, or important boundaries.
+        </div>
+        <div class="border-preview">
+          <div class="border-sample thin" style="border-color: var(--border-strong)">1px</div>
+          <div class="border-sample default" style="border-color: var(--border-strong)">2px</div>
+          <div class="border-sample thick" style="border-color: var(--border-strong)">4px</div>
+        </div>
+      </div>
+
+      <!-- border-focus -->
+      <div class="token-card">
+        <div class="token-name">border-focus</div>
+        <div class="token-value">var(--border-focus)</div>
+        <div class="token-description">
+          Focus indicator border for accessibility. High contrast blue for keyboard navigation visibility.
+        </div>
+        <div class="border-preview">
+          <div class="border-sample thin" style="border-color: var(--border-focus)">1px</div>
+          <div class="border-sample default" style="border-color: var(--border-focus)">2px</div>
+          <div class="border-sample thick" style="border-color: var(--border-focus)">4px</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>CSS Usage</h2>
+    <div class="usage-example">
+/* Using border tokens with border-width tokens */
+.card {
+  border: var(--border-width-default) solid var(--border-default);
+  border-radius: var(--radius-default);
+}
+
+.divider {
+  border-bottom: var(--border-width-thin) solid var(--border-subtle);
+}
+
+.active-item {
+  border: var(--border-width-thick) solid var(--border-strong);
+}
+
+.button:focus-visible {
+  outline: var(--border-width-default) solid var(--border-focus);
+  outline-offset: 2px;
+}
+    </div>
+
+    <h2>Component Example</h2>
+    <div class="usage-example">
+class BorderedCard extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      &lt;style&gt;
+        :host {
+          display: block;
+          border: var(--border-width-default) solid var(--border-default);
+          border-radius: var(--radius-default);
+          padding: 1rem;
+        }
+
+        :host(:hover) {
+          border-color: var(--border-strong);
+        }
+
+        :host(:focus-within) {
+          outline: var(--border-width-default) solid var(--border-focus);
+          outline-offset: 2px;
+        }
+      &lt;/style&gt;
+      &lt;slot&gt;&lt;/slot&gt;
+    `;
+  }
+}
+    </div>
+  </div>
+
+  <script type="module">
+    import { registerBorderTokens } from '../../tokens/border.js';
+    
+    // Tokens are auto-registered, but we can manually trigger if needed
+    registerBorderTokens();
+
+    window.toggleTheme = function() {
+      const root = document.documentElement;
+      const currentTheme = root.getAttribute('data-theme');
+      root.setAttribute('data-theme', currentTheme === 'dark' ? 'light' : 'dark');
+    };
+  </script>
+</body>
+</html>

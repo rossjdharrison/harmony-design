@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Border Tokens Test - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2rem;
+      background: hsl(0, 0%, 98%);
+      color: hsl(0, 0%, 10%);
+    }
+
+    [data-theme="dark"] body {
+      background: hsl(220, 15%, 10%);
+      color: hsl(0, 0%, 95%);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+    }
+
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      background: white;
+      border: 2px solid var(--border-default);
+      border-radius: 8px;
+    }
+
+    [data-theme="dark"] .test-section {
+      background: hsl(220, 15%, 15%);
+    }
+
+    h2 {
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .test-box {
+      padding: 2rem;
+      text-align: center;
+      background: hsl(0, 0%, 98%);
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] .test-box {
+      background: hsl(220, 15%, 12%);
+    }
+
+    .test-box.default {
+      border: 2px solid var(--border-default);
+    }
+
+    .test-box.subtle {
+      border: 2px solid var(--border-subtle);
+    }
+
+    .test-box.strong {
+      border: 2px solid var(--border-strong);
+    }
+
+    .test-box.focus {
+      border: 2px solid var(--border-focus);
+    }
+
+    .interactive-test {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+
+    .test-button {
+      padding: 0.75rem 1.5rem;
+      background: white;
+      border: 2px solid var(--border-default);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    [data-theme="dark"] .test-button {
+      background: hsl(220, 15%, 15%);
+      color: hsl(0, 0%, 95%);
+    }
+
+    .test-button:hover {
+      border-color: var(--border-strong);
+    }
+
+    .test-button:focus-visible {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 2px;
+    }
+
+    .test-input {
+      padding: 0.5rem;
+      border: 1px solid var(--border-default);
+      border-radius: 4px;
+      background: white;
+      color: inherit;
+    }
+
+    [data-theme="dark"] .test-input {
+      background: hsl(220, 15%, 12%);
+    }
+
+    .test-input:focus {
+      outline: 2px solid var(--border-focus);
+      outline-offset: 0;
+      border-color: var(--border-focus);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      padding: 0.5rem 1rem;
+      background: hsl(220, 90%, 55%);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .token-value {
+      font-family: monospace;
+      font-size: 0.875rem;
+      color: hsl(280, 70%, 50%);
+      margin-top: 0.5rem;
+    }
+
+    .pass {
+      color: hsl(120, 60%, 40%);
+      font-weight: bold;
+    }
+
+    .fail {
+      color: hsl(0, 60%, 50%);
+      font-weight: bold;
+    }
+
+    .test-results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: hsl(120, 40%, 95%);
+      border-left: 4px solid hsl(120, 60%, 40%);
+      border-radius: 4px;
+    }
+
+    [data-theme="dark"] .test-results {
+      background: hsl(120, 20%, 15%);
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+
+  <div class="container">
+    <h1>Border Tokens Test Suite</h1>
+
+    <div class="test-section">
+      <h2>Token Registration Test</h2>
+      <p>Verifying all border tokens are registered as CSS custom properties:</p>
+      <div id="registration-results"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Visual Border Samples</h2>
+      <div class="test-grid">
+        <div class="test-box default">
+          <strong>border-default</strong>
+          <div class="token-value" id="default-value"></div>
+        </div>
+        <div class="test-box subtle">
+          <strong>border-subtle</strong>
+          <div class="token-value" id="subtle-value"></div>
+        </div>
+        <div class="test-box strong">
+          <strong>border-strong</strong>
+          <div class="token-value" id="strong-value"></div>
+        </div>
+        <div class="test-box focus">
+          <strong>border-focus</strong>
+          <div class="token-value" id="focus-value"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Interactive Elements Test</h2>
+      <p>Test hover and focus states with border tokens:</p>
+      <div class="interactive-test">
+        <button class="test-button">Hover Me</button>
+        <input type="text" class="test-input" placeholder="Focus me (tab key)">
+        <button class="test-button">Tab to Focus</button>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Dark Mode Test</h2>
+      <p>Toggle dark mode to verify border tokens adjust properly for contrast.</p>
+      <p>All borders should remain visible and properly contrasted in both themes.</p>
+    </div>
+
+    <div class="test-results" id="test-results">
+      <h3>Test Results</h3>
+      <div id="results-content">Running tests...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { borderTokens, borderTokensDark, registerBorderTokens } from '../tokens/border.js';
+
+    // Test suite
+    function runTests() {
+      const results = [];
+      const root = document.documentElement;
+      const computedStyle = getComputedStyle(root);
+
+      // Test 1: Token registration
+      const expectedTokens = ['border-default', 'border-subtle', 'border-strong', 'border-focus'];
+      let allRegistered = true;
+      
+      expectedTokens.forEach(token => {
+        const value = computedStyle.getPropertyValue(`--${token}`).trim();
+        const registered = value !== '';
+        
+        if (registered) {
+          document.getElementById(`${token.replace('border-', '')}-value`).textContent = value;
+        }
+        
+        results.push({
+          test: `Token --${token} registered`,
+          pass: registered,
+          value: value || 'NOT FOUND'
+        });
+        
+        if (!registered) allRegistered = false;
+      });
+
+      // Test 2: Light mode values match export
+      Object.entries(borderTokens).forEach(([token, expectedValue]) => {
+        const actualValue = computedStyle.getPropertyValue(`--${token}`).trim();
+        const matches = actualValue === expectedValue;
+        
+        results.push({
+          test: `Light mode --${token} matches export`,
+          pass: matches,
+          value: `Expected: ${expectedValue}, Got: ${actualValue}`
+        });
+      });
+
+      // Display results
+      const resultsHtml = results.map(r => 
+        `<div><span class="${r.pass ? 'pass' : 'fail'}">${r.pass ? '✓' : '✗'}</span> ${r.test}</div>`
+      ).join('');
+
+      const passCount = results.filter(r => r.pass).length;
+      const totalCount = results.length;
+
+      document.getElementById('results-content').innerHTML = `
+        <p><strong>Passed: ${passCount}/${totalCount}</strong></p>
+        ${resultsHtml}
+      `;
+
+      console.log('Border Tokens Test Results:', results);
+    }
+
+    // Theme toggle
+    window.toggleTheme = function() {
+      const root = document.documentElement;
+      const currentTheme = root.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', newTheme);
+      
+      // Re-run tests after theme change
+      setTimeout(runTests, 100);
+    };
+
+    // Run tests after tokens are registered
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(runTests, 100));
+    } else {
+      setTimeout(runTests, 100);
+    }
+  </script>
+</body>
+</html>
