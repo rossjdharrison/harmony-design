@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text Hierarchy Tokens - Harmony Design System</title>
+  <style>
+    :root {
+      /* Font Family Tokens */
+      --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+      
+      /* Font Size Tokens */
+      --font-size-sm: 0.875rem;
+      --font-size-base: 1rem;
+      --font-size-xl: 1.5rem;
+      
+      /* Font Weight Tokens */
+      --font-weight-regular: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      
+      /* Line Height Tokens */
+      --line-height-tight: 1.2;
+      --line-height-normal: 1.5;
+      --line-height-relaxed: 1.75;
+      
+      /* Letter Spacing Tokens */
+      --letter-spacing-tight: -0.02em;
+      --letter-spacing-normal: 0;
+      --letter-spacing-wide: 0.02em;
+      
+      /* Text Hierarchy Tokens */
+      --text-heading-font-family: var(--font-family-sans);
+      --text-heading-font-size: var(--font-size-xl);
+      --text-heading-font-weight: var(--font-weight-semibold);
+      --text-heading-line-height: var(--line-height-tight);
+      --text-heading-letter-spacing: var(--letter-spacing-tight);
+      
+      --text-body-font-family: var(--font-family-sans);
+      --text-body-font-size: var(--font-size-base);
+      --text-body-font-weight: var(--font-weight-regular);
+      --text-body-line-height: var(--line-height-normal);
+      --text-body-letter-spacing: var(--letter-spacing-normal);
+      
+      --text-caption-font-family: var(--font-family-sans);
+      --text-caption-font-size: var(--font-size-sm);
+      --text-caption-font-weight: var(--font-weight-regular);
+      --text-caption-line-height: var(--line-height-normal);
+      --text-caption-letter-spacing: var(--letter-spacing-normal);
+      
+      --text-label-font-family: var(--font-family-sans);
+      --text-label-font-size: var(--font-size-sm);
+      --text-label-font-weight: var(--font-weight-medium);
+      --text-label-line-height: var(--line-height-tight);
+      --text-label-letter-spacing: var(--letter-spacing-wide);
+      
+      --text-code-font-family: var(--font-family-mono);
+      --text-code-font-size: var(--font-size-sm);
+      --text-code-font-weight: var(--font-weight-regular);
+      --text-code-line-height: var(--line-height-relaxed);
+      --text-code-letter-spacing: var(--letter-spacing-normal);
+      
+      /* Colors for demo */
+      --surface-primary: #ffffff;
+      --text-primary: #1a1a1a;
+      --surface-secondary: #f5f5f5;
+    }
+    
+    body {
+      font-family: var(--font-family-sans);
+      margin: 0;
+      padding: 2rem;
+      background: var(--surface-primary);
+      color: var(--text-primary);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+    
+    .token-grid {
+      display: grid;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+    
+    .token-card {
+      background: var(--surface-secondary);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+    
+    .token-name {
+      font-family: var(--font-family-mono);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #0066cc;
+      margin-bottom: 0.5rem;
+    }
+    
+    .token-description {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+    
+    .token-preview {
+      background: white;
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .text-heading {
+      font-family: var(--text-heading-font-family);
+      font-size: var(--text-heading-font-size);
+      font-weight: var(--text-heading-font-weight);
+      line-height: var(--text-heading-line-height);
+      letter-spacing: var(--text-heading-letter-spacing);
+    }
+    
+    .text-body {
+      font-family: var(--text-body-font-family);
+      font-size: var(--text-body-font-size);
+      font-weight: var(--text-body-font-weight);
+      line-height: var(--text-body-line-height);
+      letter-spacing: var(--text-body-letter-spacing);
+    }
+    
+    .text-caption {
+      font-family: var(--text-caption-font-family);
+      font-size: var(--text-caption-font-size);
+      font-weight: var(--text-caption-font-weight);
+      line-height: var(--text-caption-line-height);
+      letter-spacing: var(--text-caption-letter-spacing);
+    }
+    
+    .text-label {
+      font-family: var(--text-label-font-family);
+      font-size: var(--text-label-font-size);
+      font-weight: var(--text-label-font-weight);
+      line-height: var(--text-label-line-height);
+      letter-spacing: var(--text-label-letter-spacing);
+      text-transform: uppercase;
+    }
+    
+    .text-code {
+      font-family: var(--text-code-font-family);
+      font-size: var(--text-code-font-size);
+      font-weight: var(--text-code-font-weight);
+      line-height: var(--text-code-line-height);
+      letter-spacing: var(--text-code-letter-spacing);
+      background: #f5f5f5;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+    }
+    
+    .token-properties {
+      font-family: var(--font-family-mono);
+      font-size: 0.75rem;
+      color: #666;
+      line-height: 1.6;
+    }
+    
+    .token-properties dt {
+      font-weight: 500;
+      color: #333;
+      margin-top: 0.5rem;
+    }
+    
+    .token-properties dd {
+      margin-left: 1rem;
+      color: #0066cc;
+    }
+    
+    .usage-example {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: var(--surface-secondary);
+      border-radius: 8px;
+    }
+    
+    .usage-example h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    
+    .example-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Text Hierarchy Tokens</h1>
+    <p class="subtitle">Typography presets for consistent text styling across the design system</p>
+    
+    <div class="token-grid">
+      <!-- text-heading -->
+      <div class="token-card">
+        <div class="token-name">--text-heading-*</div>
+        <div class="token-description">Typography preset for headings and titles</div>
+        <div class="token-preview">
+          <div class="text-heading">The quick brown fox jumps</div>
+        </div>
+        <dl class="token-properties">
+          <dt>font-family:</dt>
+          <dd>var(--font-family-sans)</dd>
+          <dt>font-size:</dt>
+          <dd>var(--font-size-xl) / 1.5rem / 24px</dd>
+          <dt>font-weight:</dt>
+          <dd>var(--font-weight-semibold) / 600</dd>
+          <dt>line-height:</dt>
+          <dd>var(--line-height-tight) / 1.2</dd>
+          <dt>letter-spacing:</dt>
+          <dd>var(--letter-spacing-tight) / -0.02em</dd>
+        </dl>
+      </div>
+      
+      <!-- text-body -->
+      <div class="token-card">
+        <div class="token-name">--text-body-*</div>
+        <div class="token-description">Typography preset for body text and paragraphs</div>
+        <div class="token-preview">
+          <div class="text-body">The quick brown fox jumps over the lazy dog. This is the standard body text style used throughout the application for readable content.</div>
+        </div>
+        <dl class="token-properties">
+          <dt>font-family:</dt>
+          <dd>var(--font-family-sans)</dd>
+          <dt>font-size:</dt>
+          <dd>var(--font-size-base) / 1rem / 16px</dd>
+          <dt>font-weight:</dt>
+          <dd>var(--font-weight-regular) / 400</dd>
+          <dt>line-height:</dt>
+          <dd>var(--line-height-normal) / 1.5</dd>
+          <dt>letter-spacing:</dt>
+          <dd>var(--letter-spacing-normal) / 0</dd>
+        </dl>
+      </div>
+      
+      <!-- text-caption -->
+      <div class="token-card">
+        <div class="token-name">--text-caption-*</div>
+        <div class="token-description">Typography preset for captions and helper text</div>
+        <div class="token-preview">
+          <div class="text-caption">This is caption text used for supplementary information and help text.</div>
+        </div>
+        <dl class="token-properties">
+          <dt>font-family:</dt>
+          <dd>var(--font-family-sans)</dd>
+          <dt>font-size:</dt>
+          <dd>var(--font-size-sm) / 0.875rem / 14px</dd>
+          <dt>font-weight:</dt>
+          <dd>var(--font-weight-regular) / 400</dd>
+          <dt>line-height:</dt>
+          <dd>var(--line-height-normal) / 1.5</dd>
+          <dt>letter-spacing:</dt>
+          <dd>var(--letter-spacing-normal) / 0</dd>
+        </dl>
+      </div>
+      
+      <!-- text-label -->
+      <div class="token-card">
+        <div class="token-name">--text-label-*</div>
+        <div class="token-description">Typography preset for labels and UI text</div>
+        <div class="token-preview">
+          <div class="text-label">Input Label</div>
+        </div>
+        <dl class="token-properties">
+          <dt>font-family:</dt>
+          <dd>var(--font-family-sans)</dd>
+          <dt>font-size:</dt>
+          <dd>var(--font-size-sm) / 0.875rem / 14px</dd>
+          <dt>font-weight:</dt>
+          <dd>var(--font-weight-medium) / 500</dd>
+          <dt>line-height:</dt>
+          <dd>var(--line-height-tight) / 1.2</dd>
+          <dt>letter-spacing:</dt>
+          <dd>var(--letter-spacing-wide) / 0.02em</dd>
+          <dt>Note:</dt>
+          <dd>Often used with text-transform: uppercase</dd>
+        </dl>
+      </div>
+      
+      <!-- text-code -->
+      <div class="token-card">
+        <div class="token-name">--text-code-*</div>
+        <div class="token-description">Typography preset for code and monospace text</div>
+        <div class="token-preview">
+          <span class="text-code">const value = "monospace";</span>
+        </div>
+        <dl class="token-properties">
+          <dt>font-family:</dt>
+          <dd>var(--font-family-mono)</dd>
+          <dt>font-size:</dt>
+          <dd>var(--font-size-sm) / 0.875rem / 14px</dd>
+          <dt>font-weight:</dt>
+          <dd>var(--font-weight-regular) / 400</dd>
+          <dt>line-height:</dt>
+          <dd>var(--line-height-relaxed) / 1.75</dd>
+          <dt>letter-spacing:</dt>
+          <dd>var(--letter-spacing-normal) / 0</dd>
+        </dl>
+      </div>
+    </div>
+    
+    <div class="usage-example">
+      <h2>Usage Example</h2>
+      <div class="example-content">
+        <div class="text-heading" style="margin-bottom: 1rem;">Section Heading</div>
+        <div class="text-body" style="margin-bottom: 0.75rem;">
+          This is body text that provides the main content. It uses comfortable spacing and weight for extended reading. The text hierarchy tokens ensure consistency across all components.
+        </div>
+        <div class="text-caption" style="margin-bottom: 1rem; color: #666;">
+          This is a caption providing additional context or metadata about the content above.
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+          <div class="text-label" style="margin-bottom: 0.25rem;">Form Label</div>
+          <input type="text" placeholder="Input field" style="padding: 0.5rem; border: 1px solid #ccc; border-radius: 4px; width: 100%; max-width: 300px; font-family: var(--font-family-sans);">
+        </div>
+        <div style="margin-top: 1rem;">
+          <span class="text-code">import { TextHierarchy } from './tokens';</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

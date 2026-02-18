@@ -1,0 +1,61 @@
+{
+  "$schema": "../harmony-schemas/token-schema.json",
+  "category": "typography",
+  "tokens": {
+    "text-heading": {
+      "value": {
+        "fontFamily": "{font-family.sans}",
+        "fontSize": "{font-size.xl}",
+        "fontWeight": "{font-weight.semibold}",
+        "lineHeight": "{line-height.tight}",
+        "letterSpacing": "{letter-spacing.tight}"
+      },
+      "type": "typography",
+      "description": "Typography preset for headings and titles"
+    },
+    "text-body": {
+      "value": {
+        "fontFamily": "{font-family.sans}",
+        "fontSize": "{font-size.base}",
+        "fontWeight": "{font-weight.regular}",
+        "lineHeight": "{line-height.normal}",
+        "letterSpacing": "{letter-spacing.normal}"
+      },
+      "type": "typography",
+      "description": "Typography preset for body text and paragraphs"
+    },
+    "text-caption": {
+      "value": {
+        "fontFamily": "{font-family.sans}",
+        "fontSize": "{font-size.sm}",
+        "fontWeight": "{font-weight.regular}",
+        "lineHeight": "{line-height.normal}",
+        "letterSpacing": "{letter-spacing.normal}"
+      },
+      "type": "typography",
+      "description": "Typography preset for captions and helper text"
+    },
+    "text-label": {
+      "value": {
+        "fontFamily": "{font-family.sans}",
+        "fontSize": "{font-size.sm}",
+        "fontWeight": "{font-weight.medium}",
+        "lineHeight": "{line-height.tight}",
+        "letterSpacing": "{letter-spacing.wide}"
+      },
+      "type": "typography",
+      "description": "Typography preset for labels and UI text"
+    },
+    "text-code": {
+      "value": {
+        "fontFamily": "{font-family.mono}",
+        "fontSize": "{font-size.sm}",
+        "fontWeight": "{font-weight.regular}",
+        "lineHeight": "{line-height.relaxed}",
+        "letterSpacing": "{letter-spacing.normal}"
+      },
+      "type": "typography",
+      "description": "Typography preset for code and monospace text"
+    }
+  }
+}

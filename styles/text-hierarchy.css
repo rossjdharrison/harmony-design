@@ -1,0 +1,100 @@
+/**
+ * Text Hierarchy Utility Classes
+ * 
+ * Provides utility classes for applying text hierarchy tokens.
+ * See: ../docs/tokens/text-hierarchy.html for visual reference
+ * See: ../tokens/text-hierarchy.json for token definitions
+ */
+
+:root {
+  /* Text Hierarchy Tokens - Composite Typography Presets */
+  --text-heading-font-family: var(--font-family-sans);
+  --text-heading-font-size: var(--font-size-xl);
+  --text-heading-font-weight: var(--font-weight-semibold);
+  --text-heading-line-height: var(--line-height-tight);
+  --text-heading-letter-spacing: var(--letter-spacing-tight);
+  
+  --text-body-font-family: var(--font-family-sans);
+  --text-body-font-size: var(--font-size-base);
+  --text-body-font-weight: var(--font-weight-regular);
+  --text-body-line-height: var(--line-height-normal);
+  --text-body-letter-spacing: var(--letter-spacing-normal);
+  
+  --text-caption-font-family: var(--font-family-sans);
+  --text-caption-font-size: var(--font-size-sm);
+  --text-caption-font-weight: var(--font-weight-regular);
+  --text-caption-line-height: var(--line-height-normal);
+  --text-caption-letter-spacing: var(--letter-spacing-normal);
+  
+  --text-label-font-family: var(--font-family-sans);
+  --text-label-font-size: var(--font-size-sm);
+  --text-label-font-weight: var(--font-weight-medium);
+  --text-label-line-height: var(--line-height-tight);
+  --text-label-letter-spacing: var(--letter-spacing-wide);
+  
+  --text-code-font-family: var(--font-family-mono);
+  --text-code-font-size: var(--font-size-sm);
+  --text-code-font-weight: var(--font-weight-regular);
+  --text-code-line-height: var(--line-height-relaxed);
+  --text-code-letter-spacing: var(--letter-spacing-normal);
+}
+
+/**
+ * Heading Text Style
+ * Use for: Section headings, card titles, dialog headers
+ */
+.text-heading {
+  font-family: var(--text-heading-font-family);
+  font-size: var(--text-heading-font-size);
+  font-weight: var(--text-heading-font-weight);
+  line-height: var(--text-heading-line-height);
+  letter-spacing: var(--text-heading-letter-spacing);
+}
+
+/**
+ * Body Text Style
+ * Use for: Paragraphs, main content, descriptions
+ */
+.text-body {
+  font-family: var(--text-body-font-family);
+  font-size: var(--text-body-font-size);
+  font-weight: var(--text-body-font-weight);
+  line-height: var(--text-body-line-height);
+  letter-spacing: var(--text-body-letter-spacing);
+}
+
+/**
+ * Caption Text Style
+ * Use for: Helper text, metadata, timestamps, supplementary info
+ */
+.text-caption {
+  font-family: var(--text-caption-font-family);
+  font-size: var(--text-caption-font-size);
+  font-weight: var(--text-caption-font-weight);
+  line-height: var(--text-caption-line-height);
+  letter-spacing: var(--text-caption-letter-spacing);
+}
+
+/**
+ * Label Text Style
+ * Use for: Form labels, button text, navigation items, UI controls
+ */
+.text-label {
+  font-family: var(--text-label-font-family);
+  font-size: var(--text-label-font-size);
+  font-weight: var(--text-label-font-weight);
+  line-height: var(--text-label-line-height);
+  letter-spacing: var(--text-label-letter-spacing);
+}
+
+/**
+ * Code Text Style
+ * Use for: Code snippets, technical values, monospace data
+ */
+.text-code {
+  font-family: var(--text-code-font-family);
+  font-size: var(--text-code-font-size);
+  font-weight: var(--text-code-font-weight);
+  line-height: var(--text-code-line-height);
+  letter-spacing: var(--text-code-letter-spacing);
+}
