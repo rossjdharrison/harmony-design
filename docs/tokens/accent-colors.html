@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Accent Colors - Harmony Design System</title>
+  <link rel="stylesheet" href="../../styles/tokens.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: var(--color-neutral-900);
+      background: var(--color-neutral-50);
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-neutral-950);
+    }
+
+    .subtitle {
+      font-size: 1.125rem;
+      color: var(--color-neutral-600);
+      margin-bottom: 2rem;
+    }
+
+    .color-family {
+      margin-bottom: 3rem;
+    }
+
+    .color-family h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--color-neutral-900);
+    }
+
+    .color-scale {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .color-swatch {
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0.75rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      cursor: pointer;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .color-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .color-value {
+      font-size: 0.75rem;
+      font-family: 'Monaco', 'Courier New', monospace;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      opacity: 0.9;
+    }
+
+    /* Light text for dark swatches */
+    .color-swatch[data-lightness="dark"] {
+      color: white;
+    }
+
+    /* Dark text for light swatches */
+    .color-swatch[data-lightness="light"] {
+      color: var(--color-neutral-950);
+    }
+
+    .usage-guide {
+      background: white;
+      padding: 1.5rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      margin-top: 1rem;
+    }
+
+    .usage-guide h3 {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--color-neutral-900);
+    }
+
+    .usage-guide p {
+      color: var(--color-neutral-700);
+      font-size: 0.875rem;
+    }
+
+    .usage-examples {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .usage-example {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--color-neutral-900);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transform: translateY(1rem);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Accent Colors</h1>
+    <p class="subtitle">Semantic color scales for UI states, feedback, and visual hierarchy</p>
+
+    <!-- Blue -->
+    <div class="color-family">
+      <h2>Blue - Information & Navigation</h2>
+      <div class="color-scale" id="blue-scale"></div>
+      <div class="usage-guide">
+        <h3>Usage</h3>
+        <p>Blue conveys trust, stability, and information. Use for informational messages, links, and navigation elements.</p>
+        <div class="usage-examples">
+          <div class="usage-example" style="background: var(--color-blue-100); color: var(--color-blue-900);">Info Background</div>
+          <div class="usage-example" style="background: var(--color-blue-500); color: white;">Primary Action</div>
+          <div class="usage-example" style="background: var(--color-blue-700); color: white;">Link Hover</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Green -->
+    <div class="color-family">
+      <h2>Green - Success & Confirmation</h2>
+      <div class="color-scale" id="green-scale"></div>
+      <div class="usage-guide">
+        <h3>Usage</h3>
+        <p>Green indicates success, completion, and positive states. Use for success messages, confirmations, and positive indicators.</p>
+        <div class="usage-examples">
+          <div class="usage-example" style="background: var(--color-green-100); color: var(--color-green-900);">Success Background</div>
+          <div class="usage-example" style="background: var(--color-green-500); color: white;">Confirm Button</div>
+          <div class="usage-example" style="background: var(--color-green-700); color: white;">Active State</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Red -->
+    <div class="color-family">
+      <h2>Red - Error & Destructive Actions</h2>
+      <div class="color-scale" id="red-scale"></div>
+      <div class="usage-guide">
+        <h3>Usage</h3>
+        <p>Red signals errors, warnings, and destructive actions. Use for error messages, validation failures, and delete operations.</p>
+        <div class="usage-examples">
+          <div class="usage-example" style="background: var(--color-red-100); color: var(--color-red-900);">Error Background</div>
+          <div class="usage-example" style="background: var(--color-red-500); color: white;">Delete Button</div>
+          <div class="usage-example" style="background: var(--color-red-700); color: white;">Critical Alert</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yellow -->
+    <div class="color-family">
+      <h2>Yellow - Warning & Caution</h2>
+      <div class="color-scale" id="yellow-scale"></div>
+      <div class="usage-guide">
+        <h3>Usage</h3>
+        <p>Yellow draws attention and signals caution. Use for warnings, important notices, and items requiring user attention.</p>
+        <div class="usage-examples">
+          <div class="usage-example" style="background: var(--color-yellow-100); color: var(--color-yellow-900);">Warning Background</div>
+          <div class="usage-example" style="background: var(--color-yellow-500); color: var(--color-yellow-950);">Caution Button</div>
+          <div class="usage-example" style="background: var(--color-yellow-700); color: white;">Alert Badge</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Purple -->
+    <div class="color-family">
+      <h2>Purple - Creative & Premium</h2>
+      <div class="color-scale" id="purple-scale"></div>
+      <div class="usage-guide">
+        <h3>Usage</h3>
+        <p>Purple suggests creativity, luxury, and special features. Use for premium features, creative tools, and distinctive elements.</p>
+        <div class="usage-examples">
+          <div class="usage-example" style="background: var(--color-purple-100); color: var(--color-purple-900);">Premium Background</div>
+          <div class="usage-example" style="background: var(--color-purple-500); color: white;">Special Feature</div>
+          <div class="usage-example" style="background: var(--color-purple-700); color: white;">Pro Badge</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Color copied to clipboard!</div>
+
+  <script>
+    /**
+     * Accent Colors Documentation
+     * Interactive visualization of the Harmony Design System accent color palette
+     * See: DESIGN_SYSTEM.md#tokens-colors
+     */
+
+    const colorScales = {
+      blue: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'],
+      green: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'],
+      red: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'],
+      yellow: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'],
+      purple: ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950']
+    };
+
+    /**
+     * Determines if a color is light or dark for text contrast
+     * @param {string} hex - Hex color value
+     * @returns {string} 'light' or 'dark'
+     */
+    function getLightness(hex) {
+      const rgb = parseInt(hex.slice(1), 16);
+      const r = (rgb >> 16) & 0xff;
+      const g = (rgb >> 8) & 0xff;
+      const b = (rgb >> 0) & 0xff;
+      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return luma > 128 ? 'light' : 'dark';
+    }
+
+    /**
+     * Copies text to clipboard and shows toast notification
+     * @param {string} text - Text to copy
+     */
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 2000);
+      });
+    }
+
+    /**
+     * Renders color swatches for a given color family
+     * @param {string} colorName - Name of the color family
+     * @param {string[]} shades - Array of shade values
+     */
+    function renderColorScale(colorName, shades) {
+      const container = document.getElementById(`${colorName}-scale`);
+      
+      shades.forEach(shade => {
+        const cssVar = `--color-${colorName}-${shade}`;
+        const colorValue = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
+        
+        const swatch = document.createElement('div');
+        swatch.className = 'color-swatch';
+        swatch.style.background = `var(${cssVar})`;
+        swatch.setAttribute('data-lightness', getLightness(colorValue));
+        
+        swatch.innerHTML = `
+          <div class="color-label">${shade}</div>
+          <div class="color-value">${colorValue}</div>
+        `;
+        
+        swatch.addEventListener('click', () => {
+          copyToClipboard(colorValue);
+        });
+        
+        container.appendChild(swatch);
+      });
+    }
+
+    // Render all color scales
+    Object.entries(colorScales).forEach(([colorName, shades]) => {
+      renderColorScale(colorName, shades);
+    });
+  </script>
+</body>
+</html>
