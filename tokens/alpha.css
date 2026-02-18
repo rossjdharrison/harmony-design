@@ -1,0 +1,64 @@
+/**
+ * Alpha/Transparency Token Variables
+ * 
+ * Provides alpha/transparency variants for overlays, scrims, and state indicators.
+ * These tokens are designed for layering and visual hierarchy.
+ * 
+ * @see DESIGN_SYSTEM.md#alpha-transparency-tokens
+ */
+
+:root {
+  /* Overlay Tokens - Dark overlays on light content */
+  --alpha-overlay-light: rgba(0, 0, 0, 0.4);
+  --alpha-overlay-medium: rgba(0, 0, 0, 0.6);
+  --alpha-overlay-heavy: rgba(0, 0, 0, 0.8);
+  --alpha-overlay-subtle: rgba(0, 0, 0, 0.2);
+
+  /* Scrim Tokens - Light overlays on dark content */
+  --alpha-scrim-light: rgba(255, 255, 255, 0.4);
+  --alpha-scrim-medium: rgba(255, 255, 255, 0.6);
+  --alpha-scrim-heavy: rgba(255, 255, 255, 0.8);
+
+  /* Backdrop Tokens - For glass morphism and blur effects */
+  --alpha-backdrop-blur: rgba(255, 255, 255, 0.7);
+  --alpha-backdrop-frosted: rgba(255, 255, 255, 0.5);
+
+  /* Surface Elevation Tokens - Layered transparency */
+  --alpha-surface-elevated-10: rgba(255, 255, 255, 0.1);
+  --alpha-surface-elevated-20: rgba(255, 255, 255, 0.2);
+  --alpha-surface-elevated-30: rgba(255, 255, 255, 0.3);
+  --alpha-surface-elevated-40: rgba(255, 255, 255, 0.4);
+  --alpha-surface-elevated-50: rgba(255, 255, 255, 0.5);
+
+  /* Interactive State Tokens */
+  --alpha-disabled: rgba(0, 0, 0, 0.38);
+  --alpha-focus: rgba(59, 130, 246, 0.2);
+  --alpha-hover: rgba(0, 0, 0, 0.08);
+  --alpha-pressed: rgba(0, 0, 0, 0.12);
+}
+
+/* Dark Theme Overrides */
+[data-theme="dark"] {
+  /* Invert overlay/scrim for dark mode */
+  --alpha-overlay-light: rgba(255, 255, 255, 0.1);
+  --alpha-overlay-medium: rgba(255, 255, 255, 0.2);
+  --alpha-overlay-heavy: rgba(255, 255, 255, 0.3);
+  --alpha-overlay-subtle: rgba(255, 255, 255, 0.05);
+
+  --alpha-scrim-light: rgba(0, 0, 0, 0.4);
+  --alpha-scrim-medium: rgba(0, 0, 0, 0.6);
+  --alpha-scrim-heavy: rgba(0, 0, 0, 0.8);
+
+  --alpha-backdrop-blur: rgba(0, 0, 0, 0.7);
+  --alpha-backdrop-frosted: rgba(0, 0, 0, 0.5);
+
+  --alpha-surface-elevated-10: rgba(0, 0, 0, 0.1);
+  --alpha-surface-elevated-20: rgba(0, 0, 0, 0.2);
+  --alpha-surface-elevated-30: rgba(0, 0, 0, 0.3);
+  --alpha-surface-elevated-40: rgba(0, 0, 0, 0.4);
+  --alpha-surface-elevated-50: rgba(0, 0, 0, 0.5);
+
+  --alpha-disabled: rgba(255, 255, 255, 0.38);
+  --alpha-hover: rgba(255, 255, 255, 0.08);
+  --alpha-pressed: rgba(255, 255, 255, 0.12);
+}

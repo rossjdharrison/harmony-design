@@ -1,0 +1,102 @@
+{
+  "alpha": {
+    "overlay": {
+      "light": {
+        "value": "rgba(0, 0, 0, 0.4)",
+        "type": "color",
+        "description": "Light overlay for modals and dialogs"
+      },
+      "medium": {
+        "value": "rgba(0, 0, 0, 0.6)",
+        "type": "color",
+        "description": "Medium overlay for emphasis"
+      },
+      "heavy": {
+        "value": "rgba(0, 0, 0, 0.8)",
+        "type": "color",
+        "description": "Heavy overlay for maximum focus"
+      },
+      "subtle": {
+        "value": "rgba(0, 0, 0, 0.2)",
+        "type": "color",
+        "description": "Subtle overlay for hover states"
+      }
+    },
+    "scrim": {
+      "light": {
+        "value": "rgba(255, 255, 255, 0.4)",
+        "type": "color",
+        "description": "Light scrim for dark backgrounds"
+      },
+      "medium": {
+        "value": "rgba(255, 255, 255, 0.6)",
+        "type": "color",
+        "description": "Medium scrim for dark backgrounds"
+      },
+      "heavy": {
+        "value": "rgba(255, 255, 255, 0.8)",
+        "type": "color",
+        "description": "Heavy scrim for dark backgrounds"
+      }
+    },
+    "backdrop": {
+      "blur": {
+        "value": "rgba(255, 255, 255, 0.7)",
+        "type": "color",
+        "description": "Backdrop for glass morphism effects"
+      },
+      "frosted": {
+        "value": "rgba(255, 255, 255, 0.5)",
+        "type": "color",
+        "description": "Frosted glass effect backdrop"
+      }
+    },
+    "surface": {
+      "elevated-10": {
+        "value": "rgba(255, 255, 255, 0.1)",
+        "type": "color",
+        "description": "10% opacity surface elevation"
+      },
+      "elevated-20": {
+        "value": "rgba(255, 255, 255, 0.2)",
+        "type": "color",
+        "description": "20% opacity surface elevation"
+      },
+      "elevated-30": {
+        "value": "rgba(255, 255, 255, 0.3)",
+        "type": "color",
+        "description": "30% opacity surface elevation"
+      },
+      "elevated-40": {
+        "value": "rgba(255, 255, 255, 0.4)",
+        "type": "color",
+        "description": "40% opacity surface elevation"
+      },
+      "elevated-50": {
+        "value": "rgba(255, 255, 255, 0.5)",
+        "type": "color",
+        "description": "50% opacity surface elevation"
+      }
+    },
+    "disabled": {
+      "value": "rgba(0, 0, 0, 0.38)",
+      "type": "color",
+      "description": "Disabled state overlay"
+    },
+    "focus": {
+      "value": "rgba(59, 130, 246, 0.2)",
+      "type": "color",
+      "description": "Focus state overlay using primary color"
+    },
+    "hover": {
+      "value": "rgba(0, 0, 0, 0.08)",
+      "type": "color",
+      "description": "Hover state overlay"
+    },
+    "pressed": {
+      "value": "rgba(0, 0, 0, 0.12)",
+      "type": "color",
+      "description": "Pressed/active state overlay"
+    }
+  }
+}

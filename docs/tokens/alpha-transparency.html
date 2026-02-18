@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alpha/Transparency Tokens - Harmony Design System</title>
+  <link rel="stylesheet" href="../../tokens/alpha.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #1a202c;
+    }
+
+    .subtitle {
+      color: #718096;
+      margin-bottom: 2rem;
+      font-size: 1.125rem;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #2d3748;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0.5rem;
+    }
+
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .token-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .token-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .token-preview {
+      height: 120px;
+      position: relative;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect width="10" height="10" fill="%23f7fafc"/><rect x="10" width="10" height="10" fill="%23edf2f7"/><rect y="10" width="10" height="10" fill="%23edf2f7"/><rect x="10" y="10" width="10" height="10" fill="%23f7fafc"/></svg>');
+      background-size: 20px 20px;
+    }
+
+    .token-overlay {
+      position: absolute;
+      inset: 0;
+    }
+
+    .token-info {
+      padding: 1rem;
+      background: #f7fafc;
+    }
+
+    .token-name {
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+    }
+
+    .token-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #718096;
+    }
+
+    .demo-section {
+      margin-top: 2rem;
+      padding: 2rem;
+      background: #f7fafc;
+      border-radius: 8px;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .demo-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .demo-card h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #2d3748;
+    }
+
+    .interactive-demo {
+      position: relative;
+      height: 150px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      overflow: hidden;
+    }
+
+    .interactive-demo::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--alpha-hover);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .interactive-demo:hover::after {
+      opacity: 1;
+    }
+
+    .interactive-demo:active::after {
+      background: var(--alpha-pressed);
+      opacity: 1;
+    }
+
+    .modal-demo {
+      position: relative;
+      height: 200px;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%23e2e8f0"/><text x="50" y="50" text-anchor="middle" dominant-baseline="middle" font-family="sans-serif" font-size="12" fill="%23718096">Content Below</text></svg>');
+      background-size: 100px 100px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--alpha-overlay-medium);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 80%;
+    }
+
+    .glass-demo {
+      position: relative;
+      height: 200px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .glass-card {
+      background: var(--alpha-backdrop-blur);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-weight: 600;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    [data-theme="dark"] .container {
+      background: #1a202c;
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] h1,
+    [data-theme="dark"] .section h2,
+    [data-theme="dark"] .token-name,
+    [data-theme="dark"] .demo-card h3 {
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .subtitle,
+    [data-theme="dark"] .token-value {
+      color: #a0aec0;
+    }
+
+    [data-theme="dark"] .token-card {
+      border-color: #2d3748;
+    }
+
+    [data-theme="dark"] .token-info {
+      background: #2d3748;
+    }
+
+    [data-theme="dark"] .demo-section {
+      background: #2d3748;
+    }
+
+    [data-theme="dark"] .demo-card {
+      background: #1a202c;
+    }
+
+    [data-theme="dark"] .modal-content {
+      background: #2d3748;
+      color: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+
+  <div class="container">
+    <h1>Alpha/Transparency Tokens</h1>
+    <p class="subtitle">Overlay, scrim, and transparency variants for layering and visual hierarchy</p>
+
+    <div class="section">
+      <h2>Overlay Tokens</h2>
+      <p>Dark overlays for use on light content (modals, dialogs, focus states)</p>
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-overlay-subtle);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">overlay-subtle</div>
+            <div class="token-value">rgba(0, 0, 0, 0.2)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-overlay-light);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">overlay-light</div>
+            <div class="token-value">rgba(0, 0, 0, 0.4)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-overlay-medium);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">overlay-medium</div>
+            <div class="token-value">rgba(0, 0, 0, 0.6)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-overlay-heavy);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">overlay-heavy</div>
+            <div class="token-value">rgba(0, 0, 0, 0.8)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Scrim Tokens</h2>
+      <p>Light overlays for use on dark content</p>
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="token-preview" style="background: #2d3748;">
+            <div class="token-overlay" style="background: var(--alpha-scrim-light);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">scrim-light</div>
+            <div class="token-value">rgba(255, 255, 255, 0.4)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #2d3748;">
+            <div class="token-overlay" style="background: var(--alpha-scrim-medium);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">scrim-medium</div>
+            <div class="token-value">rgba(255, 255, 255, 0.6)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #2d3748;">
+            <div class="token-overlay" style="background: var(--alpha-scrim-heavy);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">scrim-heavy</div>
+            <div class="token-value">rgba(255, 255, 255, 0.8)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Interactive State Tokens</h2>
+      <p>Transparency overlays for hover, focus, pressed, and disabled states</p>
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-hover);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">hover</div>
+            <div class="token-value">rgba(0, 0, 0, 0.08)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-pressed);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">pressed</div>
+            <div class="token-value">rgba(0, 0, 0, 0.12)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-focus);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">focus</div>
+            <div class="token-value">rgba(59, 130, 246, 0.2)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview">
+            <div class="token-overlay" style="background: var(--alpha-disabled);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">disabled</div>
+            <div class="token-value">rgba(0, 0, 0, 0.38)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Surface Elevation Tokens</h2>
+      <p>Layered transparency for depth and elevation</p>
+      <div class="token-grid">
+        <div class="token-card">
+          <div class="token-preview" style="background: #4a5568;">
+            <div class="token-overlay" style="background: var(--alpha-surface-elevated-10);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">elevated-10</div>
+            <div class="token-value">rgba(255, 255, 255, 0.1)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #4a5568;">
+            <div class="token-overlay" style="background: var(--alpha-surface-elevated-20);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">elevated-20</div>
+            <div class="token-value">rgba(255, 255, 255, 0.2)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #4a5568;">
+            <div class="token-overlay" style="background: var(--alpha-surface-elevated-30);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">elevated-30</div>
+            <div class="token-value">rgba(255, 255, 255, 0.3)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #4a5568;">
+            <div class="token-overlay" style="background: var(--alpha-surface-elevated-40);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">elevated-40</div>
+            <div class="token-value">rgba(255, 255, 255, 0.4)</div>
+          </div>
+        </div>
+        <div class="token-card">
+          <div class="token-preview" style="background: #4a5568;">
+            <div class="token-overlay" style="background: var(--alpha-surface-elevated-50);"></div>
+          </div>
+          <div class="token-info">
+            <div class="token-name">elevated-50</div>
+            <div class="token-value">rgba(255, 255, 255, 0.5)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2>Interactive Demonstrations</h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <h3>Interactive States</h3>
+          <div class="interactive-demo">
+            Hover & Click Me
+          </div>
+        </div>
+        <div class="demo-card">
+          <h3>Modal Overlay</h3>
+          <div class="modal-demo">
+            <div class="modal-overlay">
+              <div class="modal-content">
+                Modal Dialog
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="demo-card">
+          <h3>Glass Morphism</h3>
+          <div class="glass-demo">
+            <div class="glass-card">
+              Frosted Glass Effect
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Toggle between light and dark themes
+     */
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+    }
+  </script>
+</body>
+</html>
