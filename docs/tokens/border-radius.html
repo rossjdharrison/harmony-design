@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Border Radius Scale - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 2rem;
+      background: #fafafa;
+      color: #1a1a1a;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #1a1a1a;
+    }
+
+    .description {
+      font-size: 1.125rem;
+      color: #666;
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+
+    .scale-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .radius-card {
+      background: white;
+      padding: 1.5rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .radius-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .radius-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 1rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .radius-demo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0 auto;
+      transition: transform 0.2s ease;
+    }
+
+    .radius-demo:hover {
+      transform: scale(1.05);
+    }
+
+    .usage-section {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      margin-bottom: 2rem;
+    }
+
+    .usage-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+
+    pre {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      color: #d63384;
+    }
+
+    .guidelines {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .guidelines h3 {
+      color: #856404;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .guidelines ul {
+      margin-left: 1.5rem;
+      color: #856404;
+    }
+
+    .guidelines li {
+      margin-bottom: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Border Radius Scale</h1>
+    <p class="description">
+      The border radius scale provides consistent corner rounding values for UI elements.
+      From sharp corners to fully rounded pills, this scale covers all common use cases.
+    </p>
+
+    <div class="scale-grid" id="radiusGrid"></div>
+
+    <div class="usage-section">
+      <h2>Usage Examples</h2>
+      <pre><code>import { borderRadius, getBorderRadiusCSS } from './tokens/border-radius.js';
+
+// Direct usage
+element.style.borderRadius = `${borderRadius.md}px`;
+
+// Helper function
+element.style.borderRadius = getBorderRadiusCSS('lg');
+
+// CSS custom properties
+import { injectBorderRadiusVars } from './tokens/border-radius.js';
+injectBorderRadiusVars();
+// Then in CSS: border-radius: var(--border-radius-md);</code></pre>
+
+      <div class="guidelines">
+        <h3>Design Guidelines</h3>
+        <ul>
+          <li><strong>none (0px):</strong> Sharp corners for technical UI, tables, code blocks</li>
+          <li><strong>sm (2px):</strong> Subtle rounding for inputs, small buttons</li>
+          <li><strong>default (4px):</strong> Standard UI elements, most components</li>
+          <li><strong>md (6px):</strong> Cards, panels, modal dialogs</li>
+          <li><strong>lg (8px):</strong> Prominent elements, large cards</li>
+          <li><strong>xl (12px):</strong> Hero sections, feature cards</li>
+          <li><strong>full (9999px):</strong> Pills, badges, circular avatars</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { borderRadius } from '../../tokens/border-radius.js';
+
+    const radiusGrid = document.getElementById('radiusGrid');
+
+    // Render border radius scale
+    Object.entries(borderRadius).forEach(([name, value]) => {
+      const card = document.createElement('div');
+      card.className = 'radius-card';
+      
+      card.innerHTML = `
+        <div class="radius-label">${name}</div>
+        <div class="radius-value">${value}px</div>
+        <div class="radius-demo" style="border-radius: ${value}px;"></div>
+      `;
+      
+      radiusGrid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

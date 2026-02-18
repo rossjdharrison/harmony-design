@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Border Radius Token Tests</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .test-suite {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 800px;
+      margin: 0 auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .test-result {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .test-pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .test-fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .test-summary {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #e7f3ff;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-suite">
+    <h1>Border Radius Token Tests</h1>
+    <div id="results"></div>
+    <div id="summary" class="test-summary"></div>
+  </div>
+
+  <script type="module">
+    import { 
+      borderRadius, 
+      borderRadiusVars,
+      getBorderRadius,
+      getBorderRadiusCSS,
+      injectBorderRadiusVars
+    } from './border-radius.js';
+
+    const results = document.getElementById('results');
+    const summary = document.getElementById('summary');
+    let passed = 0;
+    let failed = 0;
+
+    function test(description, fn) {
+      try {
+        fn();
+        const div = document.createElement('div');
+        div.className = 'test-result test-pass';
+        div.textContent = `✓ ${description}`;
+        results.appendChild(div);
+        passed++;
+      } catch (error) {
+        const div = document.createElement('div');
+        div.className = 'test-result test-fail';
+        div.textContent = `✗ ${description}: ${error.message}`;
+        results.appendChild(div);
+        failed++;
+      }
+    }
+
+    function assertEqual(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(`${message}: expected ${expected}, got ${actual}`);
+      }
+    }
+
+    function assertTrue(condition, message) {
+      if (!condition) {
+        throw new Error(message);
+      }
+    }
+
+    // Run tests
+    test('borderRadius object exists', () => {
+      assertTrue(typeof borderRadius === 'object', 'borderRadius should be an object');
+    });
+
+    test('borderRadius.none is 0', () => {
+      assertEqual(borderRadius.none, 0, 'none should be 0');
+    });
+
+    test('borderRadius.sm is 2', () => {
+      assertEqual(borderRadius.sm, 2, 'sm should be 2');
+    });
+
+    test('borderRadius.default is 4', () => {
+      assertEqual(borderRadius.default, 4, 'default should be 4');
+    });
+
+    test('borderRadius.md is 6', () => {
+      assertEqual(borderRadius.md, 6, 'md should be 6');
+    });
+
+    test('borderRadius.lg is 8', () => {
+      assertEqual(borderRadius.lg, 8, 'lg should be 8');
+    });
+
+    test('borderRadius.xl is 12', () => {
+      assertEqual(borderRadius.xl, 12, 'xl should be 12');
+    });
+
+    test('borderRadius.full is 9999', () => {
+      assertEqual(borderRadius.full, 9999, 'full should be 9999');
+    });
+
+    test('borderRadiusVars contains all CSS custom properties', () => {
+      const expectedKeys = [
+        '--border-radius-none',
+        '--border-radius-sm',
+        '--border-radius-default',
+        '--border-radius-md',
+        '--border-radius-lg',
+        '--border-radius-xl',
+        '--border-radius-full'
+      ];
+      expectedKeys.forEach(key => {
+        assertTrue(key in borderRadiusVars, `${key} should exist in borderRadiusVars`);
+      });
+    });
+
+    test('getBorderRadius returns correct value', () => {
+      assertEqual(getBorderRadius('md'), 6, 'getBorderRadius("md") should return 6');
+    });
+
+    test('getBorderRadius throws on invalid name', () => {
+      try {
+        getBorderRadius('invalid');
+        throw new Error('Should have thrown');
+      } catch (e) {
+        assertTrue(e.message.includes('Invalid border radius name'), 'Should throw meaningful error');
+      }
+    });
+
+    test('getBorderRadiusCSS returns CSS string', () => {
+      assertEqual(getBorderRadiusCSS('lg'), '8px', 'getBorderRadiusCSS should return "8px"');
+    });
+
+    test('injectBorderRadiusVars sets CSS custom properties', () => {
+      injectBorderRadiusVars();
+      const rootStyle = getComputedStyle(document.documentElement);
+      const mdValue = rootStyle.getPropertyValue('--border-radius-md').trim();
+      assertEqual(mdValue, '6px', 'CSS custom property should be set');
+    });
+
+    test('all border radius values are numbers', () => {
+      Object.entries(borderRadius).forEach(([name, value]) => {
+        assertTrue(typeof value === 'number', `${name} should be a number`);
+      });
+    });
+
+    test('border radius values are in ascending order (except full)', () => {
+      const values = [
+        borderRadius.none,
+        borderRadius.sm,
+        borderRadius.default,
+        borderRadius.md,
+        borderRadius.lg,
+        borderRadius.xl
+      ];
+      for (let i = 1; i < values.length; i++) {
+        assertTrue(values[i] > values[i-1], `Values should be in ascending order`);
+      }
+    });
+
+    // Display summary
+    const total = passed + failed;
+    summary.textContent = `Tests: ${passed}/${total} passed`;
+    if (failed > 0) {
+      summary.style.background = '#f8d7da';
+      summary.style.color = '#721c24';
+    } else {
+      summary.style.background = '#d4edda';
+      summary.style.color = '#155724';
+    }
+  </script>
+</body>
+</html>

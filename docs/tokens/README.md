@@ -1,61 +1,39 @@
 # Design Tokens Documentation
 
-This directory contains interactive documentation for all design tokens in the Harmony Design System.
+This directory contains visual documentation for all design tokens in the Harmony Design System.
 
-## Available Token Categories
+## Available Token Documentation
 
-### Typography
-- **[Font Size Scale](font-size-scale.html)** - 8-step scale from xs (10px) to 3xl (32px)
-- **[Font Weight](font-weight.html)** - regular (400), medium (500), semibold (600), bold (700)
-- **[Line Height](line-height.html)** - tight (1.2), normal (1.5), relaxed (1.8)
-- **[Letter Spacing](letter-spacing.html)** - tight (-0.02em), normal (0), wide (0.02em)
+### Color Tokens
+- [Primary Colors](primary-colors.html) - Primary scale (50-950) for brand colors
+- [Neutral Colors](neutral-colors.html) - Gray scale (50-950) for surfaces and text
+- [Accent Colors](accent-colors.html) - Blue, Green, Red, Yellow accent scales
+- [Alpha Transparency](alpha-transparency.html) - Opacity variants (10%-50%)
 
-### Layout
-- **[Spacing Scale](spacing-scale.html)** - 4px base unit with 13 steps (0-12)
+### Typography Tokens
+- [Font Size Scale](font-size-scale.html) - 8 steps from xs(10px) to 3xl(32px)
+- [Font Weight](font-weight.html) - regular(400), medium(500), semibold(600)
+- [Line Height](line-height.html) - tight(1.2), normal(1.5), relaxed(1.8)
+- [Letter Spacing](letter-spacing.html) - tight(-0.02em), normal(0), relaxed(0.05em)
 
-### Color
-- **[Accent Colors](accent-colors.html)** - Blue, green, red, yellow semantic colors
-- **[Alpha Transparency](alpha-transparency.html)** - Overlay and transparency variants
+### Layout Tokens
+- [Spacing Scale](spacing-scale.html) - 4px base unit with 13 steps (0-12)
+- [Border Radius](border-radius.html) - 7 steps from none(0) to full(9999)
 
-## Token Structure
+## Usage
 
-All tokens follow these principles:
+Open any HTML file in a browser to see interactive documentation and examples.
 
-1. **JavaScript Modules**: Tokens are exported as ES6 modules from `/tokens/`
-2. **CSS Variables**: Each token automatically generates CSS custom properties
-3. **Type Safety**: JSDoc annotations provide IDE autocomplete and type checking
-4. **Auto-Apply**: Tokens automatically inject CSS variables when imported
-5. **Shadow DOM Support**: Tokens work in both document and shadow roots
+## Implementation
 
-## Usage Pattern
+All tokens are implemented as JavaScript modules in the `/tokens` directory:
+- `tokens/colors.js` - All color tokens
+- `tokens/spacing.js` - Spacing scale
+- `tokens/typography.js` - Typography tokens
+- `tokens/border-radius.js` - Border radius scale
 
-```javascript
-// Import tokens
-import { FONT_SIZE } from './tokens/font-size.js';
-import { LETTER_SPACING } from './tokens/letter-spacing.js';
-
-// Use in JavaScript
-element.style.fontSize = FONT_SIZE.base;
-element.style.letterSpacing = LETTER_SPACING.normal;
-
-// Or use CSS variables
-element.style.cssText = `
-  font-size: var(--font-size-base);
-  letter-spacing: var(--letter-spacing-normal);
-`;
-```
-
-## Design System Integration
-
-These tokens are the foundation of the Harmony Design System. They ensure:
-
-- **Consistency**: All components use the same visual language
-- **Maintainability**: Changes propagate automatically through the system
-- **Performance**: Tokens are lightweight and optimized for runtime use
-- **Developer Experience**: Strong typing and documentation at every level
-
-## Related Documentation
-
-- [Main Design System Documentation](../../DESIGN_SYSTEM.md)
-- [Token Implementation Guide](../../DESIGN_SYSTEM.md#design-tokens)
-- [Component Usage Examples](../../DESIGN_SYSTEM.md#components)
+Each token module includes:
+- Token object with all values
+- CSS custom property variants
+- Helper functions for accessing values
+- JSDoc documentation
