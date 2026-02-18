@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Error Boundary Component Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f9fafb;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: #111827;
+    }
+
+    .test-section {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #374151;
+      font-size: 1.25rem;
+    }
+
+    .test-section p {
+      color: #6b7280;
+      margin-bottom: 1rem;
+    }
+
+    .trigger-button {
+      padding: 0.5rem 1rem;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+      margin-right: 0.5rem;
+    }
+
+    .trigger-button:hover {
+      background: #2563eb;
+    }
+
+    error-boundary {
+      margin-top: 1rem;
+    }
+
+    .test-component {
+      padding: 1rem;
+      background: #e0f2fe;
+      border: 1px solid #7dd3fc;
+      border-radius: 0.375rem;
+      color: #0c4a6e;
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 0.375rem;
+      color: #166534;
+      font-size: 0.875rem;
+    }
+
+    .status.error {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <h1>Error Boundary Component Tests</h1>
+
+  <div class="test-section">
+    <h2>Test 1: Component with Render Error</h2>
+    <p>This component throws an error during rendering.</p>
+    <button class="trigger-button" onclick="triggerRenderError()">Trigger Render Error</button>
+    
+    <error-boundary id="test-1">
+      <test-component-1></test-component-1>
+    </error-boundary>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Custom Fallback Messages</h2>
+    <p>Error boundary with custom title and message.</p>
+    <button class="trigger-button" onclick="triggerCustomError()">Trigger Error</button>
+    
+    <error-boundary 
+      id="test-2"
+      fallback-title="Audio Component Failed"
+      fallback-message="The audio component encountered an error. Your work has been saved.">
+      <test-component-2></test-component-2>
+    </error-boundary>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Error with Details Shown</h2>
+    <p>Error boundary with stack trace details visible by default.</p>
+    <button class="trigger-button" onclick="triggerDetailedError()">Trigger Error</button>
+    
+    <error-boundary id="test-3" show-details="true">
+      <test-component-3></test-component-3>
+    </error-boundary>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Promise Rejection</h2>
+    <p>Component that throws unhandled promise rejection.</p>
+    <button class="trigger-button" onclick="triggerPromiseError()">Trigger Promise Error</button>
+    
+    <error-boundary id="test-4">
+      <test-component-4></test-component-4>
+    </error-boundary>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Nested Error Boundaries</h2>
+    <p>Inner error boundary catches error, outer remains functional.</p>
+    <button class="trigger-button" onclick="triggerNestedError()">Trigger Nested Error</button>
+    
+    <error-boundary id="test-5-outer" fallback-title="Outer Boundary">
+      <div class="test-component">Outer Component (Working)</div>
+      <error-boundary id="test-5-inner" fallback-title="Inner Boundary">
+        <test-component-5></test-component-5>
+      </error-boundary>
+    </error-boundary>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 6: EventBus Integration</h2>
+    <p>Errors are published to EventBus for monitoring.</p>
+    <button class="trigger-button" onclick="triggerEventBusError()">Trigger Error</button>
+    <button class="trigger-button" onclick="checkEventLog()">Check Event Log</button>
+    
+    <error-boundary id="test-6">
+      <test-component-6></test-component-6>
+    </error-boundary>
+    
+    <div id="event-log" class="status" style="display: none;"></div>
+  </div>
+
+  <!-- Test Components -->
+  <script type="module">
+    import './error-boundary.js';
+
+    // Mock EventBus for testing
+    window.EventBus = {
+      events: [],
+      publish(type, data) {
+        console.log('[EventBus] Published:', type, data);
+        this.events.push({ type, data, timestamp: Date.now() });
+      }
+    };
+
+    // Test Component 1: Render Error
+    class TestComponent1 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        if (this.hasAttribute('should-error')) {
+          throw new Error('Render error in TestComponent1');
+        }
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Component 1 is working correctly
+          </div>
+        `;
+      }
+    }
+    customElements.define('test-component-1', TestComponent1);
+
+    // Test Component 2: Custom error
+    class TestComponent2 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        if (this.hasAttribute('should-error')) {
+          throw new Error('Audio processing failed: Invalid sample rate');
+        }
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Component 2 is working correctly
+          </div>
+        `;
+      }
+    }
+    customElements.define('test-component-2', TestComponent2);
+
+    // Test Component 3: Detailed error
+    class TestComponent3 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        if (this.hasAttribute('should-error')) {
+          const error = new Error('Detailed error with stack trace');
+          error.stack = `Error: Detailed error with stack trace
+    at TestComponent3.connectedCallback (test-component-3.js:15:23)
+    at HTMLElement.connectedCallback (error-boundary.js:89:34)
+    at Object.connect (dom-utils.js:45:12)`;
+          throw error;
+        }
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Component 3 is working correctly
+          </div>
+        `;
+      }
+    }
+    customElements.define('test-component-3', TestComponent3);
+
+    // Test Component 4: Promise rejection
+    class TestComponent4 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Component 4 is working correctly
+          </div>
+        `;
+        
+        if (this.hasAttribute('should-error')) {
+          setTimeout(() => {
+            Promise.reject(new Error('Unhandled promise rejection'));
+          }, 100);
+        }
+      }
+    }
+    customElements.define('test-component-4', TestComponent4);
+
+    // Test Component 5: Nested boundary test
+    class TestComponent5 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        if (this.hasAttribute('should-error')) {
+          throw new Error('Error in nested component');
+        }
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Inner Component is working correctly
+          </div>
+        `;
+      }
+    }
+    customElements.define('test-component-5', TestComponent5);
+
+    // Test Component 6: EventBus test
+    class TestComponent6 extends HTMLElement {
+      constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+      }
+
+      connectedCallback() {
+        if (this.hasAttribute('should-error')) {
+          throw new Error('EventBus integration test error');
+        }
+        this.shadowRoot.innerHTML = `
+          <div style="padding: 1rem; background: #e0f2fe; border-radius: 0.375rem;">
+            Component 6 is working correctly
+          </div>
+        `;
+      }
+    }
+    customElements.define('test-component-6', TestComponent6);
+
+    // Test trigger functions
+    window.triggerRenderError = () => {
+      const component = document.querySelector('test-component-1');
+      component.setAttribute('should-error', '');
+      component.remove();
+      document.querySelector('#test-1').appendChild(component);
+    };
+
+    window.triggerCustomError = () => {
+      const component = document.querySelector('test-component-2');
+      component.setAttribute('should-error', '');
+      component.remove();
+      document.querySelector('#test-2').appendChild(component);
+    };
+
+    window.triggerDetailedError = () => {
+      const component = document.querySelector('test-component-3');
+      component.setAttribute('should-error', '');
+      component.remove();
+      document.querySelector('#test-3').appendChild(component);
+    };
+
+    window.triggerPromiseError = () => {
+      const component = document.querySelector('test-component-4');
+      component.setAttribute('should-error', '');
+    };
+
+    window.triggerNestedError = () => {
+      const component = document.querySelector('test-component-5');
+      component.setAttribute('should-error', '');
+      component.remove();
+      document.querySelector('#test-5-inner').appendChild(component);
+    };
+
+    window.triggerEventBusError = () => {
+      const component = document.querySelector('test-component-6');
+      component.setAttribute('should-error', '');
+      component.remove();
+      document.querySelector('#test-6').appendChild(component);
+    };
+
+    window.checkEventLog = () => {
+      const log = document.getElementById('event-log');
+      const errors = window.EventBus.events.filter(e => e.type === 'component:error');
+      
+      if (errors.length > 0) {
+        log.className = 'status';
+        log.innerHTML = `<strong>Captured ${errors.length} error event(s):</strong><br>` +
+          errors.map(e => `• ${e.data.error.message} (${new Date(e.data.timestamp).toLocaleTimeString()})`).join('<br>');
+      } else {
+        log.className = 'status error';
+        log.innerHTML = '<strong>No error events captured</strong>';
+      }
+      log.style.display = 'block';
+    };
+  </script>
+</body>
+</html>
