@@ -1,0 +1,386 @@
+/**
+ * Light Theme Semantic Tokens
+ * 
+ * Maps semantic tokens to primitive values for light mode (default theme).
+ * This is the base theme - dark-theme.css overrides these values.
+ * 
+ * Design Philosophy:
+ * - Light backgrounds with dark text for optimal readability
+ * - Subtle borders and surfaces for depth without harshness
+ * - Vibrant accent colors for interactive elements
+ * - High contrast for accessibility (WCAG AA minimum)
+ * 
+ * Related Documentation:
+ * - See DESIGN_SYSTEM.md § Design Tokens for token architecture
+ * - See tokens/primitives.css for base color palette
+ * - See tokens/semantic.css for semantic token definitions
+ * - See tokens/dark-theme.css for dark mode overrides
+ * 
+ * @module tokens/light-theme
+ */
+
+:root {
+  /* ============================================
+     TEXT COLORS
+     ============================================ */
+  
+  /* Primary text - main content, headings */
+  --text-primary: var(--neutral-900);
+  
+  /* Secondary text - supporting content, captions */
+  --text-secondary: var(--neutral-700);
+  
+  /* Tertiary text - least emphasis, placeholders */
+  --text-tertiary: var(--neutral-500);
+  
+  /* Disabled text - non-interactive elements */
+  --text-disabled: var(--neutral-400);
+  
+  /* Inverted text - on dark backgrounds */
+  --text-inverted: var(--neutral-50);
+
+  /* ============================================
+     TEXT HIERARCHY
+     ============================================ */
+  
+  /* Heading text - titles, section headers */
+  --text-heading: var(--neutral-900);
+  
+  /* Body text - paragraphs, main content */
+  --text-body: var(--neutral-800);
+  
+  /* Caption text - small labels, metadata */
+  --text-caption: var(--neutral-600);
+
+  /* ============================================
+     SURFACE COLORS
+     ============================================ */
+  
+  /* Default surface - main background */
+  --surface-default: var(--neutral-50);
+  
+  /* Raised surface - cards, panels */
+  --surface-raised: var(--neutral-0);
+  
+  /* Sunken surface - wells, inputs */
+  --surface-sunken: var(--neutral-100);
+  
+  /* Overlay surface - modals, popovers */
+  --surface-overlay: var(--neutral-0);
+
+  /* ============================================
+     SURFACE STATES
+     ============================================ */
+  
+  /* Hover state - interactive surfaces */
+  --surface-hover: var(--neutral-100);
+  
+  /* Active/pressed state */
+  --surface-active: var(--neutral-200);
+  
+  /* Selected state - active items in lists */
+  --surface-selected: var(--accent-100);
+  
+  /* Disabled state - non-interactive surfaces */
+  --surface-disabled: var(--neutral-100);
+
+  /* ============================================
+     BORDER COLORS
+     ============================================ */
+  
+  /* Default border - standard dividers */
+  --border-default: var(--neutral-300);
+  
+  /* Subtle border - light separation */
+  --border-subtle: var(--neutral-200);
+  
+  /* Strong border - emphasized separation */
+  --border-strong: var(--neutral-400);
+  
+  /* Focus border - keyboard navigation */
+  --border-focus: var(--accent-500);
+
+  /* ============================================
+     STATE COLORS
+     ============================================ */
+  
+  /* Error state - validation failures, alerts */
+  --state-error: var(--error-600);
+  --state-error-bg: var(--error-50);
+  --state-error-border: var(--error-300);
+  
+  /* Warning state - caution, important notices */
+  --state-warning: var(--warning-600);
+  --state-warning-bg: var(--warning-50);
+  --state-warning-border: var(--warning-300);
+  
+  /* Success state - confirmations, completions */
+  --state-success: var(--success-600);
+  --state-success-bg: var(--success-50);
+  --state-success-border: var(--success-300);
+  
+  /* Info state - helpful information, tips */
+  --state-info: var(--info-600);
+  --state-info-bg: var(--info-50);
+  --state-info-border: var(--info-300);
+
+  /* ============================================
+     ACCENT COLORS
+     ============================================ */
+  
+  /* Primary accent - main brand color, primary actions */
+  --accent-primary: var(--accent-600);
+  --accent-primary-hover: var(--accent-700);
+  --accent-primary-active: var(--accent-800);
+  
+  /* Secondary accent - alternative actions */
+  --accent-secondary: var(--accent-400);
+  --accent-secondary-hover: var(--accent-500);
+  --accent-secondary-active: var(--accent-600);
+  
+  /* Accent on dark - for use on dark backgrounds */
+  --accent-on-dark: var(--accent-400);
+
+  /* ============================================
+     AUDIO LEVEL COLORS
+     ============================================ */
+  
+  /* Peak level indicator - transient peaks */
+  --level-peak: var(--error-500);
+  
+  /* RMS level indicator - average level */
+  --level-rms: var(--success-500);
+  
+  /* Clip indicator - digital clipping warning */
+  --level-clip: var(--error-700);
+  
+  /* Level background - meter track */
+  --level-background: var(--neutral-200);
+  
+  /* Level scale markers - dB markings */
+  --level-scale: var(--neutral-400);
+
+  /* ============================================
+     GLOW EFFECTS
+     ============================================ */
+  
+  /* Focus ring - keyboard navigation indicator */
+  --glow-focus: 0 0 0 3px var(--accent-200);
+  
+  /* Active glow - pressed/active state */
+  --glow-active: 0 0 8px var(--accent-300);
+  
+  /* Selection glow - selected items */
+  --glow-selection: 0 0 12px var(--accent-400);
+  
+  /* Error glow - validation errors */
+  --glow-error: 0 0 0 3px var(--error-200);
+  
+  /* Success glow - successful actions */
+  --glow-success: 0 0 0 3px var(--success-200);
+
+  /* ============================================
+     INTERACTIVE STATES
+     ============================================ */
+  
+  /* Link colors */
+  --link-default: var(--accent-600);
+  --link-hover: var(--accent-700);
+  --link-active: var(--accent-800);
+  --link-visited: var(--accent-900);
+  
+  /* Button colors - default button */
+  --button-default-bg: var(--neutral-100);
+  --button-default-text: var(--neutral-900);
+  --button-default-border: var(--neutral-300);
+  
+  --button-default-hover-bg: var(--neutral-200);
+  --button-default-hover-border: var(--neutral-400);
+  
+  --button-default-active-bg: var(--neutral-300);
+  --button-default-active-border: var(--neutral-500);
+  
+  /* Button colors - primary button */
+  --button-primary-bg: var(--accent-600);
+  --button-primary-text: var(--neutral-0);
+  --button-primary-border: var(--accent-600);
+  
+  --button-primary-hover-bg: var(--accent-700);
+  --button-primary-hover-border: var(--accent-700);
+  
+  --button-primary-active-bg: var(--accent-800);
+  --button-primary-active-border: var(--accent-800);
+  
+  /* Button colors - disabled */
+  --button-disabled-bg: var(--neutral-100);
+  --button-disabled-text: var(--neutral-400);
+  --button-disabled-border: var(--neutral-200);
+  
+  /* Input colors */
+  --input-bg: var(--neutral-0);
+  --input-text: var(--neutral-900);
+  --input-border: var(--neutral-300);
+  --input-placeholder: var(--neutral-500);
+  
+  --input-hover-border: var(--neutral-400);
+  --input-focus-border: var(--accent-500);
+  --input-error-border: var(--error-500);
+  
+  --input-disabled-bg: var(--neutral-100);
+  --input-disabled-text: var(--neutral-400);
+  --input-disabled-border: var(--neutral-200);
+
+  /* ============================================
+     COMPONENT-SPECIFIC TOKENS
+     ============================================ */
+  
+  /* Fader/Slider */
+  --fader-track-bg: var(--neutral-200);
+  --fader-track-fill: var(--accent-500);
+  --fader-thumb-bg: var(--neutral-0);
+  --fader-thumb-border: var(--neutral-400);
+  --fader-thumb-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+  /* Toggle/Switch */
+  --toggle-off-bg: var(--neutral-300);
+  --toggle-off-thumb: var(--neutral-0);
+  --toggle-on-bg: var(--accent-500);
+  --toggle-on-thumb: var(--neutral-0);
+  
+  /* Transport controls */
+  --transport-bg: var(--neutral-100);
+  --transport-button-bg: var(--neutral-0);
+  --transport-button-hover: var(--neutral-200);
+  --transport-button-active: var(--accent-500);
+  --transport-button-recording: var(--error-500);
+  
+  /* Clip/Region */
+  --clip-bg: var(--accent-100);
+  --clip-border: var(--accent-400);
+  --clip-text: var(--neutral-900);
+  --clip-waveform: var(--accent-600);
+  --clip-selected-bg: var(--accent-200);
+  --clip-selected-border: var(--accent-600);
+  
+  /* Timeline */
+  --timeline-bg: var(--neutral-50);
+  --timeline-grid: var(--neutral-300);
+  --timeline-ruler: var(--neutral-700);
+  --timeline-playhead: var(--error-500);
+  --timeline-selection: rgba(59, 130, 246, 0.2);
+  
+  /* Mixer channel */
+  --channel-bg: var(--neutral-100);
+  --channel-border: var(--neutral-300);
+  --channel-label: var(--neutral-900);
+  --channel-meter-bg: var(--neutral-200);
+  
+  /* Modal/Dialog */
+  --modal-backdrop: rgba(0, 0, 0, 0.5);
+  --modal-bg: var(--neutral-0);
+  --modal-border: var(--neutral-300);
+  --modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  
+  /* Tooltip */
+  --tooltip-bg: var(--neutral-900);
+  --tooltip-text: var(--neutral-50);
+  --tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  
+  /* Menu/Dropdown */
+  --menu-bg: var(--neutral-0);
+  --menu-border: var(--neutral-300);
+  --menu-item-hover: var(--neutral-100);
+  --menu-item-active: var(--accent-100);
+  --menu-separator: var(--neutral-200);
+  --menu-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* ============================================
+     ELEVATION SHADOWS
+     ============================================ */
+  
+  /* Subtle elevation - cards, panels */
+  --elevation-1: 0 1px 3px rgba(0, 0, 0, 0.08);
+  
+  /* Medium elevation - dropdowns, popovers */
+  --elevation-2: 0 4px 12px rgba(0, 0, 0, 0.12);
+  
+  /* High elevation - modals, dialogs */
+  --elevation-3: 0 8px 24px rgba(0, 0, 0, 0.15);
+  
+  /* Maximum elevation - overlays */
+  --elevation-4: 0 16px 48px rgba(0, 0, 0, 0.2);
+
+  /* ============================================
+     SCROLLBAR STYLING
+     ============================================ */
+  
+  --scrollbar-track: var(--neutral-100);
+  --scrollbar-thumb: var(--neutral-400);
+  --scrollbar-thumb-hover: var(--neutral-500);
+  --scrollbar-thumb-active: var(--neutral-600);
+
+  /* ============================================
+     SELECTION COLORS
+     ============================================ */
+  
+  --selection-bg: var(--accent-200);
+  --selection-text: var(--neutral-900);
+
+  /* ============================================
+     CODE SYNTAX (for documentation/debug views)
+     ============================================ */
+  
+  --code-bg: var(--neutral-100);
+  --code-text: var(--neutral-900);
+  --code-comment: var(--neutral-600);
+  --code-keyword: var(--accent-700);
+  --code-string: var(--success-600);
+  --code-number: var(--warning-600);
+  --code-function: var(--info-600);
+}
+
+/**
+ * High Contrast Mode Support
+ * 
+ * Enhances contrast for users who prefer or require higher contrast.
+ * Activated via prefers-contrast: high media query.
+ */
+@media (prefers-contrast: high) {
+  :root {
+    /* Increase text contrast */
+    --text-primary: var(--neutral-1000);
+    --text-secondary: var(--neutral-800);
+    --text-tertiary: var(--neutral-700);
+    
+    /* Strengthen borders */
+    --border-default: var(--neutral-500);
+    --border-subtle: var(--neutral-400);
+    --border-strong: var(--neutral-600);
+    
+    /* Enhance state colors */
+    --state-error: var(--error-700);
+    --state-warning: var(--warning-700);
+    --state-success: var(--success-700);
+    --state-info: var(--info-700);
+    
+    /* Boost accent contrast */
+    --accent-primary: var(--accent-700);
+  }
+}
+
+/**
+ * Reduced Motion Support
+ * 
+ * Respects user preference for reduced motion by disabling glow effects.
+ * Activated via prefers-reduced-motion: reduce media query.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    /* Remove glow effects for reduced motion */
+    --glow-focus: 0 0 0 3px var(--accent-200);
+    --glow-active: none;
+    --glow-selection: none;
+    --glow-error: 0 0 0 3px var(--error-200);
+    --glow-success: 0 0 0 3px var(--success-200);
+  }
+}
