@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Letter Spacing Tokens - Harmony Design System</title>
+  <style>
+    :root {
+      --letter-spacing-tight: -0.02em;
+      --letter-spacing-normal: 0;
+      --letter-spacing-wide: 0.02em;
+      
+      --color-neutral-50: #fafafa;
+      --color-neutral-100: #f5f5f5;
+      --color-neutral-200: #e5e5e5;
+      --color-neutral-700: #404040;
+      --color-neutral-900: #171717;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: var(--color-neutral-50);
+      color: var(--color-neutral-900);
+      line-height: 1.6;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: var(--letter-spacing-tight);
+    }
+    
+    .subtitle {
+      color: var(--color-neutral-700);
+      margin-bottom: 2rem;
+    }
+    
+    .token-grid {
+      display: grid;
+      gap: 1.5rem;
+      margin: 2rem 0;
+    }
+    
+    .token-card {
+      background: white;
+      border: 1px solid var(--color-neutral-200);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .token-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--color-neutral-100);
+    }
+    
+    .token-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--color-neutral-900);
+    }
+    
+    .token-value {
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      background: var(--color-neutral-100);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      color: var(--color-neutral-700);
+    }
+    
+    .sample-text {
+      margin: 1rem 0;
+    }
+    
+    .sample-heading {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .sample-body {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    
+    .usage-note {
+      background: var(--color-neutral-100);
+      padding: 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      color: var(--color-neutral-700);
+      margin-top: 1rem;
+    }
+    
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .comparison-card {
+      background: white;
+      border: 1px solid var(--color-neutral-200);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    
+    .comparison-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-neutral-700);
+      margin-bottom: 0.5rem;
+    }
+    
+    .comparison-sample {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    code {
+      font-family: 'Courier New', monospace;
+      background: var(--color-neutral-100);
+      padding: 0.125rem 0.375rem;
+      border-radius: 3px;
+      font-size: 0.875em;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1rem;
+      color: #3b82f6;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <a href="README.md" class="back-link">← Back to Token Documentation</a>
+  
+  <h1>Letter Spacing Tokens</h1>
+  <p class="subtitle">
+    Letter spacing (tracking) values for typography control. These tokens affect 
+    the horizontal space between characters, impacting readability and visual density.
+  </p>
+
+  <section>
+    <h2>Token Reference</h2>
+    
+    <div class="token-grid">
+      <div class="token-card">
+        <div class="token-header">
+          <span class="token-name">Tight</span>
+          <span class="token-value">-0.02em</span>
+        </div>
+        <div class="sample-text">
+          <div class="sample-heading" style="letter-spacing: var(--letter-spacing-tight);">
+            Display Heading
+          </div>
+          <p class="sample-body" style="letter-spacing: var(--letter-spacing-tight);">
+            Tighter letter spacing is typically used for large headings and display text 
+            where the increased font size naturally creates more space between letters. 
+            Reducing the spacing slightly improves visual cohesion.
+          </p>
+        </div>
+        <div class="usage-note">
+          <strong>Best for:</strong> Headings (h1-h3), display text, titles, large UI labels
+        </div>
+      </div>
+
+      <div class="token-card">
+        <div class="token-header">
+          <span class="token-name">Normal</span>
+          <span class="token-value">0</span>
+        </div>
+        <div class="sample-text">
+          <div class="sample-heading" style="letter-spacing: var(--letter-spacing-normal);">
+            Standard Heading
+          </div>
+          <p class="sample-body" style="letter-spacing: var(--letter-spacing-normal);">
+            Normal letter spacing uses the default browser spacing, which is optimized 
+            for most body text and general UI elements. This is the most common setting 
+            and provides good readability for standard font sizes.
+          </p>
+        </div>
+        <div class="usage-note">
+          <strong>Best for:</strong> Body text, paragraphs, default UI components, buttons
+        </div>
+      </div>
+
+      <div class="token-card">
+        <div class="token-header">
+          <span class="token-name">Wide</span>
+          <span class="token-value">0.02em</span>
+        </div>
+        <div class="sample-text">
+          <div class="sample-heading" style="letter-spacing: var(--letter-spacing-wide);">
+            Spacious Heading
+          </div>
+          <p class="sample-body" style="letter-spacing: var(--letter-spacing-wide);">
+            Wider letter spacing improves readability for small text, uppercase text, 
+            and situations where enhanced legibility is needed. The increased spacing 
+            creates a more open, airy feel.
+          </p>
+        </div>
+        <div class="usage-note">
+          <strong>Best for:</strong> Small text, uppercase labels, captions, metadata, accessibility
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Side-by-Side Comparison</h2>
+    
+    <div class="comparison-grid">
+      <div class="comparison-card">
+        <div class="comparison-label">Tight (-0.02em)</div>
+        <div class="comparison-sample" style="letter-spacing: var(--letter-spacing-tight);">
+          HARMONY
+        </div>
+      </div>
+      
+      <div class="comparison-card">
+        <div class="comparison-label">Normal (0)</div>
+        <div class="comparison-sample" style="letter-spacing: var(--letter-spacing-normal);">
+          HARMONY
+        </div>
+      </div>
+      
+      <div class="comparison-card">
+        <div class="comparison-label">Wide (0.02em)</div>
+        <div class="comparison-sample" style="letter-spacing: var(--letter-spacing-wide);">
+          HARMONY
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Usage Examples</h2>
+    
+    <h3>JavaScript</h3>
+    <pre><code>import { LETTER_SPACING } from './tokens/letter-spacing.js';
+
+// Apply to element
+element.style.letterSpacing = LETTER_SPACING.tight;
+
+// Use in Web Component
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = `
+      &lt;style&gt;
+        h1 { letter-spacing: var(--letter-spacing-tight); }
+        p { letter-spacing: var(--letter-spacing-normal); }
+        .caption { letter-spacing: var(--letter-spacing-wide); }
+      &lt;/style&gt;
+    `;
+  }
+}</code></pre>
+
+    <h3>CSS</h3>
+    <pre><code>/* Using CSS variables */
+.heading {
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.body-text {
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+.small-caps {
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: var(--letter-spacing-wide);
+}</code></pre>
+  </section>
+
+  <section>
+    <h2>Design Guidelines</h2>
+    <ul>
+      <li><strong>Tight spacing</strong> works best with larger font sizes (18px+) where natural spacing is already generous</li>
+      <li><strong>Normal spacing</strong> is the default and works for most use cases</li>
+      <li><strong>Wide spacing</strong> improves readability for small text (12px and below) and uppercase text</li>
+      <li>Letter spacing is relative (em units), so it scales proportionally with font size</li>
+      <li>Avoid extreme letter spacing values that compromise readability</li>
+      <li>Consider accessibility: some users benefit from slightly wider letter spacing</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Token Values</h2>
+    <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+      <thead>
+        <tr style="background: var(--color-neutral-100); text-align: left;">
+          <th style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);">Token Name</th>
+          <th style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);">Value</th>
+          <th style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);">CSS Variable</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>LETTER_SPACING.tight</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>-0.02em</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>--letter-spacing-tight</code></td>
+        </tr>
+        <tr style="background: var(--color-neutral-50);">
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>LETTER_SPACING.normal</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>0</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>--letter-spacing-normal</code></td>
+        </tr>
+        <tr>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>LETTER_SPACING.wide</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>0.02em</code></td>
+          <td style="padding: 0.75rem; border: 1px solid var(--color-neutral-200);"><code>--letter-spacing-wide</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>

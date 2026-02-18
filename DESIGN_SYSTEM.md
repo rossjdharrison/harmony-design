@@ -1,313 +1,295 @@
 # Harmony Design System
 
-A complete design system for building audio production interfaces with consistent visual language, accessible components, and performance-first architecture.
+Welcome to the Harmony Design System documentation. This system provides a complete set of design tokens, components, and patterns for building the Harmony DAW interface.
 
 ## Overview
 
-Harmony is a design system built for professional audio applications. It provides design tokens, reusable components, and clear patterns for creating interfaces that are both beautiful and functional.
+Harmony is a modern Digital Audio Workstation (DAW) built with web technologies. The design system ensures consistency, performance, and maintainability across all UI components.
 
+### Core Principles
+
+1. **Performance First**: All components meet strict performance budgets (16ms render, 50MB memory, 200ms load)
+2. **Web Standards**: Built with vanilla JavaScript, Web Components, and Shadow DOM
+3. **Token-Based Design**: All visual properties derive from design tokens
+4. **Accessibility**: WCAG 2.1 AA compliance throughout
+5. **Audio-Optimized**: Specialized components for audio production workflows
+
+## Design Tokens
+
+Design tokens are the foundation of the visual language. They are implemented as JavaScript modules that export both JS constants and CSS custom properties.
 
 ### Typography Tokens
 
-The typography system provides a consistent font size scale for all text elements.
+#### Font Size Scale
+8-step scale providing consistent sizing across all text elements.
 
-**Font Size Scale** (8 steps):
-- `xs` (10px) - Captions, labels, helper text
-- `sm` (12px) - Secondary information, metadata
-- `base` (14px) - Body text, default UI text
-- `md` (16px) - Emphasized body text, small headings
-- `lg` (18px) - Subheadings, card titles
-- `xl` (20px) - Section headings, prominent labels
-- `2xl` (24px) - Page section titles
-- `3xl` (30px) - Page titles, hero text
-
-Each size includes optimized line heights for readability (ratios between 1.27-1.5).
-
-**Files**:
-- Implementation: [tokens/typography.js](tokens/typography.js)
-- Visual Documentation: [docs/tokens/font-size-scale.html](docs/tokens/font-size-scale.html)
-- Tests: [tokens/typography.test.html](tokens/typography.test.html)
-
-**Usage**:
-```javascript
-import { getFontSize, getTextStyle } from './tokens/typography.js';
-
-// Get font size
-const size = getFontSize('xl'); // '20px'
-
-// Get complete text style
-const style = getTextStyle('xl', 'bold');
-// { fontSize: '20px', lineHeight: '28px', fontWeight: '700', letterSpacing: '0' }
-```
-**Key Principles:**
-- **Performance First**: 60fps animations, <16ms render budget, <200ms load time
-- **Accessibility**: WCAG 2.1 AA compliance, keyboard navigation, screen reader support
-- **Consistency**: Unified visual language through design tokens
-- **Modularity**: Atomic design methodology with clear component hierarchy
-
-## Getting Started
-
-### Quick Start
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <link rel="stylesheet" href="styles/tokens.css">
-</head>
-<body>
-  <harmony-button variant="primary">Click Me</harmony-button>
-  <script type="module" src="components/controls/harmony-button.js"></script>
-</body>
-</html>
-```
-
-### Design Tokens
-
-Design tokens are the foundation of the visual design system. They store design decisions as data and ensure consistency across all components.
-
-**Token Categories:**
-- **Colors**: Primary and neutral scales with semantic naming
-- **Typography**: Font families, sizes, weights, and line heights
-- **Spacing**: Consistent spacing scale for layout and components
-- **Elevation**: Shadow tokens for depth and hierarchy
-
-#### Color Tokens
-
-**Primary Scale (50-950)**
-
-The primary color scale provides 11 shades for the main brand color. See [tokens/colors.json](tokens/colors.json).
-
-Usage patterns:
-- **50-200**: Subtle backgrounds, tinted surfaces
-- **400-600**: Interactive elements, buttons, CTAs
-- **700-950**: Text on light backgrounds, emphasis
-
-Example:
-```css
-.button-primary {
-  background: var(--color-primary-500);
-  color: white;
-}
-
-.button-primary:hover {
-  background: var(--color-primary-600);
-}
-```
-
-**Neutral/Gray Scale (50-950)**
-
-The neutral scale provides 11 achromatic shades for surfaces, text, and UI elements. This is the workhorse of the color system, used for establishing visual hierarchy and ensuring proper contrast ratios. See [tokens/colors.json](tokens/colors.json).
-
-Usage patterns:
-- **50-100**: Page and card backgrounds, subtle surfaces
-- **200-300**: Borders, dividers, separator lines
-- **300-400**: Disabled states, inactive elements
-- **400-500**: Placeholder text, secondary icons
-- **500-700**: Secondary and body text
-- **700-800**: Headings, emphasized text
-- **900-950**: Primary text, maximum contrast elements
-
-The neutral scale is designed with accessibility in mind. All text color combinations meet WCAG 2.1 AA contrast requirements:
-- Neutral-900 on Neutral-50: 17.6:1 contrast ratio
-- Neutral-700 on Neutral-50: 9.8:1 contrast ratio
-- Neutral-600 on Neutral-100: 7.2:1 contrast ratio
-
-Example:
-```css
-.card {
-  background: var(--color-neutral-50);
-  border: 1px solid var(--color-neutral-200);
-  color: var(--color-neutral-900);
-}
-
-.card-subtitle {
-  color: var(--color-neutral-600);
-}
-
-.card-disabled {
-  color: var(--color-neutral-400);
-  background: var(--color-neutral-100);
-}
-```
-
-**Visual Token Catalog**
-
-Browse all tokens with live previews: [docs/tokens/token-catalog.html](docs/tokens/token-catalog.html)
-
-### Using Tokens in JavaScript
+- **Implementation**: [`tokens/font-size.js`](tokens/font-size.js)
+- **Documentation**: [`docs/tokens/font-size-scale.html`](docs/tokens/font-size-scale.html)
+- **Values**: xs (10px), sm (12px), base (14px), md (16px), lg (18px), xl (20px), 2xl (24px), 3xl (32px)
 
 ```javascript
-import { getToken } from './core/token-hook.js';
-
-const primaryColor = getToken('color.primary.500');
-const neutralText = getToken('color.neutral.700');
-const neutralBorder = getToken('color.neutral-200');
+import { FONT_SIZE } from './tokens/font-size.js';
+element.style.fontSize = FONT_SIZE.base; // 14px
 ```
 
-See: [core/token-hook.js](core/token-hook.js)
+#### Font Weight
+Standard weight scale for typographic hierarchy.
 
-### Token Provider
-
-The TokenProvider manages theme state and provides tokens to components:
+- **Implementation**: [`tokens/font-weight.js`](tokens/font-weight.js)
+- **Documentation**: [`docs/tokens/font-weight.html`](docs/tokens/font-weight.html)
+- **Values**: regular (400), medium (500), semibold (600), bold (700)
 
 ```javascript
-import './core/token-provider.js';
-
-// TokenProvider automatically loads and provides tokens
-// Components can access via getToken() or CSS custom properties
+import { FONT_WEIGHT } from './tokens/font-weight.js';
+element.style.fontWeight = FONT_WEIGHT.semibold; // 600
 ```
 
-See: [core/token-provider.js](core/token-provider.js)
+#### Line Height
+Vertical rhythm and text readability control.
 
-## Component Architecture
-
-### Atomic Design Hierarchy
-
-Harmony uses atomic design methodology to organize components:
-
-1. **Primitives** (Atoms): Basic building blocks (buttons, inputs, labels)
-2. **Molecules**: Simple component groups (labeled inputs, icon buttons)
-3. **Organisms**: Complex UI sections (navigation bars, forms)
-4. **Templates**: Page-level layouts
-5. **Pages**: Specific implementations
-
-See: [docs/atomic-design-hierarchy.md](docs/atomic-design-hierarchy.md)
-
-### Web Components
-
-All UI components are built as Web Components with shadow DOM:
+- **Implementation**: [`tokens/line-height.js`](tokens/line-height.js)
+- **Documentation**: [`docs/tokens/line-height.html`](docs/tokens/line-height.html)
+- **Values**: tight (1.2), normal (1.5), relaxed (1.8)
 
 ```javascript
-class HarmonyButton extends HTMLElement {
+import { LINE_HEIGHT } from './tokens/line-height.js';
+element.style.lineHeight = LINE_HEIGHT.normal; // 1.5
+```
+
+#### Letter Spacing
+Horizontal spacing between characters (tracking).
+
+- **Implementation**: [`tokens/letter-spacing.js`](tokens/letter-spacing.js)
+- **Documentation**: [`docs/tokens/letter-spacing.html`](docs/tokens/letter-spacing.html)
+- **Values**: tight (-0.02em), normal (0), wide (0.02em)
+
+Letter spacing affects readability and visual density:
+- **Tight**: Use for headings and display text (18px+) where natural spacing is generous
+- **Normal**: Default for most body text and UI elements
+- **Wide**: Improves readability for small text (12px and below) and uppercase labels
+
+```javascript
+import { LETTER_SPACING } from './tokens/letter-spacing.js';
+element.style.letterSpacing = LETTER_SPACING.tight; // -0.02em
+```
+
+**Typography Combination Example**:
+```javascript
+// Heading style
+heading.style.fontSize = FONT_SIZE.xl;
+heading.style.fontWeight = FONT_WEIGHT.bold;
+heading.style.lineHeight = LINE_HEIGHT.tight;
+heading.style.letterSpacing = LETTER_SPACING.tight;
+
+// Body text style
+body.style.fontSize = FONT_SIZE.base;
+body.style.fontWeight = FONT_WEIGHT.regular;
+body.style.lineHeight = LINE_HEIGHT.normal;
+body.style.letterSpacing = LETTER_SPACING.normal;
+
+// Small label style
+label.style.fontSize = FONT_SIZE.sm;
+label.style.fontWeight = FONT_WEIGHT.medium;
+label.style.textTransform = 'uppercase';
+label.style.letterSpacing = LETTER_SPACING.wide;
+```
+
+### Layout Tokens
+
+#### Spacing Scale
+4px base unit system for consistent spacing and sizing.
+
+- **Implementation**: [`tokens/spacing.js`](tokens/spacing.js)
+- **Documentation**: [`docs/tokens/spacing-scale.html`](docs/tokens/spacing-scale.html)
+- **Values**: 0 (0px), 1 (4px), 2 (8px), 3 (12px), 4 (16px), 5 (20px), 6 (24px), 7 (28px), 8 (32px), 9 (36px), 10 (40px), 11 (44px), 12 (48px)
+
+```javascript
+import { SPACING } from './tokens/spacing.js';
+element.style.padding = SPACING[4]; // 16px
+element.style.gap = SPACING[2]; // 8px
+```
+
+### Color Tokens
+
+#### Accent Colors
+Semantic colors for interactive elements and feedback.
+
+- **Implementation**: [`tokens/accent-colors.js`](tokens/accent-colors.js)
+- **Documentation**: [`docs/tokens/accent-colors.html`](docs/tokens/accent-colors.html)
+- **Colors**: blue (primary actions), green (success), red (danger/error), yellow (warning)
+
+```javascript
+import { ACCENT_COLORS } from './tokens/accent-colors.js';
+button.style.backgroundColor = ACCENT_COLORS.blue[500];
+```
+
+#### Alpha Transparency
+Overlay and transparency variants for layering and depth.
+
+- **Implementation**: [`tokens/alpha-transparency.js`](tokens/alpha-transparency.js)
+- **Documentation**: [`docs/tokens/alpha-transparency.html`](docs/tokens/alpha-transparency.html)
+- **Values**: Opacity levels from 0% to 90% in 10% increments
+
+```javascript
+import { ALPHA } from './tokens/alpha-transparency.js';
+overlay.style.backgroundColor = `rgb(0 0 0 / ${ALPHA[50]})`; // 50% opacity
+```
+
+### Token Usage Patterns
+
+All tokens follow consistent patterns:
+
+1. **Auto-injection**: Tokens automatically create CSS variables when imported
+2. **Dual access**: Use via JavaScript constants or CSS custom properties
+3. **Shadow DOM ready**: Tokens work in both document and shadow roots
+4. **Type-safe**: Full JSDoc annotations for IDE support
+
+```javascript
+// Pattern 1: JavaScript access
+import { FONT_SIZE } from './tokens/font-size.js';
+element.style.fontSize = FONT_SIZE.base;
+
+// Pattern 2: CSS variables
+element.style.fontSize = 'var(--font-size-base)';
+
+// Pattern 3: Shadow DOM
+class MyComponent extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-  }
-  
-  connectedCallback() {
-    this.render();
-  }
-  
-  render() {
     this.shadowRoot.innerHTML = `
       <style>
-        button {
-          background: var(--color-primary-500);
-          color: white;
-          border: none;
-          padding: 0.5rem 1rem;
-          border-radius: 4px;
+        :host {
+          font-size: var(--font-size-base);
+          letter-spacing: var(--letter-spacing-normal);
         }
       </style>
-      <button><slot></slot></button>
     `;
   }
 }
-
-customElements.define('harmony-button', HarmonyButton);
 ```
+
+## Components
+
+Components are organized by atomic design principles:
+
+- **Primitives**: Basic building blocks (buttons, inputs, labels)
+- **Molecules**: Simple combinations (labeled inputs, icon buttons)
+- **Organisms**: Complex UI sections (transport bar, mixer channel)
+- **Templates**: Page-level layouts (project view, mixer view)
+
+All components:
+- Use Shadow DOM for encapsulation
+- Publish events via EventBus (never call bounded contexts directly)
+- Follow performance budgets
+- Include comprehensive JSDoc documentation
+
+### Component Development
+
+See individual component directories for implementation details:
+- [`components/controls/`](components/controls/) - Form controls and inputs
+- [`components/composites/`](components/composites/) - Multi-part components
+- [`components/organisms/`](components/organisms/) - Complex UI sections
+
+## Architecture
 
 ### Event-Driven Communication
 
-Components communicate through the EventBus, never calling bounded contexts directly:
+Components communicate through the EventBus:
 
 ```javascript
 // Component publishes event
-this.dispatchEvent(new CustomEvent('harmony-action', {
+this.dispatchEvent(new CustomEvent('harmony:play-clicked', {
   bubbles: true,
   composed: true,
-  detail: { action: 'play', trackId: '123' }
+  detail: { timestamp: Date.now() }
 }));
 
-// EventBus routes to appropriate bounded context
-// Bounded context processes and publishes result
+// Bounded context subscribes
+eventBus.subscribe('harmony:play-clicked', (event) => {
+  // Handle playback logic
+});
 ```
 
-See: [core/event-bus.js](core/event-bus.js)
+### Bounded Contexts
 
-## Token Transformation Pipeline
+Core logic is implemented in Rust/WASM bounded contexts:
+- Audio processing
+- State management
+- Graph engine
+- Project serialization
 
-Tokens are transformed from source JSON to multiple output formats:
+UI components remain in vanilla JavaScript for optimal DOM performance.
 
-1. **Source**: DTCG-format JSON in `tokens/` directory
-2. **Build**: Style Dictionary transforms tokens
-3. **Output**: CSS custom properties, TypeScript declarations, documentation
+### Performance Budgets
 
-Run the build:
-```bash
-node scripts/build-tokens.js
-```
+All code must meet these constraints:
+- **Render**: 16ms per frame (60fps)
+- **Memory**: 50MB WASM heap maximum
+- **Load**: 200ms initial load time
+- **Audio Latency**: 10ms end-to-end
 
-See: [scripts/build-tokens.js](scripts/build-tokens.js)
+## Development Workflow
 
-## Development Tools
+### Adding New Tokens
 
-### Token Catalog
+1. Create token module in `tokens/`
+2. Create documentation in `docs/tokens/`
+3. Update this file with token reference
+4. Test in Chrome with real components
+5. Commit with descriptive message
 
-Interactive visual catalog of all design tokens:
-- [docs/tokens/token-catalog.html](docs/tokens/token-catalog.html)
+### Creating Components
 
-### Token-Component Matrix
+1. Choose appropriate atomic level
+2. Implement with Shadow DOM
+3. Use design tokens exclusively
+4. Add JSDoc documentation
+5. Create test page
+6. Verify in Chrome (all states: default, hover, focus, active, disabled)
+7. Update this documentation
 
-Documentation showing which components use which tokens:
-- [docs/tokens/token-component-matrix.js](docs/tokens/token-component-matrix.js)
+### Testing Requirements
+
+- All UI components must be tested in Chrome before completion
+- Verify all interactive states (hover, focus, active, disabled)
+- Check performance with DevTools (60fps target)
+- Test with EventBus debugger (Ctrl+Shift+E)
+
+## Tools and Debugging
 
 ### EventBus Debugger
+Available on every page via Ctrl+Shift+E. Shows:
+- All published events
+- Event payload inspection
+- Subscriber information
+- Validation errors
 
-Real-time event monitoring (Ctrl+Shift+E):
-- [components/event-bus-debugger.js](components/event-bus-debugger.js)
+### Token Inspector
+Import tokens in browser console for live inspection:
+```javascript
+import('./tokens/font-size.js').then(m => console.table(m.FONT_SIZE));
+```
 
-### Color Contrast Validator
+## Related Documentation
 
-Validates WCAG contrast ratios:
-- [components/color-contrast-validator.js](components/color-contrast-validator.js)
-
-## Performance Requirements
-
-All components must meet these budgets:
-
-- **Render Budget**: 16ms per frame (60fps)
-- **Memory Budget**: 50MB WASM heap maximum
-- **Load Budget**: 200ms initial load time
-- **Audio Latency**: 10ms end-to-end maximum
-
-## Testing Requirements
-
-All UI components must be tested in Chrome before completion:
-- Default, hover, focus, active, disabled states
-- Error states, loading states, empty states
-- 60fps animation performance (Chrome DevTools Performance panel)
-
-## Architecture Decisions
-
-### Technology Choices
-
-- **UI Layer**: Vanilla HTML/CSS/JavaScript with Web Components
-- **Core Logic**: Rust compiled to WASM for bounded contexts
-- **Build Tools**: Node.js/npm for development only (no runtime dependencies)
-- **Desktop Wrapper**: Tauri (not Electron)
-
-### No Runtime Dependencies
-
-The system uses zero npm packages in production. All runtime code is vanilla JavaScript to ensure:
-- Minimal bundle size
-- Maximum performance
-- Long-term stability
-- No dependency vulnerabilities
-
-## Documentation
-
-This file (DESIGN_SYSTEM.md) is the single source of truth for system documentation. Code files contain minimal comments with references back to relevant sections here.
+- **Token Reference**: [`docs/tokens/README.md`](docs/tokens/README.md)
+- **Architecture Diagrams**: [`docs/atomic-design-diagram.md`](docs/atomic-design-diagram.md)
+- **Component Schemas**: [`core/validation/component-schemas.js`](core/validation/component-schemas.js)
 
 ## Contributing
 
-When implementing new features:
+When modifying the design system:
 
-1. Define tokens first in `tokens/` directory
-2. Build components using those tokens
-3. Test all states in Chrome
-4. Update this documentation
-5. Ensure all quality gates pass
+1. Follow existing patterns and conventions
+2. Update documentation (non-optional)
+3. Test thoroughly in Chrome
+4. Ensure performance budgets are met
+5. Commit generated code with schema changes
+6. Push changes before starting new tasks
 
-See individual component files for implementation details.
+---
+
+**Version**: 1.0  
+**Last Updated**: 2025-01-15  
+**Maintainer**: Harmony Design System Team

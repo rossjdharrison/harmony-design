@@ -4,70 +4,58 @@ This directory contains interactive documentation for all design tokens in the H
 
 ## Available Token Categories
 
-### Typography Tokens
-- **[Font Size Scale](./font-size-scale.html)** - 8-step scale from xs (10px) to 3xl (32px)
-- **[Font Weight](./font-weight.html)** - 4 weights: regular (400), medium (500), semibold (600), bold (700)
+### Typography
+- **[Font Size Scale](font-size-scale.html)** - 8-step scale from xs (10px) to 3xl (32px)
+- **[Font Weight](font-weight.html)** - regular (400), medium (500), semibold (600), bold (700)
+- **[Line Height](line-height.html)** - tight (1.2), normal (1.5), relaxed (1.8)
+- **[Letter Spacing](letter-spacing.html)** - tight (-0.02em), normal (0), wide (0.02em)
 
-### Color Tokens
-- **[Primary Colors](./accent-colors.html)** - Primary brand color scale (50-950)
-- **[Accent Colors](./accent-colors.html)** - Blue, green, red, yellow accent palettes
-- **[Alpha Transparency](./alpha-transparency.html)** - Transparency variants for overlay effects
+### Layout
+- **[Spacing Scale](spacing-scale.html)** - 4px base unit with 13 steps (0-12)
 
-### Spacing Tokens
-- **[Spacing Scale](./spacing-scale.html)** - 4px base unit scale (0-12 steps)
+### Color
+- **[Accent Colors](accent-colors.html)** - Blue, green, red, yellow semantic colors
+- **[Alpha Transparency](alpha-transparency.html)** - Overlay and transparency variants
 
-## Token Catalog
+## Token Structure
 
-The **[Token Catalog](./token-catalog.html)** provides a comprehensive overview of all tokens with visual previews and usage examples.
+All tokens follow these principles:
 
-## Using These Tokens
+1. **JavaScript Modules**: Tokens are exported as ES6 modules from `/tokens/`
+2. **CSS Variables**: Each token automatically generates CSS custom properties
+3. **Type Safety**: JSDoc annotations provide IDE autocomplete and type checking
+4. **Auto-Apply**: Tokens automatically inject CSS variables when imported
+5. **Shadow DOM Support**: Tokens work in both document and shadow roots
 
-All tokens are defined as CSS custom properties in the `styles/` directory:
-
-- `styles/tokens-font-size.css` - Font size tokens
-- `styles/tokens-font-weight.css` - Font weight tokens
-- `styles/tokens-colors.css` - Color tokens
-- `styles/tokens-spacing.css` - Spacing tokens
-
-### Basic Usage
-
-```css
-/* In your component styles */
-.my-component {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-primary-600);
-  padding: var(--spacing-4);
-}
-```
-
-### Web Components
+## Usage Pattern
 
 ```javascript
-class MyComponent extends HTMLElement {
-  connectedCallback() {
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          font-size: var(--font-size-md);
-          font-weight: var(--font-weight-regular);
-          color: var(--color-neutral-900);
-        }
-      </style>
-      <div>Content</div>
-    `;
-  }
-}
+// Import tokens
+import { FONT_SIZE } from './tokens/font-size.js';
+import { LETTER_SPACING } from './tokens/letter-spacing.js';
+
+// Use in JavaScript
+element.style.fontSize = FONT_SIZE.base;
+element.style.letterSpacing = LETTER_SPACING.normal;
+
+// Or use CSS variables
+element.style.cssText = `
+  font-size: var(--font-size-base);
+  letter-spacing: var(--letter-spacing-normal);
+`;
 ```
 
-## Design Principles
+## Design System Integration
 
-1. **Consistency** - Tokens ensure consistent design across all components
-2. **Maintainability** - Change once, update everywhere
-3. **Accessibility** - Tokens are chosen with WCAG guidelines in mind
-4. **Performance** - CSS custom properties enable efficient theming
+These tokens are the foundation of the Harmony Design System. They ensure:
+
+- **Consistency**: All components use the same visual language
+- **Maintainability**: Changes propagate automatically through the system
+- **Performance**: Tokens are lightweight and optimized for runtime use
+- **Developer Experience**: Strong typing and documentation at every level
 
 ## Related Documentation
 
-- [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) - Complete design system documentation
-- [Token-Component Matrix](./token-component-matrix.js) - Maps which components use which tokens
+- [Main Design System Documentation](../../DESIGN_SYSTEM.md)
+- [Token Implementation Guide](../../DESIGN_SYSTEM.md#design-tokens)
+- [Component Usage Examples](../../DESIGN_SYSTEM.md#components)
