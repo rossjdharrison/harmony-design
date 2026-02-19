@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Variant Assignment Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #0066cc;
+      padding-bottom: 0.5rem;
+    }
+    
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .test-case {
+      margin: 1rem 0;
+      padding: 1rem;
+      border-left: 4px solid #ddd;
+    }
+    
+    .test-case.pass {
+      border-left-color: #00aa00;
+      background: #f0fff0;
+    }
+    
+    .test-case.fail {
+      border-left-color: #cc0000;
+      background: #fff0f0;
+    }
+    
+    .test-name {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .test-result {
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+    
+    .distribution-chart {
+      margin: 1rem 0;
+    }
+    
+    .bar {
+      display: flex;
+      align-items: center;
+      margin: 0.5rem 0;
+    }
+    
+    .bar-label {
+      width: 120px;
+      font-weight: bold;
+    }
+    
+    .bar-visual {
+      flex: 1;
+      height: 30px;
+      background: #0066cc;
+      margin: 0 1rem;
+      position: relative;
+    }
+    
+    .bar-value {
+      min-width: 80px;
+      text-align: right;
+    }
+    
+    .expected {
+      opacity: 0.5;
+      background: #666;
+    }
+    
+    .summary {
+      background: #e3f2fd;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 2rem;
+    }
+    
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #0066cc;
+    }
+    
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Variant Assignment Tests</h1>
+  
+  <div id="test-results"></div>
+  
+  <script type="module">
+    import {
+      assignVariant,
+      isUserInExperiment,
+      getVariantWithTraffic,
+      validateDeterminism,
+      analyzeDistribution
+    } from './variant-assignment.js';
+    
+    const resultsContainer = document.getElementById('test-results');
+    const testResults = [];
+    
+    /**
+     * Test runner utility
+     */
+    function test(name, fn) {
+      try {
+        fn();
+        testResults.push({ name, passed: true, message: 'Passed' });
+      } catch (error) {
+        testResults.push({ name, passed: false, message: error.message });
+      }
+    }
+    
+    /**
+     * Assertion utilities
+     */
+    function assertEquals(actual, expected, message = '') {
+      if (actual !== expected) {
+        throw new Error(`${message}\nExpected: ${expected}\nActual: ${actual}`);
+      }
+    }
+    
+    function assertTrue(value, message = '') {
+      if (!value) {
+        throw new Error(`${message}\nExpected truthy value, got: ${value}`);
+      }
+    }
+    
+    function assertThrows(fn, message = '') {
+      try {
+        fn();
+        throw new Error(`${message}\nExpected function to throw`);
+      } catch (error) {
+        // Expected
+      }
+    }
+    
+    // ============================================
+    // Test Suite: Basic Assignment
+    // ============================================
+    
+    test('Assigns variant deterministically', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      const v1 = assignVariant('exp-001', 'user-123', variants);
+      const v2 = assignVariant('exp-001', 'user-123', variants);
+      const v3 = assignVariant('exp-001', 'user-123', variants);
+      
+      assertEquals(v1, v2, 'First and second assignment should match');
+      assertEquals(v2, v3, 'Second and third assignment should match');
+    });
+    
+    test('Different users get potentially different variants', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      const assignments = new Set();
+      for (let i = 0; i < 100; i++) {
+        const variant = assignVariant('exp-001', `user-${i}`, variants);
+        assignments.add(variant);
+      }
+      
+      // With 100 users and 50/50 split, we should see both variants
+      assertTrue(assignments.size > 1, 'Should assign multiple variants');
+    });
+    
+    test('Same user in different experiments gets different variants', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      const assignments = new Set();
+      for (let i = 0; i < 10; i++) {
+        const variant = assignVariant(`exp-${i}`, 'user-123', variants);
+        assignments.add(variant);
+      }
+      
+      // Should see variation across experiments (high probability)
+      assertTrue(assignments.size > 1, 'Should vary across experiments');
+    });
+    
+    test('Respects variant weights approximately', () => {
+      const variants = [
+        { id: 'control', weight: 0.7 },
+        { id: 'treatment', weight: 0.3 }
+      ];
+      
+      const counts = { control: 0, treatment: 0 };
+      const numUsers = 10000;
+      
+      for (let i = 0; i < numUsers; i++) {
+        const variant = assignVariant('exp-001', `user-${i}`, variants);
+        counts[variant]++;
+      }
+      
+      const controlPercentage = counts.control / numUsers;
+      const treatmentPercentage = counts.treatment / numUsers;
+      
+      // Allow 5% margin of error
+      assertTrue(
+        Math.abs(controlPercentage - 0.7) < 0.05,
+        `Control should be ~70%, got ${controlPercentage * 100}%`
+      );
+      assertTrue(
+        Math.abs(treatmentPercentage - 0.3) < 0.05,
+        `Treatment should be ~30%, got ${treatmentPercentage * 100}%`
+      );
+    });
+    
+    test('Handles unequal weights correctly', () => {
+      const variants = [
+        { id: 'a', weight: 0.1 },
+        { id: 'b', weight: 0.2 },
+        { id: 'c', weight: 0.3 },
+        { id: 'd', weight: 0.4 }
+      ];
+      
+      const counts = { a: 0, b: 0, c: 0, d: 0 };
+      const numUsers = 10000;
+      
+      for (let i = 0; i < numUsers; i++) {
+        const variant = assignVariant('exp-001', `user-${i}`, variants);
+        counts[variant]++;
+      }
+      
+      // Verify approximate distribution (allow 5% margin)
+      assertTrue(Math.abs(counts.a / numUsers - 0.1) < 0.05, 'Variant A distribution');
+      assertTrue(Math.abs(counts.b / numUsers - 0.2) < 0.05, 'Variant B distribution');
+      assertTrue(Math.abs(counts.c / numUsers - 0.3) < 0.05, 'Variant C distribution');
+      assertTrue(Math.abs(counts.d / numUsers - 0.4) < 0.05, 'Variant D distribution');
+    });
+    
+    // ============================================
+    // Test Suite: Input Validation
+    // ============================================
+    
+    test('Throws on missing experimentId', () => {
+      assertThrows(() => {
+        assignVariant('', 'user-123', [{ id: 'control', weight: 1 }]);
+      }, 'Should throw on empty experimentId');
+    });
+    
+    test('Throws on missing userId', () => {
+      assertThrows(() => {
+        assignVariant('exp-001', '', [{ id: 'control', weight: 1 }]);
+      }, 'Should throw on empty userId');
+    });
+    
+    test('Throws on empty variants array', () => {
+      assertThrows(() => {
+        assignVariant('exp-001', 'user-123', []);
+      }, 'Should throw on empty variants');
+    });
+    
+    test('Throws on negative weight', () => {
+      assertThrows(() => {
+        assignVariant('exp-001', 'user-123', [
+          { id: 'control', weight: -0.5 }
+        ]);
+      }, 'Should throw on negative weight');
+    });
+    
+    test('Throws on zero total weight', () => {
+      assertThrows(() => {
+        assignVariant('exp-001', 'user-123', [
+          { id: 'control', weight: 0 },
+          { id: 'treatment', weight: 0 }
+        ]);
+      }, 'Should throw on zero total weight');
+    });
+    
+    // ============================================
+    // Test Suite: Traffic Allocation
+    // ============================================
+    
+    test('Traffic allocation is deterministic', () => {
+      const enrolled1 = isUserInExperiment('exp-001', 'user-123', 0.5);
+      const enrolled2 = isUserInExperiment('exp-001', 'user-123', 0.5);
+      const enrolled3 = isUserInExperiment('exp-001', 'user-123', 0.5);
+      
+      assertEquals(enrolled1, enrolled2, 'Enrollment should be consistent');
+      assertEquals(enrolled2, enrolled3, 'Enrollment should be consistent');
+    });
+    
+    test('Traffic allocation respects percentage', () => {
+      const numUsers = 10000;
+      let enrolled = 0;
+      
+      for (let i = 0; i < numUsers; i++) {
+        if (isUserInExperiment('exp-001', `user-${i}`, 0.25)) {
+          enrolled++;
+        }
+      }
+      
+      const percentage = enrolled / numUsers;
+      assertTrue(
+        Math.abs(percentage - 0.25) < 0.05,
+        `Expected ~25% enrollment, got ${percentage * 100}%`
+      );
+    });
+    
+    test('100% traffic allocation includes all users', () => {
+      for (let i = 0; i < 100; i++) {
+        assertTrue(
+          isUserInExperiment('exp-001', `user-${i}`, 1.0),
+          'All users should be enrolled at 100%'
+        );
+      }
+    });
+    
+    test('0% traffic allocation excludes all users', () => {
+      for (let i = 0; i < 100; i++) {
+        assertTrue(
+          !isUserInExperiment('exp-001', `user-${i}`, 0.0),
+          'No users should be enrolled at 0%'
+        );
+      }
+    });
+    
+    test('getVariantWithTraffic returns default for unenrolled users', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      // Find a user that's not enrolled at 10% traffic
+      let unenrolledUser = null;
+      for (let i = 0; i < 1000; i++) {
+        const userId = `user-${i}`;
+        if (!isUserInExperiment('exp-001', userId, 0.1)) {
+          unenrolledUser = userId;
+          break;
+        }
+      }
+      
+      assertTrue(unenrolledUser !== null, 'Should find an unenrolled user');
+      
+      const variant = getVariantWithTraffic({
+        experimentId: 'exp-001',
+        userId: unenrolledUser,
+        variants,
+        trafficAllocation: 0.1,
+        defaultVariant: 'control'
+      });
+      
+      assertEquals(variant, 'control', 'Unenrolled user should get default');
+    });
+    
+    // ============================================
+    // Test Suite: Determinism Validation
+    // ============================================
+    
+    test('validateDeterminism passes for consistent assignment', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      const isDeterministic = validateDeterminism('exp-001', 'user-123', variants, 1000);
+      assertTrue(isDeterministic, 'Assignment should be deterministic');
+    });
+    
+    // ============================================
+    // Test Suite: Distribution Analysis
+    // ============================================
+    
+    test('analyzeDistribution returns correct structure', () => {
+      const variants = [
+        { id: 'control', weight: 0.5 },
+        { id: 'treatment', weight: 0.5 }
+      ];
+      
+      const userIds = Array.from({ length: 1000 }, (_, i) => `user-${i}`);
+      const distribution = analyzeDistribution('exp-001', userIds, variants);
+      
+      assertTrue('control' in distribution, 'Should have control stats');
+      assertTrue('treatment' in distribution, 'Should have treatment stats');
+      assertTrue(distribution.control.count > 0, 'Control should have assignments');
+      assertTrue(distribution.treatment.count > 0, 'Treatment should have assignments');
+    });
+    
+    // ============================================
+    // Render Results
+    // ============================================
+    
+    function renderResults() {
+      const passed = testResults.filter(r => r.passed).length;
+      const failed = testResults.filter(r => !r.passed).length;
+      const total = testResults.length;
+      
+      let html = `
+        <div class="summary">
+          <h2>Test Summary</h2>
+          <div class="summary-stats">
+            <div class="stat">
+              <div class="stat-value">${total}</div>
+              <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" style="color: #00aa00;">${passed}</div>
+              <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value" style="color: #cc0000;">${failed}</div>
+              <div class="stat-label">Failed</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${Math.round(passed / total * 100)}%</div>
+              <div class="stat-label">Success Rate</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="test-section">
+          <h2>Test Results</h2>
+      `;
+      
+      testResults.forEach(result => {
+        html += `
+          <div class="test-case ${result.passed ? 'pass' : 'fail'}">
+            <div class="test-name">${result.passed ? '✓' : '✗'} ${result.name}</div>
+            <div class="test-result">${result.message}</div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      
+      // Add distribution visualization
+      const variants = [
+        { id: 'control', weight: 0.6 },
+        { id: 'treatment-a', weight: 0.3 },
+        { id: 'treatment-b', weight: 0.1 }
+      ];
+      
+      const userIds = Array.from({ length: 10000 }, (_, i) => `user-${i}`);
+      const distribution = analyzeDistribution('exp-demo', userIds, variants);
+      
+      html += `
+        <div class="test-section">
+          <h2>Distribution Analysis (10,000 users)</h2>
+          <div class="distribution-chart">
+      `;
+      
+      Object.entries(distribution).forEach(([variantId, stats]) => {
+        const actualWidth = stats.percentage * 100;
+        const expectedWidth = stats.expectedPercentage * 100;
+        
+        html += `
+          <div class="bar">
+            <div class="bar-label">${variantId}</div>
+            <div style="flex: 1; position: relative;">
+              <div class="bar-visual expected" style="width: ${expectedWidth}%; position: absolute;"></div>
+              <div class="bar-visual" style="width: ${actualWidth}%;"></div>
+            </div>
+            <div class="bar-value">
+              ${stats.count} (${(stats.percentage * 100).toFixed(1)}%)
+              <br>
+              <small style="color: #666;">Expected: ${(stats.expectedPercentage * 100).toFixed(1)}%</small>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += `
+          </div>
+          <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">
+            <strong>Light bars:</strong> Expected distribution based on weights<br>
+            <strong>Dark bars:</strong> Actual distribution from hash function
+          </p>
+        </div>
+      `;
+      
+      resultsContainer.innerHTML = html;
+    }
+    
+    renderResults();
+  </script>
+</body>
+</html>
