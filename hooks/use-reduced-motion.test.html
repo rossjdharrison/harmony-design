@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useReducedMotion Hook Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-weight: 600;
+    }
+
+    .status.enabled {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status.disabled {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .animated-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      margin: 20px 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .animated-box.no-motion {
+      transition: none;
+    }
+
+    .animated-box:hover {
+      transform: scale(1.1) rotate(5deg);
+      opacity: 0.8;
+    }
+
+    .animated-box.no-motion:hover {
+      transform: none;
+      opacity: 1;
+    }
+
+    .log {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 10px 0;
+    }
+
+    .log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #667eea;
+      padding-left: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    .info-box {
+      background: #e7f3ff;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      border-left: 4px solid #2196f3;
+    }
+
+    .test-result {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-left: 10px;
+      font-weight: 600;
+    }
+
+    .test-result.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .test-result.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 useReducedMotion Hook Test</h1>
+
+  <div class="info-box">
+    <strong>Testing Instructions:</strong>
+    <ol>
+      <li>Open Chrome DevTools (F12)</li>
+      <li>Press Ctrl+Shift+P (Cmd+Shift+P on Mac)</li>
+      <li>Type "Emulate CSS prefers-reduced-motion"</li>
+      <li>Toggle between "reduce" and "no-preference"</li>
+      <li>Observe the status and animated box behavior change</li>
+    </ol>
+  </div>
+
+  <div class="test-section">
+    <h2>Current Motion Preference</h2>
+    <div id="status" class="status">Loading...</div>
+    <p>Media Query: <code>(prefers-reduced-motion: reduce)</code></p>
+  </div>
+
+  <div class="test-section">
+    <h2>Visual Test: Animated Box</h2>
+    <p>Hover over the box to test animation behavior:</p>
+    <div id="animatedBox" class="animated-box"></div>
+    <p id="boxStatus">Animation status: Loading...</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Subscription Test</h2>
+    <p>Change your motion preference to see real-time updates:</p>
+    <div id="log" class="log">
+      <div class="log-entry">Waiting for preference changes...</div>
+    </div>
+    <button id="clearLog">Clear Log</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Helper Functions Test</h2>
+    <button id="testDuration">Test getAnimationDuration()</button>
+    <button id="testApplyClass">Test applyConditionalAnimation()</button>
+    <div id="helperResults"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Automated Tests</h2>
+    <button id="runTests">Run All Tests</button>
+    <div id="testResults"></div>
+  </div>
+
+  <script type="module">
+    import { 
+      useReducedMotion, 
+      getGlobalReducedMotion,
+      getAnimationDuration,
+      applyConditionalAnimation
+    } from './use-reduced-motion.js';
+
+    // Initialize hook
+    const motionHook = useReducedMotion();
+    let changeCount = 0;
+
+    // Update status display
+    function updateStatus() {
+      const statusEl = document.getElementById('status');
+      const prefersReduced = motionHook.prefersReducedMotion;
+      
+      statusEl.textContent = prefersReduced 
+        ? '⚠️ Reduced Motion ENABLED - Animations should be minimal'
+        : '✅ Normal Motion - Animations enabled';
+      
+      statusEl.className = `status ${prefersReduced ? 'enabled' : 'disabled'}`;
+    }
+
+    // Update animated box
+    function updateAnimatedBox() {
+      const box = document.getElementById('animatedBox');
+      const boxStatus = document.getElementById('boxStatus');
+      const prefersReduced = motionHook.prefersReducedMotion;
+
+      if (prefersReduced) {
+        box.classList.add('no-motion');
+        boxStatus.textContent = '⚠️ Animation disabled - hover will have no effect';
+      } else {
+        box.classList.remove('no-motion');
+        boxStatus.textContent = '✅ Animation enabled - hover to see effect';
+      }
+    }
+
+    // Add log entry
+    function addLogEntry(message) {
+      const log = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      log.insertBefore(entry, log.firstChild);
+    }
+
+    // Subscribe to changes
+    const unsubscribe = motionHook.subscribe((prefersReduced) => {
+      changeCount++;
+      addLogEntry(`Motion preference changed to: ${prefersReduced ? 'REDUCED' : 'NORMAL'} (change #${changeCount})`);
+      updateStatus();
+      updateAnimatedBox();
+    });
+
+    // Initial update
+    updateStatus();
+    updateAnimatedBox();
+    addLogEntry(`Initial preference: ${motionHook.prefersReducedMotion ? 'REDUCED' : 'NORMAL'}`);
+
+    // Clear log button
+    document.getElementById('clearLog').addEventListener('click', () => {
+      document.getElementById('log').innerHTML = '<div class="log-entry">Log cleared</div>';
+    });
+
+    // Test helper functions
+    document.getElementById('testDuration').addEventListener('click', () => {
+      const duration = getAnimationDuration(300, 50);
+      const resultsEl = document.getElementById('helperResults');
+      resultsEl.innerHTML = `
+        <div class="log-entry">
+          getAnimationDuration(300, 50) returned: ${duration}ms<br>
+          Expected: ${motionHook.prefersReducedMotion ? '50ms' : '300ms'}
+          <span class="test-result ${duration === (motionHook.prefersReducedMotion ? 50 : 300) ? 'pass' : 'fail'}">
+            ${duration === (motionHook.prefersReducedMotion ? 50 : 300) ? 'PASS' : 'FAIL'}
+          </span>
+        </div>
+      `;
+    });
+
+    document.getElementById('testApplyClass').addEventListener('click', () => {
+      const testDiv = document.createElement('div');
+      applyConditionalAnimation(testDiv, 'animated', 'instant');
+      
+      const hasAnimated = testDiv.classList.contains('animated');
+      const hasInstant = testDiv.classList.contains('instant');
+      const expected = motionHook.prefersReducedMotion ? 'instant' : 'animated';
+      const actual = hasAnimated ? 'animated' : (hasInstant ? 'instant' : 'none');
+      
+      const resultsEl = document.getElementById('helperResults');
+      resultsEl.innerHTML = `
+        <div class="log-entry">
+          applyConditionalAnimation() applied class: ${actual}<br>
+          Expected: ${expected}
+          <span class="test-result ${actual === expected ? 'pass' : 'fail'}">
+            ${actual === expected ? 'PASS' : 'FAIL'}
+          </span>
+        </div>
+      `;
+    });
+
+    // Automated tests
+    document.getElementById('runTests').addEventListener('click', () => {
+      const resultsEl = document.getElementById('testResults');
+      const results = [];
+
+      // Test 1: Hook returns object with required properties
+      const test1 = typeof motionHook === 'object' && 
+                    'prefersReducedMotion' in motionHook &&
+                    'subscribe' in motionHook &&
+                    'cleanup' in motionHook;
+      results.push(`Test 1: Hook API structure <span class="test-result ${test1 ? 'pass' : 'fail'}">${test1 ? 'PASS' : 'FAIL'}</span>`);
+
+      // Test 2: prefersReducedMotion is boolean
+      const test2 = typeof motionHook.prefersReducedMotion === 'boolean';
+      results.push(`Test 2: prefersReducedMotion is boolean <span class="test-result ${test2 ? 'pass' : 'fail'}">${test2 ? 'PASS' : 'FAIL'}</span>`);
+
+      // Test 3: subscribe is function
+      const test3 = typeof motionHook.subscribe === 'function';
+      results.push(`Test 3: subscribe is function <span class="test-result ${test3 ? 'pass' : 'fail'}">${test3 ? 'PASS' : 'FAIL'}</span>`);
+
+      // Test 4: Global instance works
+      const globalInstance = getGlobalReducedMotion();
+      const test4 = globalInstance && typeof globalInstance.prefersReducedMotion === 'boolean';
+      results.push(`Test 4: Global instance works <span class="test-result ${test4 ? 'pass' : 'fail'}">${test4 ? 'PASS' : 'FAIL'}</span>`);
+
+      // Test 5: getAnimationDuration returns number
+      const duration = getAnimationDuration(300, 50);
+      const test5 = typeof duration === 'number' && (duration === 300 || duration === 50);
+      results.push(`Test 5: getAnimationDuration returns valid number <span class="test-result ${test5 ? 'pass' : 'fail'}">${test5 ? 'PASS' : 'FAIL'}</span>`);
+
+      // Test 6: Subscribe returns unsubscribe function
+      const unsub = motionHook.subscribe(() => {});
+      const test6 = typeof unsub === 'function';
+      unsub(); // Clean up
+      results.push(`Test 6: subscribe returns function <span class="test-result ${test6 ? 'pass' : 'fail'}">${test6 ? 'PASS' : 'FAIL'}</span>`);
+
+      resultsEl.innerHTML = `
+        <div class="log" style="max-height: none;">
+          ${results.map(r => `<div class="log-entry">${r}</div>`).join('')}
+        </div>
+      `;
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      unsubscribe();
+      motionHook.cleanup();
+    });
+
+    console.log('✅ useReducedMotion hook test page loaded');
+    console.log('Current preference:', motionHook.prefersReducedMotion);
+  </script>
+</body>
+</html>
