@@ -1,666 +1,268 @@
 # Harmony Design System
 
-A complete design system for building audio production interfaces with consistent, accessible components.
+This document describes the Harmony Design System architecture, implementation patterns, and usage guidelines.
 
-## Quick Start
+## Table of Contents
 
-### Development Environment
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Design Tokens](#design-tokens)
+4. [Primitives](#primitives)
+5. [Components](#components)
+6. [Event System](#event-system)
+7. [Performance](#performance)
+8. [Accessibility](#accessibility)
+9. [Testing](#testing)
 
-The Harmony Design System provides a Docker-based development environment for consistent builds across all platforms.
+## Overview
 
-**Prerequisites:**
-- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
-- Git
+Harmony is a design system built for high-performance audio applications. It uses vanilla JavaScript, Web Components, and design tokens to create a consistent, accessible user interface.
 
-**Setup:**
+### Key Principles
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd harmony-design
+- **Performance First**: 60fps animations, <16ms frame budget
+- **Accessibility**: WCAG 2.1 AA compliant
+- **No Dependencies**: Pure vanilla JavaScript, no frameworks
+- **Web Standards**: Web Components with Shadow DOM
+- **Design Tokens**: Centralized theming system
 
-# Build the development container
-./scripts/docker-dev.sh build        # Linux/Mac
-.\scripts\docker-dev.ps1 build       # Windows
+## Architecture
 
-# Start the development environment
-./scripts/docker-dev.sh start        # Linux/Mac
-.\scripts\docker-dev.ps1 start       # Windows
+### Technology Stack
 
-# Open a shell in the container
-./scripts/docker-dev.sh shell        # Linux/Mac
-.\scripts\docker-dev.ps1 shell       # Windows
-```
+- **UI Layer**: Vanilla JavaScript + Web Components
+- **Styling**: CSS with design tokens
+- **State**: EventBus pattern for component communication
+- **Backend**: Rust → WASM for audio processing
 
-**What's Included:**
-- Rust toolchain with wasm-pack for WASM compilation
-- Node.js 20.x LTS (build tools only, not runtime)
-- Python 3.11 (test servers and build scripts only)
-- Chrome (for UI component testing per policy #10)
-- All system dependencies pre-configured
-
-**Common Commands:**
-
-```bash
-# Build WASM modules
-./scripts/docker-dev.sh build-wasm
-
-# Run Rust tests
-./scripts/docker-dev.sh test
-
-# Run Chrome UI tests
-./scripts/docker-dev.sh test-chrome
-
-# Clean build artifacts
-./scripts/docker-dev.sh clean
-
-# View logs
-./scripts/docker-dev.sh logs
-```
-
-**Volume Mounts:**
-- Project files are mounted at `/workspace` for live development
-- Cargo cache is persisted for faster rebuilds
-- Target directory is cached between container restarts
-
-See [Dockerfile](./Dockerfile) and [docker-compose.yml](./docker-compose.yml) for configuration details.
-
-### Manual Setup (Without Docker)
-
-If you prefer not to use Docker, install these tools manually:
-
-1. **Rust** (1.70+): Install from [rustup.rs](https://rustup.rs)
-2. **wasm-pack**: Install with `cargo install wasm-pack`
-3. **Node.js** (20.x LTS): For build tools only
-4. **Python** (3.11+): For test servers only
-5. **Chrome**: Required for UI component testing
-
-## Architecture Overview
-
-Harmony uses a layered architecture:
-
-**Core Layer (Rust → WASM):**
-- Bounded contexts: Component lifecycle, state management
-- Graph engine: Audio processing graph
-- Schemas: Type definitions and validation
-
-**UI Layer (Vanilla JS/HTML/CSS):**
-- Web Components with Shadow DOM
-- Event-driven communication via EventBus
-- Token-based theming system
-
-**Key Principles:**
-1. **No Runtime Dependencies**: Zero npm packages in production code
-2. **No Frameworks**: Pure Web Components, no React/Vue/Leptos
-3. **Event-Driven**: UI publishes events, bounded contexts handle logic
-4. **Performance First**: 16ms render budget, 10ms audio latency
-
-See [Architecture Decisions](./docs/architecture-decisions.md) for detailed rationale.
-
-## Component Hierarchy
-
-Harmony follows Atomic Design principles:
-
-**Primitives** (Atoms):
-- Basic controls: buttons, sliders, toggles
-- Pure presentation, minimal logic
-- Example: [harmony-toggle](./controls/harmony-toggle/harmony-toggle.js)
-
-**Molecules**:
-- Composed from primitives
-- Single responsibility
-- Example: [harmony-fader](./components/controls/harmony-fader.js)
-
-**Organisms**:
-- Complex, feature-complete components
-- Example: [transport-bar](./components/composites/transport-bar/transport-bar.js)
-
-**Templates**:
-- Page-level layouts
-- Combine organisms into workflows
-
-See [Atomic Design Hierarchy](./docs/atomic-design-hierarchy.md) for the complete component tree.
-
-## Token System
-
-Design tokens define the visual language of Harmony:
-
-**Token Categories:**
-- **Primitive Tokens**: Raw values (colors, spacing, typography)
-- **Semantic Tokens**: Context-aware mappings (primary-color, spacing-medium)
-- **Component Tokens**: Component-specific overrides
-
-**Usage:**
-
-```javascript
-import { TokenProvider } from './core/token-provider.js';
-
-// Access tokens in JavaScript
-const provider = new TokenProvider();
-const primaryColor = provider.getToken('color-primary');
-
-// Tokens are available as CSS custom properties
-// See styles/tokens.css
-```
-
-**Files:**
-- [Primitive Tokens](./styles/tokens.css)
-- [Dark Theme](./styles/theme-dark.css)
-- [Light Theme](./styles/theme-light.css)
-- [Token Provider](./core/token-provider.js)
-
-## Event System
-
-All communication happens through the EventBus:
-
-**Pattern:**
-1. UI component publishes event
-2. EventBus validates and routes
-3. Bounded context handles command
-4. Bounded context publishes result
-5. UI subscribes to result
-
-**Example:**
-
-```javascript
-import { EventBus } from './core/event-bus.js';
-
-// Publish command
-EventBus.publish('transport.play', { timestamp: Date.now() });
-
-// Subscribe to result
-EventBus.subscribe('playback.started', (data) => {
-  console.log('Playback started:', data);
-});
-```
-
-**Debugging:**
-- EventBusComponent is available on every page (Ctrl+Shift+E)
-- All events are logged with context
-- Validation failures include detailed error messages
-
-See [Event Bus](./core/event-bus.js) and [Event Schemas](./core/validation/event-schemas.js).
-
-## Development Workflow
-
-### 1. Schema Changes
-
-When changing Rust behavior:
-
-```bash
-# 1. Navigate to schemas
-cd harmony-schemas
-
-# 2. Modify schema definition
-vim src/component_lifecycle.rs
-
-# 3. Run codegen
-cargo build
-
-# 4. Verify compilation
-cargo test
-
-# 5. Commit schema AND generated code together
-git add .
-git commit -m "feat: update component lifecycle schema"
-```
-
-**Important**: CI fails if schema changed but generated code is stale (policy #6).
-
-### 2. UI Component Development
-
-```bash
-# 1. Create component file
-touch components/controls/my-component.js
-
-# 2. Implement with Shadow DOM
-# See existing components for patterns
-
-# 3. Create test file
-touch components/controls/my-component.test.html
-
-# 4. Test in Chrome (MANDATORY per policy #10)
-# Verify ALL states: default, hover, focus, active, disabled
-
-# 5. Update documentation
-vim DESIGN_SYSTEM.md
-```
-
-### 3. WASM Module Development
-
-```bash
-# 1. Modify Rust code in bounded-contexts/
-vim bounded-contexts/component-lifecycle/src/lib.rs
-
-# 2. Build WASM
-cd bounded-contexts/component-lifecycle
-wasm-pack build --target web
-
-# 3. Test in browser
-# Import from pkg/ directory
-```
-
-## Performance Budgets
-
-All code must meet these targets:
-
-**Render Performance:**
-- Maximum 16ms per frame (60fps)
-- GPU-accelerated animations where possible
-- Use Chrome DevTools Performance panel to verify
-
-**Memory:**
-- Maximum 50MB WASM heap
-- Monitor with Chrome Task Manager
-
-**Load Time:**
-- Maximum 200ms initial load
-- Lazy-load non-critical components
-
-**Audio Latency:**
-- Maximum 10ms end-to-end
-- WebGPU + WASM dual implementation required
-
-See [Performance Budget](./docs/performance/performance-budget.md) and [Memoization Strategy](./docs/performance/memoization-strategy.md).
-
-## Testing
-
-### Unit Tests (Rust)
-
-```bash
-cd harmony-schemas
-cargo test
-```
-
-### Integration Tests (JavaScript)
-
-Open test HTML files in Chrome:
-- [harmony-toggle.test.html](./controls/harmony-toggle/harmony-toggle.test.html)
-- [harmony-fader.test.html](./components/controls/harmony-fader.test.html)
-- [transport-bar.test.html](./components/composites/transport-bar/transport-bar.test.html)
-
-### Performance Tests
-
-Use Chrome DevTools:
-1. Open Performance panel
-2. Record interaction
-3. Verify 60fps (no frames over 16ms)
-4. Check memory usage
-
-## CI/CD
-
-GitHub Actions runs on every PR:
-
-**Quality Gates:**
-1. Rust tests (`cargo test`)
-2. WASM build (`wasm-pack build`)
-3. Bundle size check (enforces performance budget)
-4. Lint and format checks
-
-**Preview Deployments:**
-- Vercel deploys preview on every PR
-- Test components in production-like environment
-
-See [CI Build Pipeline](./.github/workflows/ci-build.yml) and [Bundle Size Check](./.github/workflows/bundle-size-check.yml).
-
-## Contributing
-
-1. Create feature branch from `main`
-2. Implement changes following policies
-3. Test in Chrome (UI components)
-4. Update DESIGN_SYSTEM.md (MANDATORY per policy #19)
-5. Commit with conventional commits format
-6. Push to remote (MANDATORY per policy #20)
-7. Open PR
-
-**Blocked Tasks:**
-If you cannot complete a task, create a report in `reports/blocked/{task_id}.md` (policy #18).
-
-## File Organization
+### File Structure
 
 ```
 harmony-design/
-├── bounded-contexts/     # Rust bounded contexts (WASM)
-├── components/           # UI components (Web Components)
-├── controls/             # Primitive controls
-├── core/                 # Core utilities (EventBus, TokenProvider)
-├── docs/                 # Technical documentation
-├── scripts/              # Build and dev scripts
-├── styles/               # CSS tokens and themes
-├── tests/                # Test files
-├── Dockerfile            # Development environment
-├── docker-compose.yml    # Container orchestration
-└── DESIGN_SYSTEM.md      # This file
+├── primitives/          # Atomic UI components
+│   ├── spinner/        # Loading indicators
+│   ├── icon/           # Icon wrapper
+│   ├── text/           # Text component
+│   └── ...
+├── components/         # Composite components
+├── tokens/            # Design tokens
+├── core/              # Core utilities
+└── DESIGN_SYSTEM.md   # This file
 ```
 
-## Key Policies
+## Design Tokens
 
-These rules apply to every task:
+Design tokens provide a centralized theming system. All components consume tokens via CSS custom properties.
 
-1. **No Runtime Dependencies**: npm packages for build tools only
-2. **No Frameworks**: Pure Web Components
-3. **Event-Driven**: UI publishes, BCs handle
-4. **Chrome Testing**: All UI components tested in Chrome
-5. **Documentation**: DESIGN_SYSTEM.md updated with every task
-6. **Git Push**: Changes pushed before new tasks
-7. **Performance**: Meet render/memory/load budgets
-8. **Schema-First**: Codegen from schemas, don't edit Rust directly
+### Token Categories
 
-See full policy list in task documentation.
+- **Colors**: `--color-primary`, `--color-border-subtle`
+- **Spacing**: `--spacing-sm`, `--spacing-md`, `--spacing-lg`
+- **Typography**: `--font-size-body`, `--font-weight-bold`
+- **Elevation**: `--shadow-sm`, `--shadow-md`
 
-## Support
+## Primitives
 
-- **Documentation**: This file and [docs/](./docs/)
-- **Code Examples**: See existing components
-- **Debugging**: EventBusComponent (Ctrl+Shift+E)
-- **Issues**: Check [reports/blocked/](./reports/blocked/)
+Primitives are atomic UI components that cannot be broken down further.
 
----
+### Spinner
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-01-15
-## Storybook Configuration
+Loading indicator with size variants.
 
-The Harmony Design System uses Storybook 8 for component development, documentation, and testing.
-
-### Setup
-
-Storybook is configured in the .storybook/ directory with:
-
-- **Vite Builder**: Fast HMR and optimized production builds
-- **Dark Mode**: Theme switching via `@storybook/addon-themes`
-- **Accessibility Testing**: Automated checks with axe-playwright
-- **Web Components**: Native support for custom elements
-
-### Quick Start
-
-```bash
-# Start Storybook dev server
-npm run storybook
-
-# Build static Storybook
-npm run build-storybook
-
-# Run accessibility tests
-npm run test-storybook
-```
-
-### Writing Stories
-
-Stories follow this pattern:
-
-```javascript
-// components/my-component/my-component.stories.js
-export default {
-  title: 'Components/MyComponent',
-  tags: ['autodocs'],
-};
-
-export const Default = () => {
-  const element = document.createElement('my-component');
-  return element;
-};
-```
-
-### Theme Support
-
-Storybook provides automatic theme switching between light and dark modes. Components should use CSS variables for theming:
-
-- `--color-background`: Main background color
-- `--color-surface`: Surface/card background
-- `--color-text`: Primary text color
-- `--color-text-secondary`: Secondary text color
-- `--color-border`: Border color
-- `--color-primary`: Primary brand color
-- `--color-primary-hover`: Primary hover state
-
-Example usage:
-
-```javascript
-button.style.backgroundColor = 'var(--color-primary)';
-button.style.color = 'white';
-```
-
-### Accessibility Testing
-
-All stories are automatically tested for WCAG 2.1 AA compliance. The a11y addon checks:
-
-- Color contrast ratios
-- ARIA attributes
-- Keyboard navigation
-- Focus management
-- Semantic HTML
-
-To disable a11y testing for a specific story:
-
-```javascript
-MyStory.parameters = {
-  a11y: {
-    disable: true,
-  },
-};
-```
-
-### Performance Targets
-
-Storybook configuration follows Harmony performance budgets:
-
-- Dev server start: <3s
-- HMR update: <100ms
-- Story render: <16ms (60fps target)
-- Production build: <30s
-
-### Configuration Files
-
-- [.storybook/main.js](../.storybook/main.js): Main configuration
-- [.storybook/preview.js](../.storybook/preview.js): Preview decorators and parameters
-- [.storybook/manager.js](../.storybook/manager.js): Manager UI customization
-- [.storybook/vite.config.js](../.storybook/vite.config.js): Vite build configuration
-- [.storybook/preview-head.html](../.storybook/preview-head.html): Custom preview HTML
-- [.storybook/test-runner.js](../.storybook/test-runner.js): Test runner configuration
-
-### Example Stories
-
-See [.storybook/example.stories.js](../.storybook/example.stories.js) for a complete example demonstrating theme support and accessibility best practices.
-
-
-## Storybook Configuration
-
-### Overview
-
-Harmony Design System uses Storybook 8 for component development, documentation, and testing. The configuration includes Vite builder for fast development and dark mode support for theme testing.
-
-**Location**: .storybook/
-
-### Key Features
-
-1. **Storybook 8**: Latest version with improved performance and developer experience
-2. **Vite Builder**: Fast Hot Module Replacement (HMR) and optimized builds
-3. **Dark Mode**: Theme switching support via \ddon-themes\
-4. **Accessibility Testing**: Built-in a11y checks with \ddon-a11y\
-5. **Web Components Support**: Native custom element rendering
-6. **Interactive Controls**: Live editing of component props
-7. **Responsive Viewports**: Test components at mobile, tablet, and desktop sizes
-
-### Configuration Files
-
-- **main.js**: Main configuration (stories, addons, framework setup)
-- **preview.js**: Preview environment (decorators, parameters, theme support)
-- **manager.js**: Storybook UI customization (theme, branding)
-- **vite.config.js**: Custom Vite configuration for optimal Web Components support
-- **preview-head.html**: Global HTML resources (fonts, meta tags, CSS variables)
-
-### Running Storybook
-
-\\\ash
-# Start development server
-cd .storybook
-npm run storybook
-
-# Build static version
-npm run build-storybook
-\\\
-
-Storybook runs at http://localhost:6006
-
-### Writing Stories
-
-Stories are co-located with components:
-
-\\\
-components/my-component/
-  my-component.js          # Component implementation
-  my-component.stories.js  # Storybook stories
-  my-component.test.html   # Browser tests
-\\\
-
-**Example story structure**:
-
-\\\javascript
-export default {
-  title: 'Components/MyComponent',
-  tags: ['autodocs']
-};
-
-export const Default = {
-  render: (args) => createMyComponent(args),
-  args: { prop: 'value' }
-};
-\\\
-
-### Dark Mode Support
-
-Components should use CSS custom properties for theme support:
-
-\\\css
-.my-component {
-  background: var(--color-background);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-\\\
-
-Toggle theme using toolbar in Storybook UI. Themes are defined in \preview-head.html\:
-
-- **Light theme**: \:root\ (default)
-- **Dark theme**: \.theme-dark\ class
-
-### Addons
-
-Installed addons provide rich development features:
-
-- **essentials**: Controls, actions, viewport, docs, toolbars
-- **links**: Navigate between related stories
-- **interactions**: Test user interactions and component behavior
-- **a11y**: Automated accessibility testing (WCAG compliance)
-- **themes**: Dark/light mode switching
-- **styling**: CSS and styling utilities
-
-### Performance Considerations
-
-Storybook configuration follows Harmony performance budgets:
-
-1. **Fast HMR**: Vite builder provides sub-100ms updates
-2. **Selective Optimization**: Only build tools are pre-bundled
-3. **No Runtime Dependencies**: Stories use vanilla JS (no npm imports in component code)
-4. **Lazy Loading**: Stories load on-demand
-
-### Integration Points
-
-Storybook integrates with Harmony architecture:
-
-- **Design Tokens**: Loads from \	okens/design-tokens.css\
-- **Global Styles**: Imports from \styles/global.css\
-- **Web Components**: Native shadow DOM support
-- **EventBus**: Available for interactive stories (use \../core/event-bus.js\)
-- **Quality Gates**: Stories can be tested in CI pipeline
-
-### Best Practices
-
-1. **Co-locate Stories**: Keep \.stories.js\ files next to component implementation
-2. **Use Autodocs**: Tag stories with \'autodocs'\ for automatic documentation
-3. **Test All States**: Create stories for default, hover, focus, disabled, error states
-4. **Accessibility**: Use a11y addon to catch issues early
-5. **Responsive Testing**: Test components in mobile, tablet, desktop viewports
-6. **Performance**: Monitor render times using browser DevTools (target: 16ms)
-
-### Example Story
-
-See \.storybook/example.stories.js\ for a complete example demonstrating:
-
-- Multiple story variants (Primary, Success, Warning, Error)
-- Interactive controls with argTypes
-- Dark mode support
-- Proper documentation
-
-### Troubleshooting
-
-**Stories not loading**: Check story paths in \main.js\ match your file structure
-
-**Dark mode not working**: Ensure CSS custom properties are defined and components use them
-
-**Slow performance**: Check \ite.config.js\ - exclude source files from optimization
-
-### Related Files
-
-- Configuration: [.storybook/main.js](.storybook/main.js)
-- Preview: [.storybook/preview.js](.storybook/preview.js)
-- Theme: [.storybook/manager.js](.storybook/manager.js)
-- Example: [.storybook/example.stories.js](.storybook/example.stories.js)
-- README: [.storybook/README.md](.storybook/README.md)
-
-
-
-### Divider Atom
-
-**Purpose**: Visual separator between content sections with configurable orientation, thickness, and spacing.
-
-**Location**: `primitives/harmony-divider.js`
+**File**: [primitives/spinner/harmony-spinner.js](primitives/spinner/harmony-spinner.js)
 
 **Usage**:
 ```html
-<!-- Basic horizontal divider -->
-<harmony-divider></harmony-divider>
-
-<!-- Vertical divider -->
-<harmony-divider orientation="vertical"></harmony-divider>
-
-<!-- Custom thickness and spacing -->
-<harmony-divider thickness="2" spacing="large"></harmony-divider>
-
-<!-- Custom color -->
-<harmony-divider color="#2196f3" thickness="2"></harmony-divider>
+<harmony-spinner size="medium"></harmony-spinner>
 ```
 
-**Attributes**:
-- `orientation`: "horizontal" (default) or "vertical"
-- `thickness`: Line thickness in pixels (default: 1)
-- `spacing`: "none", "small", "medium" (default), or "large"
-- `color`: CSS color value (default: uses --color-border-default token)
+**Sizes**: `small` (16px), `medium` (32px), `large` (48px)
 
-**CSS Custom Properties**:
-- `--divider-color`: Override divider color
-- `--divider-thickness`: Override thickness
-- `--divider-spacing-block`: Vertical spacing
-- `--divider-spacing-inline`: Horizontal spacing
+**Performance**: GPU-accelerated CSS animations, 60fps target
 
-**Spacing Presets**:
-- none: 0px
-- small: 8px
-- medium: 16px
-- large: 24px
+**Accessibility**: Includes `role="status"` and `aria-label`
 
-**Performance**:
-- Render time: <1ms per instance
-- Memory: ~2KB per instance
-- Suitable for many instances on a page
+See [primitives/spinner/README.md](primitives/spinner/README.md) for details.
 
-**Accessibility**:
-- Uses `role="separator"` for screen readers
-- Includes `aria-orientation` attribute
-- Does not interfere with keyboard navigation
+### Icon
 
-**Testing**: See `primitives/harmony-divider.test.html` for all states and configurations.
+SVG icon wrapper with size and color variants.
 
-**Related**: Works with all layout components, pairs well with Surface and Text atoms for visual hierarchy.
+**File**: [primitives/icon/harmony-icon.js](primitives/icon/harmony-icon.js)
 
+**Usage**:
+```html
+<harmony-icon name="play" size="medium"></harmony-icon>
+```
+
+### Text
+
+Styled text component with semantic variants.
+
+**File**: [primitives/text/harmony-text.js](primitives/text/harmony-text.js)
+
+**Usage**:
+```html
+<harmony-text variant="heading">Title</harmony-text>
+```
+
+### Surface
+
+Background container with elevation levels.
+
+**File**: [primitives/surface/harmony-surface.js](primitives/surface/harmony-surface.js)
+
+### Divider
+
+Horizontal/vertical separator with thickness variants.
+
+**File**: [primitives/divider/harmony-divider.js](primitives/divider/harmony-divider.js)
+
+### Badge
+
+Small status indicator with color variants.
+
+**File**: [primitives/badge/harmony-badge.js](primitives/badge/harmony-badge.js)
+
+### Tooltip
+
+Floating hint with arrow and placement options.
+
+**File**: [primitives/tooltip/harmony-tooltip.js](primitives/tooltip/harmony-tooltip.js)
+
+## Components
+
+Components are composite elements built from primitives.
+
+### Pattern: Event-Driven Communication
+
+Components publish events instead of calling bounded contexts directly:
+
+```javascript
+// Component publishes event
+this.dispatchEvent(new CustomEvent('action-requested', {
+  bubbles: true,
+  composed: true,
+  detail: { action: 'play' }
+}));
+```
+
+EventBus routes events to appropriate handlers.
+
+## Event System
+
+### EventBus Pattern
+
+The EventBus provides centralized event routing and debugging.
+
+**File**: [core/event-bus.js](core/event-bus.js)
+
+### Component Events
+
+All components follow this pattern:
+
+1. User interaction triggers event
+2. Component dispatches custom event
+3. EventBus routes to subscribers
+4. Bounded context handles logic
+5. Result event updates UI
+
+## Performance
+
+### Budgets
+
+- **Render**: <16ms per frame (60fps)
+- **Memory**: <50MB WASM heap
+- **Load**: <200ms initial load
+
+### Optimization Techniques
+
+- CSS `contain` for layout optimization
+- `will-change` for animation hints
+- Shadow DOM for style encapsulation
+- GPU-accelerated transforms
+
+### Monitoring
+
+Use Chrome DevTools Performance panel to verify:
+
+1. Frame rate stays at 60fps
+2. No long tasks >50ms
+3. Memory usage within budget
+
+## Accessibility
+
+### Requirements
+
+- WCAG 2.1 Level AA compliance
+- Keyboard navigation support
+- Screen reader compatibility
+- Reduced motion support
+
+### Implementation
+
+All components include:
+
+- Proper ARIA attributes (`role`, `aria-label`, `aria-live`)
+- Keyboard event handlers
+- Focus management
+- `prefers-reduced-motion` media query support
+
+## Testing
+
+### Browser Testing
+
+All components must be tested in Chrome before completion:
+
+1. Visual appearance matches design
+2. All states work (default, hover, focus, active, disabled)
+3. Animations run at 60fps
+4. Events dispatch correctly
+5. Accessibility features work
+
+### Test Pages
+
+Each component includes a `.test.html` file demonstrating:
+
+- All variants and states
+- Performance monitoring
+- Event logging
+- Dynamic controls
+- Accessibility features
+
+### Performance Testing
+
+Open Chrome DevTools > Performance:
+
+1. Start recording
+2. Interact with component
+3. Stop recording
+4. Verify no frames exceed 16ms budget
+
+## Contributing
+
+### Adding New Components
+
+1. Create component directory in `primitives/` or `components/`
+2. Implement Web Component with Shadow DOM
+3. Add JSDoc documentation
+4. Create test page
+5. Test in Chrome (all states, 60fps)
+6. Update this document
+
+### Code Style
+
+- Use JSDoc comments for all public APIs
+- Follow EventBus pattern for communication
+- Include performance budgets in comments
+- Add accessibility attributes
+- Use design tokens for styling
+
+### Documentation
+
+This file (DESIGN_SYSTEM.md) is the single source of truth. Code files contain minimal comments that reference relevant sections here.
+
+---
+
+**Last Updated**: 2025-01-XX  
+**Version**: 1.0.0

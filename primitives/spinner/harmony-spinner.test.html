@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Spinner - Test Page</title>
+  <style>
+    :root {
+      --color-border-subtle: #e0e0e0;
+      --color-primary: #0066cc;
+      --spacing-md: 16px;
+      --spacing-lg: 24px;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: var(--spacing-lg);
+      background: #fafafa;
+      color: #333;
+    }
+
+    .test-section {
+      background: white;
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: var(--color-primary);
+    }
+
+    .spinner-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-md);
+    }
+
+    .spinner-demo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-md);
+      padding: var(--spacing-md);
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+
+    .spinner-demo label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .inline-demo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: var(--spacing-md);
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .background-variants {
+      display: flex;
+      gap: var(--spacing-lg);
+      margin-top: var(--spacing-md);
+    }
+
+    .bg-variant {
+      padding: var(--spacing-lg);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--spacing-md);
+      flex: 1;
+    }
+
+    .bg-light {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+    }
+
+    .bg-dark {
+      background: #2c3e50;
+      color: white;
+    }
+
+    .bg-dark harmony-spinner {
+      --color-border-subtle: #4a5f7f;
+      --color-primary: #5dade2;
+    }
+
+    .performance-stats {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      background: #f0f0f0;
+      padding: 8px;
+      border-radius: 4px;
+      margin-top: var(--spacing-md);
+    }
+
+    #event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #f5f5f5;
+      padding: var(--spacing-md);
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .log-entry {
+      margin-bottom: 4px;
+      padding: 4px;
+      border-left: 3px solid var(--color-primary);
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔄 Harmony Spinner - Test Page</h1>
+
+  <div class="test-section">
+    <h2>Size Variants</h2>
+    <div class="spinner-grid">
+      <div class="spinner-demo">
+        <label>Small (16px)</label>
+        <harmony-spinner size="small" aria-label="Small loading spinner"></harmony-spinner>
+      </div>
+      <div class="spinner-demo">
+        <label>Medium (32px) - Default</label>
+        <harmony-spinner size="medium" aria-label="Medium loading spinner"></harmony-spinner>
+      </div>
+      <div class="spinner-demo">
+        <label>Large (48px)</label>
+        <harmony-spinner size="large" aria-label="Large loading spinner"></harmony-spinner>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Inline Usage</h2>
+    <div class="inline-demo">
+      <harmony-spinner size="small"></harmony-spinner>
+      <span>Loading your content...</span>
+    </div>
+    <div class="inline-demo">
+      <harmony-spinner size="medium"></harmony-spinner>
+      <span>Processing request...</span>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Background Variants</h2>
+    <div class="background-variants">
+      <div class="bg-variant bg-light">
+        <label>Light Background</label>
+        <harmony-spinner size="medium"></harmony-spinner>
+      </div>
+      <div class="bg-variant bg-dark">
+        <label>Dark Background</label>
+        <harmony-spinner size="medium"></harmony-spinner>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Accessibility</h2>
+    <p>All spinners have proper ARIA attributes:</p>
+    <ul>
+      <li><code>role="status"</code> - Indicates loading state</li>
+      <li><code>aria-label</code> - Provides screen reader description</li>
+      <li><code>aria-live="polite"</code> - Announces changes without interrupting</li>
+    </ul>
+    <harmony-spinner size="medium" aria-label="Custom loading message for screen readers"></harmony-spinner>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Monitoring</h2>
+    <div class="performance-stats" id="performance-stats">
+      <div>FPS: <span id="fps">--</span></div>
+      <div>Animation Frame Time: <span id="frame-time">--</span>ms</div>
+      <div>Memory: <span id="memory">--</span>MB</div>
+    </div>
+    <p><small>Open Chrome DevTools > Performance to verify 60fps animation</small></p>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div id="event-log"></div>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Dynamic Control</h2>
+    <button onclick="toggleSize()">Toggle Size</button>
+    <button onclick="addSpinner()">Add Spinner</button>
+    <button onclick="removeSpinner()">Remove Spinner</button>
+    <div id="dynamic-container" style="margin-top: 16px; display: flex; gap: 16px; flex-wrap: wrap;"></div>
+  </div>
+
+  <script type="module">
+    import { HarmonySpinner } from './harmony-spinner.js';
+
+    // Event logging
+    const eventLog = document.getElementById('event-log');
+    
+    function logEvent(message) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 20 entries
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Listen for spinner mounted events
+    document.addEventListener('spinner-mounted', (e) => {
+      logEvent(`Spinner mounted: size=${e.detail.size}, timestamp=${e.detail.timestamp.toFixed(2)}ms`);
+    });
+
+    // Performance monitoring
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let fps = 0;
+
+    function updatePerformance() {
+      frameCount++;
+      const currentTime = performance.now();
+      const elapsed = currentTime - lastTime;
+
+      if (elapsed >= 1000) {
+        fps = Math.round((frameCount * 1000) / elapsed);
+        document.getElementById('fps').textContent = fps;
+        
+        const frameTime = (elapsed / frameCount).toFixed(2);
+        document.getElementById('frame-time').textContent = frameTime;
+        
+        // Check if frame time exceeds 16ms budget
+        if (parseFloat(frameTime) > 16) {
+          document.getElementById('frame-time').style.color = 'red';
+        } else {
+          document.getElementById('frame-time').style.color = 'green';
+        }
+
+        frameCount = 0;
+        lastTime = currentTime;
+      }
+
+      // Memory monitoring (if available)
+      if (performance.memory) {
+        const memoryMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+        document.getElementById('memory').textContent = memoryMB;
+        
+        // Check if memory exceeds 50MB budget
+        if (parseFloat(memoryMB) > 50) {
+          document.getElementById('memory').style.color = 'red';
+        } else {
+          document.getElementById('memory').style.color = 'green';
+        }
+      }
+
+      requestAnimationFrame(updatePerformance);
+    }
+
+    updatePerformance();
+
+    // Dynamic controls
+    let currentSize = 'medium';
+    const sizes = ['small', 'medium', 'large'];
+    
+    window.toggleSize = () => {
+      const currentIndex = sizes.indexOf(currentSize);
+      currentSize = sizes[(currentIndex + 1) % sizes.length];
+      
+      const spinners = document.querySelectorAll('#dynamic-container harmony-spinner');
+      spinners.forEach(spinner => {
+        spinner.size = currentSize;
+      });
+      
+      logEvent(`Size changed to: ${currentSize}`);
+    };
+
+    window.addSpinner = () => {
+      const container = document.getElementById('dynamic-container');
+      const spinner = document.createElement('harmony-spinner');
+      spinner.size = currentSize;
+      spinner.setAttribute('aria-label', `Dynamic spinner ${container.children.length + 1}`);
+      container.appendChild(spinner);
+      
+      logEvent(`Spinner added (total: ${container.children.length})`);
+    };
+
+    window.removeSpinner = () => {
+      const container = document.getElementById('dynamic-container');
+      if (container.lastChild) {
+        container.removeChild(container.lastChild);
+        logEvent(`Spinner removed (total: ${container.children.length})`);
+      }
+    };
+
+    window.clearLog = () => {
+      eventLog.innerHTML = '';
+      logEvent('Log cleared');
+    };
+
+    // Initial log
+    logEvent('Test page loaded successfully');
+  </script>
+</body>
+</html>
