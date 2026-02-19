@@ -170,6 +170,7 @@ jobs:
           const DOM_APIS = /\bdocument\b|\bwindow\b|\bHTMLElement\b|\bcustomElements\b|\bnavigator\.(?!userAgent)/;
 
           console.log(`Found ${tests.length} test file(s)`);
+          const TEST_TIMEOUT_MS = 10_000; // 10 s per test — hangs are a test bug, not a CI bug
           let passed = 0, failed = 0, skipped = 0;
           for (const t of tests) {
             const src = fs.readFileSync(t, 'utf8');
@@ -179,11 +180,15 @@ jobs:
               continue;
             }
             try {
-              execSync(`node "${t}"`, { stdio: 'inherit' });
+              execSync(`node "${t}"`, { stdio: 'inherit', timeout: TEST_TIMEOUT_MS });
               console.log('PASS', t);
               passed++;
-            } catch {
-              console.error('FAIL', t);
+            } catch (err) {
+              if (err.killed) {
+                console.error(`TIMEOUT (>${TEST_TIMEOUT_MS / 1000}s)`, t);
+              } else {
+                console.error('FAIL', t);
+              }
               failed++;
             }
           }
