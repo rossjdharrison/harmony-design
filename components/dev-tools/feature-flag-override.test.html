@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Flag Override - Test</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f5;
+    }
+
+    .test-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .test-section {
+      margin: 24px 0;
+      padding: 16px;
+      background: #f9f9f9;
+      border-radius: 4px;
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #555;
+    }
+
+    button {
+      padding: 8px 16px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    button:hover {
+      background: #005a9e;
+    }
+
+    .flag-status {
+      margin: 12px 0;
+      padding: 12px;
+      background: white;
+      border-left: 4px solid #007acc;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+    }
+
+    .flag-status.enabled {
+      border-left-color: #28a745;
+    }
+
+    .flag-status.disabled {
+      border-left-color: #dc3545;
+    }
+
+    .info {
+      background: #e7f3ff;
+      padding: 12px;
+      border-radius: 4px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: #004085;
+    }
+
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', 'Monaco', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <h1>🚩 Feature Flag Override - Test Page</h1>
+    
+    <div class="info">
+      Press <code>Ctrl+Shift+F</code> to toggle the Feature Flag Override toolbar.
+      The toolbar appears on the right side of the screen.
+    </div>
+
+    <div class="test-section">
+      <h2>Controls</h2>
+      <button id="show-btn">Show Toolbar</button>
+      <button id="hide-btn">Hide Toolbar</button>
+      <button id="toggle-btn">Toggle Toolbar</button>
+    </div>
+
+    <div class="test-section">
+      <h2>Test Flags</h2>
+      <button id="register-flags-btn">Register Test Flags</button>
+      <button id="check-flags-btn">Check Flag Status</button>
+      <div id="flag-status"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Mock FeatureFlagContext</h2>
+      <p>This test page includes a mock FeatureFlagContext to simulate the real implementation.</p>
+      <div id="context-info"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Expected Behavior</h2>
+      <ul>
+        <li>Toolbar should slide in from the right when shown</li>
+        <li>Flags should be listed with current status (ON/OFF)</li>
+        <li>Clicking toggle button should change flag state</li>
+        <li>Overridden flags should be highlighted in blue</li>
+        <li>Reset button should restore default value</li>
+        <li>Search should filter flags by name or description</li>
+        <li>Overrides should persist in localStorage</li>
+        <li>Keyboard shortcut Ctrl+Shift+F should toggle toolbar</li>
+      </ul>
+    </div>
+
+    <div class="test-section">
+      <h2>Performance Validation</h2>
+      <ul>
+        <li>✓ No framework dependencies (vanilla Web Component)</li>
+        <li>✓ Uses shadow DOM for encapsulation</li>
+        <li>✓ CSS transitions for smooth animations</li>
+        <li>✓ Event delegation for efficient event handling</li>
+        <li>✓ localStorage for persistence (no network calls)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Mock FeatureFlagContext -->
+  <script>
+    /**
+     * Mock FeatureFlagContext for testing
+     */
+    window.FeatureFlagContext = {
+      _flags: new Map(),
+
+      registerFlag(name, enabled, description, environment) {
+        this._flags.set(name, { name, enabled, description, environment });
+        
+        // Dispatch registration event
+        window.dispatchEvent(new CustomEvent('featureflag:registered', {
+          detail: { name, enabled, description, environment }
+        }));
+      },
+
+      getAllFlags() {
+        return Array.from(this._flags.values());
+      },
+
+      getFlag(name) {
+        return this._flags.get(name);
+      }
+    };
+
+    // Register some test flags
+    function registerTestFlags() {
+      window.FeatureFlagContext.registerFlag(
+        'new-audio-engine',
+        true,
+        'Enable the new WebGPU-accelerated audio engine',
+        'development'
+      );
+
+      window.FeatureFlagContext.registerFlag(
+        'experimental-ui',
+        false,
+        'Enable experimental UI components',
+        'development'
+      );
+
+      window.FeatureFlagContext.registerFlag(
+        'advanced-editing',
+        true,
+        'Enable advanced editing features',
+        'staging'
+      );
+
+      window.FeatureFlagContext.registerFlag(
+        'collaboration',
+        false,
+        'Enable real-time collaboration features',
+        'production'
+      );
+
+      window.FeatureFlagContext.registerFlag(
+        'ai-assistant',
+        false,
+        'Enable AI-powered mixing assistant',
+        'development'
+      );
+
+      window.FeatureFlagContext.registerFlag(
+        'cloud-sync',
+        true,
+        'Enable cloud project synchronization',
+        'production'
+      );
+
+      updateContextInfo();
+      updateFlagStatus();
+    }
+
+    function updateContextInfo() {
+      const flags = window.FeatureFlagContext.getAllFlags();
+      document.getElementById('context-info').innerHTML = `
+        <strong>${flags.length}</strong> flags registered
+      `;
+    }
+
+    function updateFlagStatus() {
+      const flags = window.FeatureFlagContext.getAllFlags();
+      const overrides = getOverrides();
+      
+      const statusHtml = flags.map(flag => {
+        const isOverridden = overrides.hasOwnProperty(flag.name);
+        const currentValue = isOverridden ? overrides[flag.name] : flag.enabled;
+        
+        return `
+          <div class="flag-status ${currentValue ? 'enabled' : 'disabled'}">
+            <strong>${flag.name}</strong>: ${currentValue ? 'ENABLED' : 'DISABLED'}
+            ${isOverridden ? ' (overridden)' : ' (default)'}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('flag-status').innerHTML = statusHtml || '<em>No flags registered</em>';
+    }
+
+    function getOverrides() {
+      try {
+        const stored = localStorage.getItem('harmony_feature_flag_overrides');
+        return stored ? JSON.parse(stored) : {};
+      } catch (e) {
+        return {};
+      }
+    }
+
+    // Auto-register flags on load
+    registerTestFlags();
+
+    // Listen for override changes
+    window.addEventListener('featureflag:overrides-changed', () => {
+      updateFlagStatus();
+    });
+  </script>
+
+  <!-- Load the component -->
+  <script src="feature-flag-override.js"></script>
+
+  <!-- Add component to page -->
+  <feature-flag-override></feature-flag-override>
+
+  <!-- Test controls -->
+  <script>
+    const toolbar = document.querySelector('feature-flag-override');
+
+    document.getElementById('show-btn').addEventListener('click', () => {
+      toolbar.show();
+    });
+
+    document.getElementById('hide-btn').addEventListener('click', () => {
+      toolbar.hide();
+    });
+
+    document.getElementById('toggle-btn').addEventListener('click', () => {
+      toolbar.toggle();
+    });
+
+    document.getElementById('register-flags-btn').addEventListener('click', () => {
+      registerTestFlags();
+    });
+
+    document.getElementById('check-flags-btn').addEventListener('click', () => {
+      updateFlagStatus();
+    });
+
+    // Show toolbar on load for testing
+    setTimeout(() => {
+      toolbar.show();
+    }, 500);
+  </script>
+</body>
+</html>
