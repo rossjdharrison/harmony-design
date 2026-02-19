@@ -1,120 +1,398 @@
 {
-  "typography": {
-    "font-family": {
-      "base": {
-        "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        "type": "fontFamily"
+  "$schema": "./token-schema.json",
+  "version": "1.0.0",
+  "category": "typography",
+  "tokens": {
+    "fontFamily": {
+      "primary": {
+        "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif",
+        "type": "fontFamily",
+        "description": "Primary system font stack for body text"
       },
       "mono": {
-        "value": "'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace",
-        "type": "fontFamily"
+        "value": "'SF Mono', 'Monaco', 'Inconsolata', 'Fira Mono', 'Droid Sans Mono', 'Source Code Pro', monospace",
+        "type": "fontFamily",
+        "description": "Monospace font stack for code and technical content"
+      },
+      "display": {
+        "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
+        "type": "fontFamily",
+        "description": "Display font stack for headings and emphasis"
       }
     },
-    "font-size": {
-      "h1": {
-        "value": "2.5rem",
-        "type": "fontSize",
-        "comment": "40px"
-      },
-      "h2": {
-        "value": "2rem",
-        "type": "fontSize",
-        "comment": "32px"
-      },
-      "h3": {
-        "value": "1.5rem",
-        "type": "fontSize",
-        "comment": "24px"
-      },
-      "h4": {
-        "value": "1.25rem",
-        "type": "fontSize",
-        "comment": "20px"
-      },
-      "h5": {
-        "value": "1.125rem",
-        "type": "fontSize",
-        "comment": "18px"
-      },
-      "h6": {
-        "value": "1rem",
-        "type": "fontSize",
-        "comment": "16px"
-      },
-      "body-large": {
-        "value": "1.125rem",
-        "type": "fontSize",
-        "comment": "18px"
-      },
-      "body": {
-        "value": "1rem",
-        "type": "fontSize",
-        "comment": "16px"
-      },
-      "body-small": {
-        "value": "0.875rem",
-        "type": "fontSize",
-        "comment": "14px"
-      },
-      "label": {
-        "value": "0.875rem",
-        "type": "fontSize",
-        "comment": "14px"
-      },
-      "caption": {
+    "fontSize": {
+      "xs": {
         "value": "0.75rem",
         "type": "fontSize",
-        "comment": "12px"
+        "description": "Extra small text (12px)"
+      },
+      "sm": {
+        "value": "0.875rem",
+        "type": "fontSize",
+        "description": "Small text (14px)"
+      },
+      "base": {
+        "value": "1rem",
+        "type": "fontSize",
+        "description": "Base body text (16px)"
+      },
+      "lg": {
+        "value": "1.125rem",
+        "type": "fontSize",
+        "description": "Large text (18px)"
+      },
+      "xl": {
+        "value": "1.25rem",
+        "type": "fontSize",
+        "description": "Extra large text (20px)"
+      },
+      "2xl": {
+        "value": "1.5rem",
+        "type": "fontSize",
+        "description": "Heading 4 (24px)"
+      },
+      "3xl": {
+        "value": "1.875rem",
+        "type": "fontSize",
+        "description": "Heading 3 (30px)"
+      },
+      "4xl": {
+        "value": "2.25rem",
+        "type": "fontSize",
+        "description": "Heading 2 (36px)"
+      },
+      "5xl": {
+        "value": "3rem",
+        "type": "fontSize",
+        "description": "Heading 1 (48px)"
+      },
+      "6xl": {
+        "value": "3.75rem",
+        "type": "fontSize",
+        "description": "Display large (60px)"
+      },
+      "7xl": {
+        "value": "4.5rem",
+        "type": "fontSize",
+        "description": "Display extra large (72px)"
       }
     },
-    "font-weight": {
+    "fontWeight": {
+      "thin": {
+        "value": "100",
+        "type": "fontWeight",
+        "description": "Thin weight"
+      },
+      "extralight": {
+        "value": "200",
+        "type": "fontWeight",
+        "description": "Extra light weight"
+      },
       "light": {
         "value": "300",
-        "type": "fontWeight"
+        "type": "fontWeight",
+        "description": "Light weight"
       },
-      "regular": {
+      "normal": {
         "value": "400",
-        "type": "fontWeight"
+        "type": "fontWeight",
+        "description": "Normal body text weight"
       },
       "medium": {
         "value": "500",
-        "type": "fontWeight"
+        "type": "fontWeight",
+        "description": "Medium weight for emphasis"
       },
       "semibold": {
         "value": "600",
-        "type": "fontWeight"
+        "type": "fontWeight",
+        "description": "Semibold weight for subheadings"
       },
       "bold": {
         "value": "700",
-        "type": "fontWeight"
+        "type": "fontWeight",
+        "description": "Bold weight for headings"
+      },
+      "extrabold": {
+        "value": "800",
+        "type": "fontWeight",
+        "description": "Extra bold weight"
+      },
+      "black": {
+        "value": "900",
+        "type": "fontWeight",
+        "description": "Black weight for maximum emphasis"
       }
     },
-    "line-height": {
+    "lineHeight": {
+      "none": {
+        "value": "1",
+        "type": "lineHeight",
+        "description": "No line height (1)"
+      },
       "tight": {
-        "value": "1.2",
-        "type": "lineHeight"
+        "value": "1.25",
+        "type": "lineHeight",
+        "description": "Tight line height for headings"
+      },
+      "snug": {
+        "value": "1.375",
+        "type": "lineHeight",
+        "description": "Snug line height"
       },
       "normal": {
         "value": "1.5",
-        "type": "lineHeight"
+        "type": "lineHeight",
+        "description": "Normal line height for body text"
       },
       "relaxed": {
-        "value": "1.75",
-        "type": "lineHeight"
+        "value": "1.625",
+        "type": "lineHeight",
+        "description": "Relaxed line height"
+      },
+      "loose": {
+        "value": "2",
+        "type": "lineHeight",
+        "description": "Loose line height for increased readability"
       }
     },
-    "letter-spacing": {
+    "letterSpacing": {
+      "tighter": {
+        "value": "-0.05em",
+        "type": "letterSpacing",
+        "description": "Tighter letter spacing"
+      },
       "tight": {
-        "value": "-0.02em",
-        "type": "letterSpacing"
+        "value": "-0.025em",
+        "type": "letterSpacing",
+        "description": "Tight letter spacing"
       },
       "normal": {
         "value": "0",
-        "type": "letterSpacing"
+        "type": "letterSpacing",
+        "description": "Normal letter spacing"
       },
       "wide": {
-        "value": "0.02em",
-        "type": "letterSpacing"
+        "value": "0.025em",
+        "type": "letterSpacing",
+        "description": "Wide letter spacing"
+      },
+      "wider": {
+        "value": "0.05em",
+        "type": "letterSpacing",
+        "description": "Wider letter spacing"
+      },
+      "widest": {
+        "value": "0.1em",
+        "type": "letterSpacing",
+        "description": "Widest letter spacing for all-caps text"
+      }
+    },
+    "textTransform": {
+      "none": {
+        "value": "none",
+        "type": "textTransform",
+        "description": "No text transformation"
+      },
+      "uppercase": {
+        "value": "uppercase",
+        "type": "textTransform",
+        "description": "Uppercase text"
+      },
+      "lowercase": {
+        "value": "lowercase",
+        "type": "textTransform",
+        "description": "Lowercase text"
+      },
+      "capitalize": {
+        "value": "capitalize",
+        "type": "textTransform",
+        "description": "Capitalize first letter"
+      }
+    },
+    "textDecoration": {
+      "none": {
+        "value": "none",
+        "type": "textDecoration",
+        "description": "No text decoration"
+      },
+      "underline": {
+        "value": "underline",
+        "type": "textDecoration",
+        "description": "Underline text"
+      },
+      "lineThrough": {
+        "value": "line-through",
+        "type": "textDecoration",
+        "description": "Strike-through text"
+      }
+    },
+    "typeScale": {
+      "body": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.base}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Body text style"
+      },
+      "bodySmall": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.sm}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Small body text style"
+      },
+      "bodyLarge": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.lg}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Large body text style"
+      },
+      "heading1": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.5xl}",
+          "fontWeight": "{fontWeight.bold}",
+          "lineHeight": "{lineHeight.tight}",
+          "letterSpacing": "{letterSpacing.tight}"
+        },
+        "type": "typography",
+        "description": "Heading 1 style"
+      },
+      "heading2": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.4xl}",
+          "fontWeight": "{fontWeight.bold}",
+          "lineHeight": "{lineHeight.tight}",
+          "letterSpacing": "{letterSpacing.tight}"
+        },
+        "type": "typography",
+        "description": "Heading 2 style"
+      },
+      "heading3": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.3xl}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.tight}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Heading 3 style"
+      },
+      "heading4": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.2xl}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.snug}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Heading 4 style"
+      },
+      "heading5": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.xl}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.snug}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Heading 5 style"
+      },
+      "heading6": {
+        "value": {
+          "fontFamily": "{fontFamily.display}",
+          "fontSize": "{fontSize.lg}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Heading 6 style"
+      },
+      "caption": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.sm}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.wide}"
+        },
+        "type": "typography",
+        "description": "Caption text style"
+      },
+      "overline": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.xs}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.widest}",
+          "textTransform": "{textTransform.uppercase}"
+        },
+        "type": "typography",
+        "description": "Overline text style"
+      },
+      "code": {
+        "value": {
+          "fontFamily": "{fontFamily.mono}",
+          "fontSize": "{fontSize.sm}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Inline code text style"
+      },
+      "codeBlock": {
+        "value": {
+          "fontFamily": "{fontFamily.mono}",
+          "fontSize": "{fontSize.sm}",
+          "fontWeight": "{fontWeight.normal}",
+          "lineHeight": "{lineHeight.relaxed}",
+          "letterSpacing": "{letterSpacing.normal}"
+        },
+        "type": "typography",
+        "description": "Code block text style"
+      },
+      "label": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.sm}",
+          "fontWeight": "{fontWeight.medium}",
+          "lineHeight": "{lineHeight.normal}",
+          "letterSpacing": "{letterSpacing.wide}"
+        },
+        "type": "typography",
+        "description": "Form label text style"
+      },
+      "button": {
+        "value": {
+          "fontFamily": "{fontFamily.primary}",
+          "fontSize": "{fontSize.base}",
+          "fontWeight": "{fontWeight.semibold}",
+          "lineHeight": "{lineHeight.none}",
+          "letterSpacing": "{letterSpacing.wide}"
+        },
+        "type": "typography",
+        "description": "Button text style"
       }
     }
   }
