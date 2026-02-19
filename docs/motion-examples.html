@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Examples - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #f5f5f5;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      color: #0066cc;
+    }
+
+    .subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: #333;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 0.5rem;
+    }
+
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .example-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1.5rem;
+      background: #fafafa;
+    }
+
+    .example-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #333;
+    }
+
+    .example-description {
+      font-size: 0.875rem;
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .demo-area {
+      background: white;
+      border: 2px dashed #ddd;
+      border-radius: 4px;
+      padding: 2rem;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .demo-element {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    button {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      transition: background 150ms ease-out;
+    }
+
+    button:hover {
+      background: #0052a3;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .code-block {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.875rem;
+      margin-top: 1rem;
+    }
+
+    .settings-panel {
+      background: #f0f7ff;
+      border: 1px solid #0066cc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .settings-panel label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .settings-panel input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      color: #856404;
+    }
+
+    .list-demo {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .list-item {
+      background: white;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+
+    .performance-indicator {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.875rem;
+      z-index: 1000;
+    }
+
+    .fps-good { color: #4caf50; }
+    .fps-warn { color: #ff9800; }
+    .fps-bad { color: #f44336; }
+  </style>
+</head>
+<body>
+  <div class="performance-indicator" id="fpsCounter">
+    FPS: <span id="fpsValue" class="fps-good">60</span>
+  </div>
+
+  <div class="container">
+    <h1>Motion Examples</h1>
+    <p class="subtitle">Interactive demonstrations of Harmony Design System animations</p>
+
+    <div class="settings-panel">
+      <strong>Accessibility Settings</strong>
+      <label>
+        <input type="checkbox" id="reducedMotion">
+        Simulate prefers-reduced-motion
+      </label>
+      <label>
+        <input type="checkbox" id="showFPS" checked>
+        Show FPS counter
+      </label>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Performance Note:</strong> All animations target 60fps (16ms per frame). 
+      Open Chrome DevTools Performance panel to analyze frame timing.
+    </div>
+
+    <h2>Basic Transitions</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <div class="example-title">Fade In/Out</div>
+        <div class="example-description">Smooth opacity transition (200ms)</div>
+        <div class="demo-area">
+          <div class="demo-element" id="fadeDemo">Fade Me</div>
+        </div>
+        <div class="controls">
+          <button onclick="fadeIn()">Fade In</button>
+          <button onclick="fadeOut()">Fade Out</button>
+        </div>
+      </div>
+
+      <div class="example-card">
+        <div class="example-title">Slide In/Out</div>
+        <div class="example-description">Transform-based slide (300ms)</div>
+        <div class="demo-area">
+          <div class="demo-element" id="slideDemo">Slide Me</div>
+        </div>
+        <div class="controls">
+          <button onclick="slideIn()">Slide In</button>
+          <button onclick="slideOut()">Slide Out</button>
+        </div>
+      </div>
+
+      <div class="example-card">
+        <div class="example-title">Scale In/Out</div>
+        <div class="example-description">Scale transform (200ms)</div>
+        <div class="demo-area">
+          <div class="demo-element" id="scaleDemo">Scale Me</div>
+        </div>
+        <div class="controls">
+          <button onclick="scaleIn()">Scale In</button>
+          <button onclick="scaleOut()">Scale Out</button>
+        </div>
+      </div>
+    </div>
+
+    <h2>Gesture Animations</h2>
+    <div class="example-grid">
+      <div class="example-card">
+        <div class="example-title">Hover Effect</div>
+        <div class="example-description">Subtle lift on hover (100ms)</div>
+        <div class="demo-area">
+          <div class="demo-element" id="hoverDemo">Hover Over Me</div>
+        </div>
+      </div>
+
+      <div class="example-card">
+        <div class="example-title">Tap Feedback</div>
+        <div class="example-description">Press and release animation</div>
+        <div class="demo-area">
+          <div class="demo-element" id="tapDemo">Tap Me</div>
+        </div>
+      </div>
+
+      <div class="example-card">
+        <div class="example-title">Drag Interaction</div>
+        <div class="example-description">Follow cursor with spring physics</div>
+        <div class="demo-area">
+          <div class="demo-element" id="dragDemo">Drag Me</div>
+        </div>
+      </div>
+    </div>
+
+    <h2>Stagger Animations</h2>
+    <div class="example-card">
+      <div class="example-title">List Reveal</div>
+      <div class="example-description">Sequential item animation with 50ms stagger</div>
+      <div class="demo-area">
+        <div class="list-demo" id="listDemo">
+          <div class="list-item">Item 1</div>
+          <div class="list-item">Item 2</div>
+          <div class="list-item">Item 3</div>
+          <div class="list-item">Item 4</div>
+          <div class="list-item">Item 5</div>
+        </div>
+      </div>
+      <div class="controls">
+        <button onclick="staggerIn()">Stagger In</button>
+        <button onclick="staggerOut()">Stagger Out</button>
+      </div>
+    </div>
+
+    <h2>Code Examples</h2>
+    <div class="code-block">
+<pre>// Using Motion Variants
+import { motionVariants } from './animations/motion-variants.js';
+
+element.animate(
+  motionVariants.fadeIn.keyframes,
+  motionVariants.fadeIn.options
+);
+
+// Using Transition Presets
+import { TRANSITIONS } from './animations/transition-presets.js';
+
+element.style.transition = `opacity ${TRANSITIONS.NORMAL.duration}ms ${TRANSITIONS.NORMAL.easing}`;
+
+// Respecting Reduced Motion
+import { useReducedMotion } from './hooks/useReducedMotion.js';
+
+const duration = useReducedMotion() ? 0 : 200;
+element.animate([...], { duration });</pre>
+    </div>
+  </div>
+
+  <script type="module">
+    import { motionVariants } from '../animations/motion-variants.js';
+    import { TRANSITIONS } from '../animations/transition-presets.js';
+    import { applyHoverAnimation, applyTapAnimation } from '../animations/gesture-animations.js';
+    import { staggerChildren } from '../animations/stagger-children.js';
+    import { useReducedMotion } from '../hooks/useReducedMotion.js';
+
+    // Global state
+    let reducedMotion = false;
+
+    // FPS Counter
+    let lastTime = performance.now();
+    let frames = 0;
+    let fps = 60;
+
+    function updateFPS() {
+      frames++;
+      const now = performance.now();
+      if (now >= lastTime + 1000) {
+        fps = Math.round((frames * 1000) / (now - lastTime));
+        frames = 0;
+        lastTime = now;
+        
+        const fpsValue = document.getElementById('fpsValue');
+        fpsValue.textContent = fps;
+        fpsValue.className = fps >= 55 ? 'fps-good' : fps >= 45 ? 'fps-warn' : 'fps-bad';
+      }
+      requestAnimationFrame(updateFPS);
+    }
+    updateFPS();
+
+    // Settings
+    document.getElementById('reducedMotion').addEventListener('change', (e) => {
+      reducedMotion = e.target.checked;
+    });
+
+    document.getElementById('showFPS').addEventListener('change', (e) => {
+      document.getElementById('fpsCounter').style.display = e.target.checked ? 'block' : 'none';
+    });
+
+    // Helper to get duration
+    function getDuration(preset) {
+      return reducedMotion ? 0 : preset.duration;
+    }
+
+    // Fade animations
+    window.fadeIn = () => {
+      const el = document.getElementById('fadeDemo');
+      el.animate(
+        motionVariants.fadeIn.keyframes,
+        { ...motionVariants.fadeIn.options, duration: getDuration(TRANSITIONS.NORMAL) }
+      );
+    };
+
+    window.fadeOut = () => {
+      const el = document.getElementById('fadeDemo');
+      el.animate(
+        motionVariants.fadeOut.keyframes,
+        { ...motionVariants.fadeOut.options, duration: getDuration(TRANSITIONS.NORMAL) }
+      );
+    };
+
+    // Slide animations
+    window.slideIn = () => {
+      const el = document.getElementById('slideDemo');
+      el.animate(
+        motionVariants.slideInLeft.keyframes,
+        { ...motionVariants.slideInLeft.options, duration: getDuration(TRANSITIONS.SLOW) }
+      );
+    };
+
+    window.slideOut = () => {
+      const el = document.getElementById('slideDemo');
+      el.animate(
+        motionVariants.slideOutLeft.keyframes,
+        { ...motionVariants.slideOutLeft.options, duration: getDuration(TRANSITIONS.SLOW) }
+      );
+    };
+
+    // Scale animations
+    window.scaleIn = () => {
+      const el = document.getElementById('scaleDemo');
+      el.animate(
+        motionVariants.scaleIn.keyframes,
+        { ...motionVariants.scaleIn.options, duration: getDuration(TRANSITIONS.NORMAL) }
+      );
+    };
+
+    window.scaleOut = () => {
+      const el = document.getElementById('scaleDemo');
+      el.animate(
+        motionVariants.scaleOut.keyframes,
+        { ...motionVariants.scaleOut.options, duration: getDuration(TRANSITIONS.NORMAL) }
+      );
+    };
+
+    // Gesture animations
+    const hoverEl = document.getElementById('hoverDemo');
+    applyHoverAnimation(hoverEl, {
+      scale: 1.05,
+      y: -4,
+      duration: getDuration(TRANSITIONS.FAST)
+    });
+
+    const tapEl = document.getElementById('tapDemo');
+    applyTapAnimation(tapEl, {
+      scale: 0.95,
+      duration: getDuration(TRANSITIONS.FAST)
+    });
+
+    // Drag animation
+    const dragEl = document.getElementById('dragDemo');
+    let isDragging = false;
+    let startX, startY, offsetX = 0, offsetY = 0;
+
+    dragEl.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      startX = e.clientX - offsetX;
+      startY = e.clientY - offsetY;
+      dragEl.style.cursor = 'grabbing';
+      dragEl.style.transition = 'none';
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      offsetX = e.clientX - startX;
+      offsetY = e.clientY - startY;
+      dragEl.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      dragEl.style.cursor = 'pointer';
+      dragEl.style.transition = 'transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)';
+      dragEl.style.transform = 'translate(0, 0)';
+      offsetX = 0;
+      offsetY = 0;
+    });
+
+    // Stagger animations
+    window.staggerIn = () => {
+      const items = Array.from(document.querySelectorAll('.list-item'));
+      staggerChildren(items, 'in', {
+        staggerDelay: 50,
+        duration: getDuration(TRANSITIONS.NORMAL)
+      });
+    };
+
+    window.staggerOut = () => {
+      const items = Array.from(document.querySelectorAll('.list-item'));
+      staggerChildren(items, 'out', {
+        staggerDelay: 30,
+        duration: getDuration(TRANSITIONS.FAST)
+      });
+    };
+
+    // Auto-demo on load
+    setTimeout(() => {
+      fadeIn();
+      staggerIn();
+    }, 500);
+  </script>
+</body>
+</html>
