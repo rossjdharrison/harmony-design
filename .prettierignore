@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+target/
+*.wasm
+pkg/
+
+# Generated files
+harmony-dev/crates/
+harmony-dev/workers/
+**/generated/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+
+# Documentation backups
+docs-backup-*/
+
+# Reports
+reports/
+
+# Test coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.commit-message.txt
+.git-commit-message
+
+# Rust specific
+Cargo.lock
+**/*.rs.bk
+
+# Backup files
+*.backup

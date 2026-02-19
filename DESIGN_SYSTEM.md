@@ -1,268 +1,320 @@
 # Harmony Design System
 
-This document describes the Harmony Design System architecture, implementation patterns, and usage guidelines.
+This document describes the Harmony Design System architecture, development workflows, and implementation guidelines.
 
 ## Table of Contents
 
 1. [Overview](#overview)
 2. [Architecture](#architecture)
-3. [Design Tokens](#design-tokens)
-4. [Primitives](#primitives)
-5. [Components](#components)
-6. [Event System](#event-system)
-7. [Performance](#performance)
-8. [Accessibility](#accessibility)
-9. [Testing](#testing)
+3. [Development Workflow](#development-workflow)
+4. [Code Formatting](#code-formatting)
+5. [Component Development](#component-development)
+6. [Performance Guidelines](#performance-guidelines)
+7. [Testing Requirements](#testing-requirements)
+8. [Documentation Standards](#documentation-standards)
 
 ## Overview
 
-Harmony is a design system built for high-performance audio applications. It uses vanilla JavaScript, Web Components, and design tokens to create a consistent, accessible user interface.
-
-### Key Principles
-
-- **Performance First**: 60fps animations, <16ms frame budget
-- **Accessibility**: WCAG 2.1 AA compliant
-- **No Dependencies**: Pure vanilla JavaScript, no frameworks
-- **Web Standards**: Web Components with Shadow DOM
-- **Design Tokens**: Centralized theming system
+Harmony is a high-performance design system for audio production interfaces. It combines Rust/WASM for audio processing with vanilla Web Components for UI rendering.
 
 ## Architecture
 
 ### Technology Stack
 
-- **UI Layer**: Vanilla JavaScript + Web Components
-- **Styling**: CSS with design tokens
-- **State**: EventBus pattern for component communication
-- **Backend**: Rust → WASM for audio processing
+- **UI Layer**: Vanilla HTML/CSS/JavaScript with Web Components
+- **Core Logic**: Rust compiled to WebAssembly
+- **State Management**: EventBus with TypeNavigator queries
+- **Audio Processing**: WebGPU + WASM implementations
+- **Desktop Wrapper**: Tauri (not Electron)
 
-### File Structure
+### Bounded Contexts
+
+Bounded contexts handle domain logic in Rust:
+
+- `component-lifecycle/` - Component state management
+- See `bounded-contexts/` for all contexts
+
+### File Organization
 
 ```
 harmony-design/
-├── primitives/          # Atomic UI components
-│   ├── spinner/        # Loading indicators
-│   ├── icon/           # Icon wrapper
-│   ├── text/           # Text component
-│   └── ...
-├── components/         # Composite components
-├── tokens/            # Design tokens
-├── core/              # Core utilities
-└── DESIGN_SYSTEM.md   # This file
+├── components/        # Web Components (UI layer)
+├── bounded-contexts/  # Rust bounded contexts
+├── core/             # Core utilities (EventBus, errors, etc.)
+├── primitives/       # Atomic UI components
+├── tokens/           # Design tokens
+├── styles/           # Global styles
+└── scripts/          # Build and dev tools
 ```
 
-## Design Tokens
+## Development Workflow
 
-Design tokens provide a centralized theming system. All components consume tokens via CSS custom properties.
+### Setup
 
-### Token Categories
+1. Clone repository
+2. Install dependencies: `npm install` (dev tools only)
+3. Build WASM: `cd bounded-contexts && cargo build --target wasm32-unknown-unknown`
+4. Run dev server: `npm run dev`
 
-- **Colors**: `--color-primary`, `--color-border-subtle`
-- **Spacing**: `--spacing-sm`, `--spacing-md`, `--spacing-lg`
-- **Typography**: `--font-size-body`, `--font-weight-bold`
-- **Elevation**: `--shadow-sm`, `--shadow-md`
+### Making Changes
 
-## Primitives
+1. **UI Components**: Edit files in `components/`, `primitives/`, etc.
+2. **Core Logic**: Edit schemas in `harmony-schemas/`, run codegen
+3. **Documentation**: Update this file (DESIGN_SYSTEM.md)
 
-Primitives are atomic UI components that cannot be broken down further.
+### Schema Changes
 
-### Spinner
+When modifying Rust behavior:
 
-Loading indicator with size variants.
+1. Navigate to `harmony-schemas/`
+2. Modify the schema
+3. Run codegen: `npm run codegen`
+4. Verify compilation
+5. Commit schema + generated code together
 
-**File**: [primitives/spinner/harmony-spinner.js](primitives/spinner/harmony-spinner.js)
+**Important**: CI fails if schema changed but generated code is stale.
 
-**Usage**:
-```html
-<harmony-spinner size="medium"></harmony-spinner>
+## Code Formatting
+
+### Prettier Configuration
+
+The project uses Prettier for consistent code formatting. Configuration is in `.prettierrc.json`.
+
+**Key formatting rules:**
+
+- **Print width**: 100 characters (80 for Markdown/JSON)
+- **Indentation**: 2 spaces (4 for Rust)
+- **Quotes**: Single quotes for JS/CSS, double for HTML attributes
+- **Semicolons**: Always required
+- **Trailing commas**: ES5 style
+- **Line endings**: LF (Unix style)
+
+### Running Prettier
+
+```bash
+# Format all files
+npm run format
+
+# Check formatting without changes
+npm run format:check
+
+# Format specific file
+npx prettier --write path/to/file.js
 ```
 
-**Sizes**: `small` (16px), `medium` (32px), `large` (48px)
+### Editor Integration
 
-**Performance**: GPU-accelerated CSS animations, 60fps target
+The `.editorconfig` file provides IDE-agnostic formatting rules. Most modern editors support it automatically.
 
-**Accessibility**: Includes `role="status"` and `aria-label`
+**Recommended VS Code settings** (`.vscode/settings.json`):
 
-See [primitives/spinner/README.md](primitives/spinner/README.md) for details.
-
-### Icon
-
-SVG icon wrapper with size and color variants.
-
-**File**: [primitives/icon/harmony-icon.js](primitives/icon/harmony-icon.js)
-
-**Usage**:
-```html
-<harmony-icon name="play" size="medium"></harmony-icon>
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
 ```
 
-### Text
+### File-Specific Rules
 
-Styled text component with semantic variants.
+- **JavaScript/HTML/CSS**: 100 character line length, 2 space indent
+- **Markdown**: 80 character line length, wrap prose
+- **JSON**: 80 character line length for readability
+- **Rust**: 4 space indent (Rust convention), 100 character line length
+- **YAML**: 2 space indent, single quotes
 
-**File**: [primitives/text/harmony-text.js](primitives/text/harmony-text.js)
+### Ignored Files
 
-**Usage**:
-```html
-<harmony-text variant="heading">Title</harmony-text>
+See `.prettierignore` for excluded paths:
+
+- Generated files (`harmony-dev/crates/`, `harmony-dev/workers/`)
+- Build outputs (`dist/`, `target/`, `*.wasm`)
+- Dependencies (`node_modules/`)
+- Lock files and logs
+
+### Pre-commit Hooks
+
+Husky runs Prettier on staged files before commit. If formatting fails, the commit is blocked.
+
+To bypass (not recommended): `git commit --no-verify`
+
+## Component Development
+
+### Web Component Pattern
+
+All UI components must:
+
+1. Extend `HTMLElement`
+2. Use Shadow DOM
+3. Publish events (never call bounded contexts directly)
+4. Follow performance budgets
+
+**Example structure**:
+
+```javascript
+/**
+ * MyComponent - Brief description
+ * @fires my-event - When something happens
+ */
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.render();
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>/* Component styles */</style>
+      <div>/* Component markup */</div>
+    `;
+  }
+}
+
+customElements.define('my-component', MyComponent);
 ```
 
-### Surface
+See `components/` for examples.
 
-Background container with elevation levels.
+### Event-Driven Communication
 
-**File**: [primitives/surface/harmony-surface.js](primitives/surface/harmony-surface.js)
-
-### Divider
-
-Horizontal/vertical separator with thickness variants.
-
-**File**: [primitives/divider/harmony-divider.js](primitives/divider/harmony-divider.js)
-
-### Badge
-
-Small status indicator with color variants.
-
-**File**: [primitives/badge/harmony-badge.js](primitives/badge/harmony-badge.js)
-
-### Tooltip
-
-Floating hint with arrow and placement options.
-
-**File**: [primitives/tooltip/harmony-tooltip.js](primitives/tooltip/harmony-tooltip.js)
-
-## Components
-
-Components are composite elements built from primitives.
-
-### Pattern: Event-Driven Communication
-
-Components publish events instead of calling bounded contexts directly:
+**UI → Bounded Context**:
 
 ```javascript
 // Component publishes event
-this.dispatchEvent(new CustomEvent('action-requested', {
+this.dispatchEvent(new CustomEvent('play-clicked', {
   bubbles: true,
   composed: true,
-  detail: { action: 'play' }
+  detail: { trackId: 123 }
 }));
 ```
 
-EventBus routes events to appropriate handlers.
+**Bounded Context → UI**:
 
-## Event System
+```javascript
+// Component subscribes to result
+window.EventBus.subscribe('playback-started', (data) => {
+  this.updatePlayState(data);
+});
+```
 
 ### EventBus Pattern
 
-The EventBus provides centralized event routing and debugging.
+- UI components publish command events
+- EventBus routes to bounded contexts
+- Bounded contexts publish result events
+- UI components subscribe to results
 
-**File**: [core/event-bus.js](core/event-bus.js)
+**Required on every page**: `<event-bus-component>` for debugging (Ctrl+Shift+E)
 
-### Component Events
+See `core/event-bus.js` for implementation.
 
-All components follow this pattern:
+## Performance Guidelines
 
-1. User interaction triggers event
-2. Component dispatches custom event
-3. EventBus routes to subscribers
-4. Bounded context handles logic
-5. Result event updates UI
+### Absolute Constraints
 
-## Performance
+1. **Render Budget**: Maximum 16ms per frame (60fps)
+2. **Memory Budget**: Maximum 50MB WASM heap
+3. **Load Budget**: Maximum 200ms initial load time
+4. **Audio Latency**: Maximum 10ms end-to-end
 
-### Budgets
+### Optimization Strategies
 
-- **Render**: <16ms per frame (60fps)
-- **Memory**: <50MB WASM heap
-- **Load**: <200ms initial load
-
-### Optimization Techniques
-
-- CSS `contain` for layout optimization
-- `will-change` for animation hints
-- Shadow DOM for style encapsulation
-- GPU-accelerated transforms
-
-### Monitoring
-
-Use Chrome DevTools Performance panel to verify:
-
-1. Frame rate stays at 60fps
-2. No long tasks >50ms
-3. Memory usage within budget
-
-## Accessibility
-
-### Requirements
-
-- WCAG 2.1 Level AA compliance
-- Keyboard navigation support
-- Screen reader compatibility
-- Reduced motion support
-
-### Implementation
-
-All components include:
-
-- Proper ARIA attributes (`role`, `aria-label`, `aria-live`)
-- Keyboard event handlers
-- Focus management
-- `prefers-reduced-motion` media query support
-
-## Testing
-
-### Browser Testing
-
-All components must be tested in Chrome before completion:
-
-1. Visual appearance matches design
-2. All states work (default, hover, focus, active, disabled)
-3. Animations run at 60fps
-4. Events dispatch correctly
-5. Accessibility features work
-
-### Test Pages
-
-Each component includes a `.test.html` file demonstrating:
-
-- All variants and states
-- Performance monitoring
-- Event logging
-- Dynamic controls
-- Accessibility features
+- Use GPU-first rendering where possible
+- Avoid async operations in audio render thread
+- Use SharedArrayBuffer for AudioWorklet ↔ GPU transfer
+- Minimize DOM manipulation (batch updates)
+- Use CSS transforms for animations (GPU-accelerated)
 
 ### Performance Testing
 
-Open Chrome DevTools > Performance:
+Test animations with Chrome DevTools Performance panel. Target: 60fps for all UI animations.
 
-1. Start recording
-2. Interact with component
-3. Stop recording
-4. Verify no frames exceed 16ms budget
+## Testing Requirements
 
-## Contributing
+### Chrome Testing (Mandatory)
 
-### Adding New Components
+All UI components must be tested in Chrome before task completion.
 
-1. Create component directory in `primitives/` or `components/`
-2. Implement Web Component with Shadow DOM
-3. Add JSDoc documentation
-4. Create test page
-5. Test in Chrome (all states, 60fps)
-6. Update this document
+**Test all states**:
 
-### Code Style
+- Default, hover, focus, active, disabled
+- Error states, loading states, empty states (for complex components)
 
-- Use JSDoc comments for all public APIs
-- Follow EventBus pattern for communication
-- Include performance budgets in comments
-- Add accessibility attributes
-- Use design tokens for styling
+### Test Files
 
-### Documentation
+Components should have corresponding `.test.html` files:
 
-This file (DESIGN_SYSTEM.md) is the single source of truth. Code files contain minimal comments that reference relevant sections here.
+```
+components/
+  my-component/
+    my-component.js
+    my-component.test.html
+```
+
+Open test file in Chrome to verify behavior.
+
+### Quality Gates
+
+Quality gates must pass before proceeding:
+
+- TypeScript type checking
+- Prettier formatting
+- ESLint rules
+- Rust compilation
+- WASM build
+
+Run all gates: `npm run quality-gates`
+
+## Documentation Standards
+
+### B1-Level English
+
+Write documentation in clear, simple English (B1 CEFR level):
+
+- Short sentences
+- Common vocabulary
+- Active voice
+- Clear structure
+
+### Code Comments
+
+**Minimal inline comments**. Code should be self-documenting. Use JSDoc for public APIs:
+
+```javascript
+/**
+ * Calculates the peak value over a time window
+ * @param {Float32Array} samples - Audio samples
+ * @param {number} windowMs - Window size in milliseconds
+ * @returns {number} Peak value (0-1)
+ */
+function calculatePeak(samples, windowMs) {
+  // Implementation
+}
+```
+
+### Linking
+
+Use relative links to code files:
+
+```markdown
+See [EventBus implementation](core/event-bus.js) for details.
+```
+
+### Documentation Updates
+
+Updating DESIGN_SYSTEM.md is **mandatory** for every task. Agent cannot declare completion without filesystem evidence of documentation changes.
+
+## Additional Resources
+
+- **Architecture Decisions**: See `docs/` directory
+- **Component Examples**: See `components/` and `primitives/`
+- **Performance Reports**: See `reports/` directory
+- **GitHub Workflows**: See `.github/workflows/`
 
 ---
 
-**Last Updated**: 2025-01-XX  
-**Version**: 1.0.0
+**Last Updated**: 2025-01-XX (update with each change)

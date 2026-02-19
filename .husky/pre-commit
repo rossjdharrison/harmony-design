@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run Prettier on staged files
+npx prettier --write --ignore-unknown $(git diff --cached --name-only --diff-filter=ACMR)
+
+# Re-add formatted files
+git add $(git diff --cached --name-only --diff-filter=ACMR)
