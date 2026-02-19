@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Targeting Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-result {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .test-result.pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .test-result.fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    h1 { color: #333; margin-bottom: 0.5rem; }
+    h2 { color: #666; font-size: 1.2rem; margin-top: 0; }
+    .summary {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e9ecef;
+      border-radius: 4px;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>User Targeting Tests</h1>
+  <h2>Target features based on user attributes</h2>
+  
+  <div id="test-results"></div>
+  <div id="test-summary" class="summary"></div>
+
+  <script type="module">
+    import {
+      isFeatureEnabledForUser,
+      createUserIdWhitelist,
+      createRoleRule,
+      createAttributeRule,
+      createPercentageRule,
+      createCompoundRule,
+      validateTargetingRule
+    } from './user-targeting.js';
+
+    const results = [];
+
+    function test(name, fn) {
+      try {
+        fn();
+        results.push({ name, pass: true });
+        return true;
+      } catch (error) {
+        results.push({ name, pass: false, error: error.message });
+        return false;
+      }
+    }
+
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`);
+      }
+    }
+
+    // Test users
+    const adminUser = {
+      id: 'user1',
+      roles: ['admin'],
+      attributes: { plan: 'premium', beta: true }
+    };
+
+    const editorUser = {
+      id: 'user2',
+      roles: ['editor'],
+      attributes: { plan: 'free', beta: false }
+    };
+
+    const viewerUser = {
+      id: 'user3',
+      roles: ['viewer'],
+      attributes: { plan: 'free' }
+    };
+
+    // Test: User ID whitelist
+    test('User ID whitelist - included user', () => {
+      const rule = createUserIdWhitelist(['user1', 'user2']);
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for whitelisted user');
+    });
+
+    test('User ID whitelist - excluded user', () => {
+      const rule = createUserIdWhitelist(['user1', 'user2']);
+      assert(!isFeatureEnabledForUser(rule, viewerUser), 'Should disable for non-whitelisted user');
+    });
+
+    // Test: Role-based targeting
+    test('Role targeting - single role match', () => {
+      const rule = createRoleRule('admin');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for admin');
+      assert(!isFeatureEnabledForUser(rule, editorUser), 'Should disable for non-admin');
+    });
+
+    test('Role targeting - multiple roles', () => {
+      const rule = createRoleRule(['admin', 'editor']);
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for admin');
+      assert(isFeatureEnabledForUser(rule, editorUser), 'Should enable for editor');
+      assert(!isFeatureEnabledForUser(rule, viewerUser), 'Should disable for viewer');
+    });
+
+    // Test: Attribute targeting
+    test('Attribute targeting - equals', () => {
+      const rule = createAttributeRule('plan', 'premium');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for premium plan');
+      assert(!isFeatureEnabledForUser(rule, editorUser), 'Should disable for free plan');
+    });
+
+    test('Attribute targeting - boolean', () => {
+      const rule = createAttributeRule('beta', true);
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for beta users');
+      assert(!isFeatureEnabledForUser(rule, editorUser), 'Should disable for non-beta users');
+    });
+
+    test('Attribute targeting - contains', () => {
+      const rule = createAttributeRule('plan', 'pre', 'contains');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should match substring');
+    });
+
+    test('Attribute targeting - missing attribute', () => {
+      const rule = createAttributeRule('nonexistent', 'value');
+      assert(!isFeatureEnabledForUser(rule, adminUser), 'Should disable for missing attribute');
+    });
+
+    // Test: Percentage targeting
+    test('Percentage targeting - 0%', () => {
+      const rule = createPercentageRule(0);
+      assert(!isFeatureEnabledForUser(rule, adminUser), 'Should disable at 0%');
+    });
+
+    test('Percentage targeting - 100%', () => {
+      const rule = createPercentageRule(100);
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable at 100%');
+      assert(isFeatureEnabledForUser(rule, editorUser), 'Should enable at 100%');
+    });
+
+    test('Percentage targeting - consistent bucketing', () => {
+      const rule = createPercentageRule(50);
+      const result1 = isFeatureEnabledForUser(rule, adminUser);
+      const result2 = isFeatureEnabledForUser(rule, adminUser);
+      assertEquals(result1, result2, 'Should be consistent for same user');
+    });
+
+    // Test: Compound rules
+    test('Compound rule - AND (both true)', () => {
+      const rule = createCompoundRule([
+        createRoleRule('admin'),
+        createAttributeRule('beta', true)
+      ], 'AND');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable when both match');
+    });
+
+    test('Compound rule - AND (one false)', () => {
+      const rule = createCompoundRule([
+        createRoleRule('admin'),
+        createAttributeRule('beta', true)
+      ], 'AND');
+      assert(!isFeatureEnabledForUser(rule, editorUser), 'Should disable when one fails');
+    });
+
+    test('Compound rule - OR (one true)', () => {
+      const rule = createCompoundRule([
+        createRoleRule('admin'),
+        createAttributeRule('beta', true)
+      ], 'OR');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable when one matches');
+    });
+
+    test('Compound rule - OR (both false)', () => {
+      const rule = createCompoundRule([
+        createRoleRule('admin'),
+        createAttributeRule('beta', true)
+      ], 'OR');
+      assert(!isFeatureEnabledForUser(rule, viewerUser), 'Should disable when both fail');
+    });
+
+    test('Compound rule - nested', () => {
+      const rule = createCompoundRule([
+        createCompoundRule([
+          createRoleRule('admin'),
+          createRoleRule('editor')
+        ], 'OR'),
+        createAttributeRule('plan', 'premium')
+      ], 'AND');
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should handle nested rules');
+    });
+
+    // Test: Array of rules (implicit AND)
+    test('Array of rules - all match', () => {
+      const rules = [
+        createRoleRule('admin'),
+        createAttributeRule('beta', true)
+      ];
+      assert(isFeatureEnabledForUser(rules, adminUser), 'Should enable when all match');
+    });
+
+    test('Array of rules - one fails', () => {
+      const rules = [
+        createRoleRule('admin'),
+        createAttributeRule('beta', false)
+      ];
+      assert(!isFeatureEnabledForUser(rules, adminUser), 'Should disable when one fails');
+    });
+
+    // Test: No rules (default enabled)
+    test('No rules - default enabled', () => {
+      assert(isFeatureEnabledForUser(null, adminUser), 'Should enable with no rules');
+      assert(isFeatureEnabledForUser(undefined, adminUser), 'Should enable with no rules');
+    });
+
+    // Test: Invalid user context
+    test('Invalid user - missing ID', () => {
+      const rule = createRoleRule('admin');
+      assert(!isFeatureEnabledForUser(rule, {}), 'Should disable for invalid user');
+    });
+
+    test('Invalid user - null', () => {
+      const rule = createRoleRule('admin');
+      assert(!isFeatureEnabledForUser(rule, null), 'Should disable for null user');
+    });
+
+    // Test: Rule validation
+    test('Validate valid rule', () => {
+      const rule = createRoleRule('admin');
+      const result = validateTargetingRule(rule);
+      assert(result.valid, 'Should validate correct rule');
+      assertEquals(result.errors.length, 0, 'Should have no errors');
+    });
+
+    test('Validate invalid percentage', () => {
+      const rule = { type: 'percentage', value: 150 };
+      const result = validateTargetingRule(rule);
+      assert(!result.valid, 'Should reject invalid percentage');
+      assert(result.errors.length > 0, 'Should have errors');
+    });
+
+    test('Validate missing type', () => {
+      const rule = { value: 'test' };
+      const result = validateTargetingRule(rule);
+      assert(!result.valid, 'Should reject rule without type');
+    });
+
+    test('Validate compound rule without rules', () => {
+      const rule = { type: 'compound', combinator: 'AND' };
+      const result = validateTargetingRule(rule);
+      assert(!result.valid, 'Should reject compound without rules array');
+    });
+
+    // Test: Complex real-world scenarios
+    test('Real-world: Beta feature for premium admins or 10% of editors', () => {
+      const rule = createCompoundRule([
+        createCompoundRule([
+          createRoleRule('admin'),
+          createAttributeRule('plan', 'premium')
+        ], 'AND'),
+        createCompoundRule([
+          createRoleRule('editor'),
+          createPercentageRule(10)
+        ], 'AND')
+      ], 'OR');
+
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for premium admin');
+    });
+
+    test('Real-world: Feature for specific users OR all admins', () => {
+      const rule = createCompoundRule([
+        createUserIdWhitelist(['special1', 'special2']),
+        createRoleRule('admin')
+      ], 'OR');
+
+      assert(isFeatureEnabledForUser(rule, adminUser), 'Should enable for admin');
+      assert(isFeatureEnabledForUser(rule, { id: 'special1', roles: [] }), 'Should enable for whitelisted user');
+    });
+
+    // Display results
+    const resultsContainer = document.getElementById('test-results');
+    const summaryContainer = document.getElementById('test-summary');
+
+    results.forEach(result => {
+      const div = document.createElement('div');
+      div.className = `test-result ${result.pass ? 'pass' : 'fail'}`;
+      div.textContent = `${result.pass ? '✓' : '✗'} ${result.name}`;
+      if (result.error) {
+        div.textContent += ` - ${result.error}`;
+      }
+      resultsContainer.appendChild(div);
+    });
+
+    const passed = results.filter(r => r.pass).length;
+    const total = results.length;
+    summaryContainer.textContent = `${passed}/${total} tests passed`;
+    summaryContainer.style.color = passed === total ? '#155724' : '#721c24';
+
+    console.log(`User Targeting Tests: ${passed}/${total} passed`);
+  </script>
+</body>
+</html>
