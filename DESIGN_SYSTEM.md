@@ -1,282 +1,341 @@
 # Harmony Design System
 
-This document describes the Harmony Design System architecture, patterns, and implementation guidelines.
+A high-performance design system for audio and creative applications, built with Web Components, Rust/WASM, and vanilla JavaScript.
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Token System](#token-system)
-- [Experiment System](#experiment-system)
-- [Component Patterns](#component-patterns)
-- [Event Bus](#event-bus)
-- [Performance Guidelines](#performance-guidelines)
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Getting Started](#getting-started)
+4. [Environment Configuration](#environment-configuration)
+5. [Components](#components)
+6. [Bounded Contexts](#bounded-contexts)
+7. [Event Bus](#event-bus)
+8. [Performance](#performance)
+9. [Testing](#testing)
+10. [Contributing](#contributing)
 
 ## Overview
 
-Harmony is a high-performance design system built for audio production interfaces. It uses vanilla JavaScript, Web Components, and WASM for core functionality.
+Harmony Design System is a GPU-accelerated, memory-efficient design system optimized for real-time audio processing and creative tools. It combines Web Components for UI, Rust/WASM for performance-critical operations, and a graph-based architecture for complex audio workflows.
+
+### Key Features
+
+- **Web Components**: Shadow DOM-based components with no framework dependencies
+- **Rust/WASM**: High-performance bounded contexts for audio processing
+- **Event-Driven**: Decoupled architecture using EventBus pattern
+- **GPU-First**: WebGPU acceleration for audio and visual processing
+- **Type-Safe**: TypeScript types with runtime validation
+- **A/B Testing**: Built-in experimentation framework
 
 ## Architecture
 
 ### Technology Stack
 
-- **UI Layer**: Vanilla HTML/CSS/JS with Web Components
-- **Core Logic**: Rust compiled to WASM
-- **State Management**: Event-driven architecture via EventBus
-- **Storage**: IndexedDB for persistence
+- **UI Layer**: Vanilla HTML/CSS/JavaScript with Web Components
+- **Core Logic**: Rust compiled to WebAssembly
+- **Type System**: TypeScript for development, runtime validation
+- **Build Tools**: npm for development only (no runtime dependencies)
+- **Testing**: Pytest for test servers, browser-based for components
 
-### Bounded Contexts
+### Directory Structure
 
-Core functionality is organized into bounded contexts implemented in Rust:
-
-- `component-lifecycle`: Component state management
-- Additional contexts in `bounded-contexts/` directory
-
-## Token System
-
-Design tokens define the visual language of the system.
-
-### Token Files
-
-- [`tokens/colors.json`](./tokens/colors.json) - Color palette and semantic colors
-- [`tokens/spacing.json`](./tokens/spacing.json) - Spacing scale
-- [`tokens/typography.json`](./tokens/typography.json) - Font families, sizes, weights
-- [`tokens/shadows.json`](./tokens/shadows.json) - Shadow and elevation system
-
-### Using Tokens
-
-Tokens are consumed via CSS custom properties:
-
-```css
-.my-component {
-  color: var(--color-primary-500);
-  padding: var(--spacing-4);
-  font-size: var(--font-size-body);
-}
+```
+harmony-design/
+├── components/          # UI components (Web Components)
+├── bounded-contexts/    # Rust/WASM business logic
+├── config/             # Environment and build configuration
+├── tokens/             # Design tokens (colors, spacing, etc.)
+├── hooks/              # Reusable JavaScript hooks
+├── contexts/           # React-style contexts (vanilla JS)
+├── animations/         # Animation presets and utilities
+├── scripts/            # Build and development scripts
+├── tests/              # Test suites
+└── docs/               # Additional documentation
 ```
 
-## Experiment System
+## Getting Started
 
-The experiment system enables A/B testing and feature experimentation with statistical rigor.
+### Prerequisites
 
-### Type Definitions
+- Node.js 18+ (for development tools only)
+- Rust 1.70+ (for WASM compilation)
+- Modern browser with WebGPU support
 
-All experiment types are defined in [`types/experiment.d.ts`](./types/experiment.d.ts). Key types include:
+### Installation
 
-- **`Experiment`**: Complete experiment configuration with variants, metrics, and targeting
-- **`ExperimentVariant`**: Individual variant definition with traffic allocation
-- **`ExperimentMetric`**: Metric definition for measurement (counter, gauge, histogram, etc.)
-- **`ExperimentAssignment`**: User assignment to a variant
-- **`ExperimentExposure`**: Exposure tracking event when user sees variant
-- **`MetricEvent`**: Metric measurement event
-- **`ExperimentResults`**: Statistical analysis results with comparisons
+```bash
+# Clone the repository
+git clone <repository-url>
+cd harmony-design
 
-### Core Concepts
+# Install development dependencies
+npm install
 
-#### Experiments
+# Build WASM modules
+cd bounded-contexts/component-lifecycle
+cargo build --target wasm32-unknown-unknown
+```
 
-An experiment tests multiple variants against a control. Each experiment has:
+### Development
 
-- **Variants**: Different versions being tested (one must be control)
-- **Metrics**: Measurements to track (one primary, multiple secondary)
-- **Traffic Allocation**: Percentage of users included (0-100)
-- **Targeting**: Rules for user inclusion (segments, geo, device, time)
-- **Status**: Lifecycle state (draft, running, completed, etc.)
+```bash
+# Start development server
+npm run dev
 
-#### Variants
+# Run tests
+npm test
 
-Each variant represents a different experience:
+# Build for production
+npm run build
+```
 
-- **Allocation**: Traffic percentage assigned to this variant
-- **Config**: Configuration payload for the variant
-- **Features**: Optional feature flags enabled
-- **isControl**: Whether this is the baseline variant
+## Environment Configuration
 
-#### Metrics
+Harmony uses environment files to configure behavior across different deployment contexts. Configuration is loaded at runtime and validated against TypeScript types.
 
-Metrics measure experiment success:
+### Environment Files
 
-- **Types**: counter, gauge, histogram, rate, conversion
-- **Primary vs Secondary**: One primary metric, multiple secondary
-- **Statistical Tests**: t-test, chi-square, Mann-Whitney, Bayesian
-- **Aggregation**: sum, avg, min, max, p50, p95, p99
+- **`.env.example`**: Template showing all available variables
+- **`.env.development`**: Development defaults (this file)
+- **`.env.production`**: Production optimized settings
+- **`.env.local`**: Local overrides (gitignored, for secrets)
 
-### Usage Pattern
+### Configuration Categories
 
-1. **Define Experiment**: Create experiment config with variants and metrics
-2. **Assignment**: User gets assigned to a variant (deterministic hash-based)
-3. **Exposure**: Track when user actually sees the variant
-4. **Measurement**: Record metric events as user interacts
-5. **Analysis**: Calculate statistical significance and lift
+#### Core Environment
+- `NODE_ENV`: Node.js environment (development/production)
+- `HARMONY_ENV`: Harmony-specific environment identifier
 
-### Event Bus Integration
+#### Feature Flags
+Development enables all debugging features:
+- `ENABLE_EXPERIMENTS`: A/B testing framework
+- `ENABLE_DEBUG_TOOLS`: Developer tools and inspectors
+- `ENABLE_PERFORMANCE_MONITORING`: Performance tracking
+- `ENABLE_EVENT_BUS_DEBUGGER`: EventBus visualization (Ctrl+Shift+E)
 
-Experiment system publishes events via EventBus:
+#### Performance Budgets
+Strict budgets enforced in production, monitored in development:
+- `RENDER_BUDGET_MS=16`: Maximum frame render time (60fps)
+- `MEMORY_BUDGET_MB=50`: WASM heap limit
+- `LOAD_BUDGET_MS=200`: Initial load time
+- `AUDIO_LATENCY_BUDGET_MS=10`: End-to-end audio processing
+
+#### Audio Engine
+- `AUDIO_SAMPLE_RATE`: Sample rate (typically 48000)
+- `AUDIO_BUFFER_SIZE`: Buffer size (lower = less latency)
+- `AUDIO_ENABLE_GPU`: Enable WebGPU acceleration
+- `AUDIO_ENABLE_WASM`: Enable WASM processing
+
+#### Storage
+- `INDEXEDDB_NAME`: Database name for project storage
+- `INDEXEDDB_VERSION`: Schema version
+- `ENABLE_STORAGE_PERSISTENCE`: Request persistent storage
+
+### Loading Configuration
+
+Configuration is loaded via `config/environment-loader.js`:
 
 ```javascript
-// Exposure tracking
-eventBus.publish({
-  type: 'ExperimentExposure',
-  payload: {
-    experimentId: 'exp-123',
-    userId: 'user-456',
-    variantId: 'variant-a',
-    timestamp: Date.now()
-  }
-});
+import { loadEnvironment } from './config/environment-loader.js';
 
-// Metric tracking
-eventBus.publish({
-  type: 'MetricTrack',
-  payload: {
-    experimentId: 'exp-123',
-    userId: 'user-456',
-    variantId: 'variant-a',
-    metricId: 'click-rate',
-    value: 1,
-    timestamp: Date.now()
-  }
-});
+const env = loadEnvironment();
+console.log('Running in:', env.HARMONY_ENV);
 ```
 
-### Components
+See [config/environment-loader.js](config/environment-loader.js) for implementation details.
 
-- [`components/experiment/experiment-context.js`](./components/experiment/experiment-context.js) - Context provider
-- [`components/experiment/use-experiment.js`](./components/experiment/use-experiment.js) - Hook for variant access
-- [`components/experiment/variant-component.js`](./components/experiment/variant-component.js) - Declarative variant rendering
-- [`components/experiment/experiment-analytics.js`](./components/experiment/experiment-analytics.js) - Analytics tracking
+### Type Safety
 
-### Statistical Analysis
+Environment variables are typed in [config/environment-types.ts](config/environment-types.ts). The loader validates all variables at runtime and provides defaults for missing values.
 
-Results include:
+## Components
 
-- **Lift**: Percentage change from control
-- **P-value**: Statistical significance
-- **Confidence Intervals**: Range of likely true effect
-- **Sample Size**: Number of users per variant
-- **Recommendations**: Continue, stop winner, or needs more data
+### Component Structure
 
-### Targeting Rules
-
-Experiments can target specific users:
-
-```typescript
-{
-  includeSegments: ['premium-users'],
-  geo: { countries: ['US', 'CA'] },
-  device: { types: ['desktop'] },
-  schedule: { daysOfWeek: [1, 2, 3, 4, 5] } // Weekdays only
-}
-```
-
-### Best Practices
-
-1. **Always include a control variant** with `isControl: true`
-2. **Define one primary metric** for decision making
-3. **Set minimum sample sizes** to ensure statistical power
-4. **Track exposure separately** from assignment
-5. **Use deterministic assignment** for consistent user experience
-6. **Monitor data quality** via health indicators
-7. **Respect user privacy** - anonymize where possible
-
-## Component Patterns
-
-### Web Components
-
-All UI components use Web Components with shadow DOM:
+All components follow this pattern:
 
 ```javascript
-class MyComponent extends HTMLElement {
+/**
+ * Custom element implementation
+ * @element harmony-component-name
+ */
+class HarmonyComponentName extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
   }
-  
+
   connectedCallback() {
     this.render();
   }
-  
+
   render() {
     this.shadowRoot.innerHTML = `
-      <style>/* styles */</style>
-      <div>/* markup */</div>
+      <style>/* Component styles */</style>
+      <div><!-- Component markup --></div>
     `;
   }
 }
 
-customElements.define('my-component', MyComponent);
+customElements.define('harmony-component-name', HarmonyComponentName);
 ```
 
-### Event Publishing
+### Component Categories
 
-Components publish events, never call bounded contexts directly:
+- **Primitives**: Basic UI elements (buttons, inputs, sliders)
+- **Molecules**: Composite components (faders, knobs, meters)
+- **Organisms**: Complex components (mixer channels, transport)
+- **Templates**: Page-level layouts
 
-```javascript
-this.dispatchEvent(new CustomEvent('action', {
-  bubbles: true,
-  composed: true,
-  detail: { /* payload */ }
-}));
-```
+### Testing Components
 
-## Event Bus
+All components must be tested in Chrome before completion:
 
-The EventBus routes events between components and bounded contexts.
+1. Open component test file in Chrome
+2. Verify all states: default, hover, focus, active, disabled
+3. Check error states, loading states, empty states
+4. Verify 60fps animations using DevTools Performance panel
+
+## Bounded Contexts
+
+Bounded contexts implement business logic in Rust, compiled to WASM. They subscribe to command events and publish result events.
 
 ### Pattern
 
-1. Component publishes event
-2. EventBus validates and routes
-3. Bounded context subscribes and processes
-4. Result published as new event
+```
+UI Component → Publishes Event → EventBus Routes → BC Handles → Publishes Result
+```
+
+### Example: Component Lifecycle
+
+See [bounded-contexts/component-lifecycle/](bounded-contexts/component-lifecycle/) for implementation.
+
+### Modifying Bounded Contexts
+
+1. Navigate to `harmony-schemas`
+2. Modify schema definition
+3. Run codegen: `npm run codegen`
+4. Verify Rust compilation
+5. Commit schema + generated code together
+
+## Event Bus
+
+The EventBus decouples UI components from business logic. All communication happens through events.
+
+### Publishing Events
+
+```javascript
+window.dispatchEvent(new CustomEvent('harmony:command:play', {
+  detail: { trackId: 'track-1' }
+}));
+```
+
+### Subscribing to Events
+
+```javascript
+window.addEventListener('harmony:result:playback-started', (event) => {
+  console.log('Playback started:', event.detail);
+});
+```
 
 ### Debugging
 
-EventBusComponent is available on every page via `Ctrl+Shift+E` for real-time event monitoring.
+Press `Ctrl+Shift+E` to open the EventBus debugger. It shows:
+- All published events
+- Event payloads
+- Subscriber counts
+- Validation errors
 
-## Performance Guidelines
+See [components/event-bus-debugger.js](components/event-bus-debugger.js) for implementation.
+
+## Performance
 
 ### Budgets
 
-- **Render**: Maximum 16ms per frame (60fps)
-- **Memory**: Maximum 50MB WASM heap
-- **Load**: Maximum 200ms initial load
-- **Audio Latency**: Maximum 10ms end-to-end
+- **Render**: 16ms per frame (60fps)
+- **Memory**: 50MB WASM heap
+- **Load**: 200ms initial load
+- **Audio**: 10ms end-to-end latency
 
-### Testing
+### Monitoring
 
-All UI components must be tested in Chrome before completion. Verify all states: default, hover, focus, active, disabled, error, loading, empty.
+Enable performance monitoring in development:
 
-### Animations
+```bash
+ENABLE_PERFORMANCE_MONITORING=true
+```
 
-Target 60fps for standard UI animations. Use Chrome DevTools Performance panel to verify.
+### GPU Acceleration
+
+Audio processing uses WebGPU when available, falling back to WASM. Data transfer uses SharedArrayBuffer for zero-copy performance.
+
+## Testing
+
+### Component Tests
+
+Browser-based tests for UI components:
+
+```html
+<!-- components/example/example.test.html -->
+<script type="module">
+  import './example.js';
+  
+  // Test component behavior
+</script>
+```
+
+### Unit Tests
+
+Rust tests for bounded contexts:
+
+```bash
+cd bounded-contexts/component-lifecycle
+cargo test
+```
+
+### Integration Tests
+
+End-to-end tests using pytest:
+
+```bash
+pytest tests/
+```
 
 ## Contributing
 
-1. Check existing structure before creating files
-2. Follow TypeNavigator-only queries for data access
-3. Use EventBus ProcessCommand pattern
-4. Pass quality gates before proceeding
-5. Update this documentation with every change
-6. Test in Chrome before marking complete
+### Before Committing
 
-## File Organization
+1. Run quality gates: `npm run validate`
+2. Test components in Chrome
+3. Update DESIGN_SYSTEM.md
+4. Run codegen if schemas changed
+5. Verify performance budgets
+
+### Commit Message Format
 
 ```
-harmony-design/
-├── tokens/              # Design tokens (JSON)
-├── types/               # TypeScript type definitions
-├── components/          # Web Components
-├── bounded-contexts/    # Rust WASM modules
-├── hooks/               # Reusable hooks
-├── contexts/            # Context providers
-├── utils/               # Utility functions
-└── DESIGN_SYSTEM.md     # This file
+feat(component-name): Brief description
+
+Detailed explanation of changes.
+Relates to task-id or issue number.
 ```
 
-## Links
+### Pull Request Checklist
 
-- [Experiment Types](./types/experiment.d.ts)
-- [Token Files](./tokens/)
-- [Components](./components/)
-- [Bounded Contexts](./bounded-contexts/)
+- [ ] All quality gates pass
+- [ ] Components tested in Chrome
+- [ ] Documentation updated
+- [ ] No technical debt introduced
+- [ ] Performance budgets met
+
+## Additional Resources
+
+- [Schema Documentation](harmony-schemas/)
+- [Component Examples](examples/)
+- [Performance Reports](reports/)
+
+---
+
+**Last Updated**: 2024-02-15
+**Version**: 1.0.0
