@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IdempotencyKey Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    
+    h1 {
+      color: #00ff88;
+      border-bottom: 2px solid #00ff88;
+      padding-bottom: 0.5rem;
+    }
+    
+    h2 {
+      color: #00ccff;
+      margin-top: 2rem;
+    }
+    
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    
+    .test-result {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .test-result.pass {
+      background: #1a3a1a;
+      border-left: 4px solid #00ff88;
+      color: #00ff88;
+    }
+    
+    .test-result.fail {
+      background: #3a1a1a;
+      border-left: 4px solid #ff4444;
+      color: #ff4444;
+    }
+    
+    .test-result.info {
+      background: #1a2a3a;
+      border-left: 4px solid #00ccff;
+      color: #00ccff;
+    }
+    
+    .summary {
+      background: #2a2a2a;
+      border: 2px solid #00ff88;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      font-size: 1.1rem;
+    }
+    
+    .summary.has-failures {
+      border-color: #ff4444;
+    }
+    
+    code {
+      background: #2a2a2a;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      color: #00ff88;
+    }
+    
+    pre {
+      background: #0a0a0a;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>IdempotencyKey Tests</h1>
+  <div id="results"></div>
+  <div id="summary"></div>
+
+  <script type="module">
+    import {
+      generateIdempotencyKey,
+      parseIdempotencyKey,
+      isValidIdempotencyKey,
+      IdempotencyKeyCache
+    } from './idempotency-key.js';
+
+    const results = [];
+    
+    function test(name, fn) {
+      try {
+        fn();
+        results.push({ name, pass: true });
+        return true;
+      } catch (error) {
+        results.push({ name, pass: false, error: error.message });
+        return false;
+      }
+    }
+    
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+    
+    function assertEqual(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`);
+      }
+    }
+    
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `test-result ${type}`;
+      div.textContent = message;
+      document.getElementById('results').appendChild(div);
+    }
+
+    // Test Suite
+    const section1 = document.createElement('div');
+    section1.className = 'test-section';
+    section1.innerHTML = '<h2>Basic Key Generation</h2>';
+    document.getElementById('results').appendChild(section1);
+
+    test('generates key with all parameters', () => {
+      const key = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      assert(typeof key === 'string', 'Key should be a string');
+      assert(key.includes('Play'), 'Key should contain event type');
+      assert(key.includes('node-123'), 'Key should contain source');
+      log('✓ Generates key with all parameters', 'pass');
+    });
+
+    test('generates key without payload', () => {
+      const key = generateIdempotencyKey('Stop', 'node-456');
+      assert(typeof key === 'string', 'Key should be a string');
+      assert(key.includes('Stop'), 'Key should contain event type');
+      assert(key.includes('node-456'), 'Key should contain source');
+      log('✓ Generates key without payload', 'pass');
+    });
+
+    test('throws on missing eventType', () => {
+      let threw = false;
+      try {
+        generateIdempotencyKey('', 'source', {});
+      } catch (e) {
+        threw = true;
+      }
+      assert(threw, 'Should throw on empty eventType');
+      log('✓ Throws on missing eventType', 'pass');
+    });
+
+    test('throws on missing source', () => {
+      let threw = false;
+      try {
+        generateIdempotencyKey('Play', '', {});
+      } catch (e) {
+        threw = true;
+      }
+      assert(threw, 'Should throw on empty source');
+      log('✓ Throws on missing source', 'pass');
+    });
+
+    const section2 = document.createElement('div');
+    section2.className = 'test-section';
+    section2.innerHTML = '<h2>Stability & Determinism</h2>';
+    document.getElementById('results').appendChild(section2);
+
+    test('generates same key for identical events', () => {
+      const payload = { trackId: 'abc', volume: 0.8 };
+      const key1 = generateIdempotencyKey('Play', 'node-123', payload);
+      const key2 = generateIdempotencyKey('Play', 'node-123', payload);
+      assertEqual(key1, key2, 'Identical events should produce identical keys');
+      log(`✓ Same key for identical events: ${key1}`, 'pass');
+    });
+
+    test('generates different keys for different event types', () => {
+      const payload = { trackId: 'abc' };
+      const key1 = generateIdempotencyKey('Play', 'node-123', payload);
+      const key2 = generateIdempotencyKey('Stop', 'node-123', payload);
+      assert(key1 !== key2, 'Different event types should produce different keys');
+      log('✓ Different keys for different event types', 'pass');
+    });
+
+    test('generates different keys for different sources', () => {
+      const payload = { trackId: 'abc' };
+      const key1 = generateIdempotencyKey('Play', 'node-123', payload);
+      const key2 = generateIdempotencyKey('Play', 'node-456', payload);
+      assert(key1 !== key2, 'Different sources should produce different keys');
+      log('✓ Different keys for different sources', 'pass');
+    });
+
+    test('generates different keys for different payloads', () => {
+      const key1 = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      const key2 = generateIdempotencyKey('Play', 'node-123', { trackId: 'xyz' });
+      assert(key1 !== key2, 'Different payloads should produce different keys');
+      log('✓ Different keys for different payloads', 'pass');
+    });
+
+    test('handles null vs undefined payload consistently', () => {
+      const key1 = generateIdempotencyKey('Play', 'node-123', null);
+      const key2 = generateIdempotencyKey('Play', 'node-123', undefined);
+      const key3 = generateIdempotencyKey('Play', 'node-123');
+      assertEqual(key1, key2, 'null and undefined should produce same key');
+      assertEqual(key2, key3, 'undefined and omitted should produce same key');
+      log('✓ Handles null/undefined payload consistently', 'pass');
+    });
+
+    const section3 = document.createElement('div');
+    section3.className = 'test-section';
+    section3.innerHTML = '<h2>Key Parsing & Validation</h2>';
+    document.getElementById('results').appendChild(section3);
+
+    test('parses valid key correctly', () => {
+      const key = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      const parsed = parseIdempotencyKey(key);
+      assert(parsed !== null, 'Should parse valid key');
+      assertEqual(parsed.eventType, 'Play', 'Should parse event type');
+      assertEqual(parsed.source, 'node-123', 'Should parse source');
+      assert(parsed.contentHash.length === 8, 'Should parse content hash');
+      log('✓ Parses valid key correctly', 'pass');
+    });
+
+    test('returns null for invalid key format', () => {
+      const parsed = parseIdempotencyKey('invalid-key');
+      assertEqual(parsed, null, 'Should return null for invalid format');
+      log('✓ Returns null for invalid key format', 'pass');
+    });
+
+    test('validates correct key format', () => {
+      const key = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      assert(isValidIdempotencyKey(key), 'Should validate correct key');
+      log('✓ Validates correct key format', 'pass');
+    });
+
+    test('rejects invalid key format', () => {
+      assert(!isValidIdempotencyKey('invalid'), 'Should reject invalid key');
+      assert(!isValidIdempotencyKey(''), 'Should reject empty key');
+      assert(!isValidIdempotencyKey(null), 'Should reject null key');
+      log('✓ Rejects invalid key formats', 'pass');
+    });
+
+    const section4 = document.createElement('div');
+    section4.className = 'test-section';
+    section4.innerHTML = '<h2>IdempotencyKeyCache</h2>';
+    document.getElementById('results').appendChild(section4);
+
+    test('cache tracks seen keys', () => {
+      const cache = new IdempotencyKeyCache(1000);
+      const key = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      
+      assert(!cache.has(key), 'Should not have unseen key');
+      cache.add(key);
+      assert(cache.has(key), 'Should have seen key');
+      
+      cache.destroy();
+      log('✓ Cache tracks seen keys', 'pass');
+    });
+
+    test('cache expires old keys', async () => {
+      const cache = new IdempotencyKeyCache(100); // 100ms TTL
+      const key = generateIdempotencyKey('Play', 'node-123', { trackId: 'abc' });
+      
+      cache.add(key);
+      assert(cache.has(key), 'Should have fresh key');
+      
+      // Wait for expiration
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      assert(!cache.has(key), 'Should not have expired key');
+      
+      cache.destroy();
+      log('✓ Cache expires old keys', 'pass');
+    });
+
+    test('cache size tracking', () => {
+      const cache = new IdempotencyKeyCache(1000);
+      
+      assertEqual(cache.size, 0, 'Should start with size 0');
+      
+      cache.add(generateIdempotencyKey('Play', 'node-1', null));
+      cache.add(generateIdempotencyKey('Play', 'node-2', null));
+      cache.add(generateIdempotencyKey('Play', 'node-3', null));
+      
+      assertEqual(cache.size, 3, 'Should track size correctly');
+      
+      cache.clear();
+      assertEqual(cache.size, 0, 'Should clear to size 0');
+      
+      cache.destroy();
+      log('✓ Cache size tracking works', 'pass');
+    });
+
+    test('cache deduplication scenario', () => {
+      const cache = new IdempotencyKeyCache(1000);
+      const payload = { trackId: 'abc', volume: 0.8 };
+      
+      // Simulate duplicate events
+      const key1 = generateIdempotencyKey('Play', 'node-123', payload);
+      const key2 = generateIdempotencyKey('Play', 'node-123', payload);
+      
+      assertEqual(key1, key2, 'Duplicate events should have same key');
+      
+      // First event
+      if (!cache.has(key1)) {
+        cache.add(key1);
+        log('  → First event processed', 'info');
+      }
+      
+      // Duplicate event (should be skipped)
+      let duplicateSkipped = false;
+      if (cache.has(key2)) {
+        duplicateSkipped = true;
+        log('  → Duplicate event skipped', 'info');
+      }
+      
+      assert(duplicateSkipped, 'Should skip duplicate event');
+      
+      cache.destroy();
+      log('✓ Cache deduplication scenario works', 'pass');
+    });
+
+    const section5 = document.createElement('div');
+    section5.className = 'test-section';
+    section5.innerHTML = '<h2>Complex Payload Handling</h2>';
+    document.getElementById('results').appendChild(section5);
+
+    test('handles nested objects', () => {
+      const payload = {
+        track: { id: 'abc', name: 'Song' },
+        settings: { volume: 0.8, pan: 0.5 }
+      };
+      const key = generateIdempotencyKey('Play', 'node-123', payload);
+      assert(typeof key === 'string', 'Should handle nested objects');
+      log('✓ Handles nested objects', 'pass');
+    });
+
+    test('handles arrays', () => {
+      const payload = { tracks: ['abc', 'def', 'ghi'] };
+      const key = generateIdempotencyKey('Play', 'node-123', payload);
+      assert(typeof key === 'string', 'Should handle arrays');
+      log('✓ Handles arrays', 'pass');
+    });
+
+    test('handles primitive payloads', () => {
+      const key1 = generateIdempotencyKey('Play', 'node-123', 'string-payload');
+      const key2 = generateIdempotencyKey('Play', 'node-123', 42);
+      const key3 = generateIdempotencyKey('Play', 'node-123', true);
+      
+      assert(typeof key1 === 'string', 'Should handle string payload');
+      assert(typeof key2 === 'string', 'Should handle number payload');
+      assert(typeof key3 === 'string', 'Should handle boolean payload');
+      
+      log('✓ Handles primitive payloads', 'pass');
+    });
+
+    test('property order does not affect hash', () => {
+      const payload1 = { a: 1, b: 2, c: 3 };
+      const payload2 = { c: 3, a: 1, b: 2 };
+      
+      const key1 = generateIdempotencyKey('Play', 'node-123', payload1);
+      const key2 = generateIdempotencyKey('Play', 'node-123', payload2);
+      
+      assertEqual(key1, key2, 'Property order should not affect hash');
+      log('✓ Property order does not affect hash', 'pass');
+    });
+
+    // Summary
+    const passed = results.filter(r => r.pass).length;
+    const failed = results.filter(r => !r.pass).length;
+    const total = results.length;
+    
+    const summaryDiv = document.getElementById('summary');
+    summaryDiv.className = `summary ${failed > 0 ? 'has-failures' : ''}`;
+    summaryDiv.innerHTML = `
+      <h2>Test Summary</h2>
+      <p><strong>Total:</strong> ${total} tests</p>
+      <p><strong>Passed:</strong> ${passed} ✓</p>
+      <p><strong>Failed:</strong> ${failed} ${failed > 0 ? '✗' : ''}</p>
+      ${failed > 0 ? '<h3>Failures:</h3>' : ''}
+      ${results.filter(r => !r.pass).map(r => `
+        <div class="test-result fail">
+          <strong>${r.name}</strong><br>
+          ${r.error}
+        </div>
+      `).join('')}
+    `;
+    
+    if (failed === 0) {
+      log('🎉 All tests passed!', 'pass');
+    }
+  </script>
+</body>
+</html>
