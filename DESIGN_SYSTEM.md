@@ -365,3 +365,41 @@ Language preferences are saved to localStorage with key `harmony-language`. This
 **Testing:**
 Open `core/i18n/language-detector.test.html` in Chrome to test language detection, switching, and persistence.
 
+
+### Translation Extraction
+
+The translation extraction script automates the process of finding translatable strings in code and updating locale files.
+
+**Location**: `scripts/extract-translations.js`
+
+**Usage**:
+```bash
+# Extract and update locale files
+node scripts/extract-translations.js
+
+# Check for missing translations (CI mode)
+node scripts/extract-translations.js --check
+
+# Process specific locale
+node scripts/extract-translations.js --locale=es
+
+# Verbose output
+node scripts/extract-translations.js --verbose
+```
+
+**Detection Patterns**:
+- `t('key')` - Direct translation call
+- `useTranslation().t('key')` - Hook-based translation
+
+**Workflow**:
+1. Scans `components/`, `controls/`, `organisms/`, `primitives/`, `templates/`, `pages/`, `core/`, `utils/`, `web/`
+2. Extracts translation keys from `.js` and `.html` files
+3. Parses keys into nested object structure (`component.button.label` ? `{ component: { button: { label: "..." } } }`)
+4. Updates locale files with missing keys:
+   - English: Uses last segment as placeholder
+   - Other locales: Marked with `[locale] key` for translator review
+5. Preserves existing translations
+
+**CI Integration**: Add `--check` flag to pre-commit hook or CI pipeline to prevent missing translations.
+
+**See**: `scripts/README.md` for detailed documentation
