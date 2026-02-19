@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stagger Children - Test Suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    h2 {
+      margin: 2rem 0 1rem;
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: #4a9eff;
+    }
+
+    .test-section {
+      margin-bottom: 3rem;
+      padding: 1.5rem;
+      background: #1a1a1a;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #3a8eef;
+    }
+
+    button:active {
+      background: #2a7edf;
+    }
+
+    button.secondary {
+      background: #333;
+    }
+
+    button.secondary:hover {
+      background: #444;
+    }
+
+    .list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .list-item {
+      padding: 1rem;
+      background: #2a2a2a;
+      border-radius: 4px;
+      border-left: 3px solid #4a9eff;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .grid-item {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      background: #0d3a5c;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .config-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .config-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .config-item label {
+      font-size: 0.875rem;
+      color: #aaa;
+    }
+
+    .config-item select,
+    .config-item input {
+      padding: 0.5rem;
+      background: #2a2a2a;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .performance-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat {
+      padding: 0.75rem;
+      background: #0d3a5c;
+      border-radius: 4px;
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: #aaa;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #4a9eff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎭 Stagger Children - Test Suite</h1>
+
+  <!-- Test 1: Basic Stagger -->
+  <div class="test-section">
+    <h2>Test 1: Basic Stagger (Programmatic)</h2>
+    <div class="controls">
+      <button onclick="testBasicStagger()">Animate Forward</button>
+      <button onclick="testBasicStagger('reverse')">Animate Reverse</button>
+      <button onclick="testBasicStagger('center-out')">Center Out</button>
+      <button onclick="testBasicStagger('edges-in')">Edges In</button>
+      <button class="secondary" onclick="resetBasicStagger()">Reset</button>
+    </div>
+    <div id="basic-list" class="list-container">
+      <div class="list-item">Item 1</div>
+      <div class="list-item">Item 2</div>
+      <div class="list-item">Item 3</div>
+      <div class="list-item">Item 4</div>
+      <div class="list-item">Item 5</div>
+      <div class="list-item">Item 6</div>
+    </div>
+    <div id="basic-status" class="status">Ready</div>
+  </div>
+
+  <!-- Test 2: Web Component -->
+  <div class="test-section">
+    <h2>Test 2: Web Component (Auto-animate)</h2>
+    <div class="controls">
+      <button onclick="animateComponent()">Animate</button>
+      <button onclick="resetComponent()">Reset</button>
+      <button onclick="addComponentItem()">Add Item</button>
+    </div>
+    <stagger-children id="component-list" delay="75" direction="forward" variant="fadeInUp" class="list-container">
+      <div class="list-item">Component Item 1</div>
+      <div class="list-item">Component Item 2</div>
+      <div class="list-item">Component Item 3</div>
+      <div class="list-item">Component Item 4</div>
+    </stagger-children>
+    <div id="component-status" class="status">Ready</div>
+  </div>
+
+  <!-- Test 3: Grid Layout -->
+  <div class="test-section">
+    <h2>Test 3: Grid Layout with Different Variants</h2>
+    <div class="config-panel">
+      <div class="config-item">
+        <label>Variant:</label>
+        <select id="grid-variant">
+          <option value="fadeInUp">Fade In Up</option>
+          <option value="fadeIn">Fade In</option>
+          <option value="slideInLeft">Slide In Left</option>
+          <option value="slideInRight">Slide In Right</option>
+          <option value="scaleIn">Scale In</option>
+        </select>
+      </div>
+      <div class="config-item">
+        <label>Delay (ms):</label>
+        <input type="number" id="grid-delay" value="30" min="0" max="200" step="10">
+      </div>
+      <div class="config-item">
+        <label>Duration (ms):</label>
+        <input type="number" id="grid-duration" value="400" min="100" max="1000" step="50">
+      </div>
+      <div class="config-item">
+        <label>Preset:</label>
+        <select id="grid-preset">
+          <option value="instant">Instant</option>
+          <option value="fast">Fast</option>
+          <option value="smooth" selected>Smooth</option>
+          <option value="gentle">Gentle</option>
+        </select>
+      </div>
+    </div>
+    <div class="controls">
+      <button onclick="animateGrid()">Animate</button>
+      <button class="secondary" onclick="resetGrid()">Reset</button>
+    </div>
+    <div id="grid-container" class="grid-container">
+      <div class="grid-item">1</div>
+      <div class="grid-item">2</div>
+      <div class="grid-item">3</div>
+      <div class="grid-item">4</div>
+      <div class="grid-item">5</div>
+      <div class="grid-item">6</div>
+      <div class="grid-item">7</div>
+      <div class="grid-item">8</div>
+      <div class="grid-item">9</div>
+      <div class="grid-item">10</div>
+      <div class="grid-item">11</div>
+      <div class="grid-item">12</div>
+    </div>
+    <div class="performance-stats">
+      <div class="stat">
+        <div class="stat-label">Start Time</div>
+        <div class="stat-value" id="grid-start">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">End Time</div>
+        <div class="stat-value" id="grid-end">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Total Duration</div>
+        <div class="stat-value" id="grid-total">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Test 4: Dynamic List -->
+  <div class="test-section">
+    <h2>Test 4: Dynamic List with Controller</h2>
+    <div class="controls">
+      <button onclick="addDynamicItem()">Add Item</button>
+      <button onclick="removeDynamicItem()">Remove Last</button>
+      <button onclick="animateDynamic()">Animate All</button>
+      <button class="secondary" onclick="resetDynamic()">Reset</button>
+    </div>
+    <div id="dynamic-list" class="list-container">
+      <div class="list-item">Dynamic Item 1</div>
+      <div class="list-item">Dynamic Item 2</div>
+      <div class="list-item">Dynamic Item 3</div>
+    </div>
+    <div id="dynamic-status" class="status">Items: 3 | Status: Ready</div>
+  </div>
+
+  <script type="module">
+    import { staggerChildren, createStaggerController } from './stagger-children.js';
+
+    // Make functions available globally for onclick handlers
+    window.staggerChildren = staggerChildren;
+    window.createStaggerController = createStaggerController;
+
+    // Test 1: Basic Stagger
+    let basicController = null;
+
+    window.testBasicStagger = async (direction = 'forward') => {
+      const container = document.getElementById('basic-list');
+      const status = document.getElementById('basic-status');
+      
+      status.textContent = `Animating (${direction})...`;
+      
+      const start = performance.now();
+      await staggerChildren(container, {
+        delay: 60,
+        direction: direction,
+        variant: 'fadeInUp',
+        preset: 'smooth',
+        duration: 300,
+        onChildStart: (child, index) => {
+          status.textContent = `Animating item ${index + 1}...`;
+        }
+      });
+      const end = performance.now();
+      
+      status.textContent = `Complete! Total time: ${Math.round(end - start)}ms`;
+    };
+
+    window.resetBasicStagger = () => {
+      const container = document.getElementById('basic-list');
+      Array.from(container.children).forEach(child => {
+        child.style.opacity = '0';
+        child.style.transform = 'translateY(20px)';
+        child.style.transition = 'none';
+      });
+      document.getElementById('basic-status').textContent = 'Reset - Ready to animate';
+    };
+
+    // Test 2: Web Component
+    window.animateComponent = () => {
+      const component = document.getElementById('component-list');
+      document.getElementById('component-status').textContent = 'Animating...';
+      component.animate().then(() => {
+        document.getElementById('component-status').textContent = 'Animation complete!';
+      });
+    };
+
+    window.resetComponent = () => {
+      const component = document.getElementById('component-list');
+      component.reset();
+      document.getElementById('component-status').textContent = 'Reset - Ready to animate';
+    };
+
+    let componentItemCount = 4;
+    window.addComponentItem = () => {
+      const component = document.getElementById('component-list');
+      componentItemCount++;
+      const item = document.createElement('div');
+      item.className = 'list-item';
+      item.textContent = `Component Item ${componentItemCount}`;
+      component.appendChild(item);
+      document.getElementById('component-status').textContent = `Added item ${componentItemCount}`;
+    };
+
+    // Test 3: Grid Layout
+    window.animateGrid = async () => {
+      const container = document.getElementById('grid-container');
+      const variant = document.getElementById('grid-variant').value;
+      const delay = parseInt(document.getElementById('grid-delay').value, 10);
+      const duration = parseInt(document.getElementById('grid-duration').value, 10);
+      const preset = document.getElementById('grid-preset').value;
+      
+      const startTime = performance.now();
+      document.getElementById('grid-start').textContent = '0ms';
+      document.getElementById('grid-end').textContent = '-';
+      document.getElementById('grid-total').textContent = '-';
+      
+      await staggerChildren(container, {
+        delay,
+        direction: 'forward',
+        variant,
+        preset,
+        duration,
+        onChildComplete: (child, index) => {
+          const elapsed = Math.round(performance.now() - startTime);
+          document.getElementById('grid-end').textContent = `${elapsed}ms`;
+        }
+      });
+      
+      const totalTime = Math.round(performance.now() - startTime);
+      document.getElementById('grid-total').textContent = `${totalTime}ms`;
+    };
+
+    window.resetGrid = () => {
+      const container = document.getElementById('grid-container');
+      const variant = document.getElementById('grid-variant').value;
+      Array.from(container.children).forEach(child => {
+        child.style.opacity = '0';
+        child.style.transform = variant === 'scaleIn' ? 'scale(0.8)' : 'translateY(20px)';
+        child.style.transition = 'none';
+      });
+      document.getElementById('grid-start').textContent = '-';
+      document.getElementById('grid-end').textContent = '-';
+      document.getElementById('grid-total').textContent = '-';
+    };
+
+    // Test 4: Dynamic List
+    let dynamicController = createStaggerController(
+      document.getElementById('dynamic-list'),
+      {
+        delay: 50,
+        direction: 'forward',
+        variant: 'slideInLeft',
+        duration: 300
+      }
+    );
+
+    let dynamicItemCount = 3;
+
+    window.addDynamicItem = () => {
+      const container = document.getElementById('dynamic-list');
+      dynamicItemCount++;
+      const item = document.createElement('div');
+      item.className = 'list-item';
+      item.textContent = `Dynamic Item ${dynamicItemCount}`;
+      container.appendChild(item);
+      
+      // Animate only the new item
+      dynamicController.animateFrom(dynamicItemCount - 1);
+      updateDynamicStatus();
+    };
+
+    window.removeDynamicItem = () => {
+      const container = document.getElementById('dynamic-list');
+      if (container.children.length > 0) {
+        container.removeChild(container.lastElementChild);
+        dynamicItemCount--;
+        updateDynamicStatus();
+      }
+    };
+
+    window.animateDynamic = async () => {
+      document.getElementById('dynamic-status').textContent = 'Animating all items...';
+      await dynamicController.animate();
+      updateDynamicStatus('Animation complete!');
+    };
+
+    window.resetDynamic = () => {
+      dynamicController.reset();
+      updateDynamicStatus('Reset');
+    };
+
+    function updateDynamicStatus(message = 'Ready') {
+      const count = document.getElementById('dynamic-list').children.length;
+      document.getElementById('dynamic-status').textContent = 
+        `Items: ${count} | Status: ${message}`;
+    }
+
+    // Initialize all tests
+    window.addEventListener('load', () => {
+      resetBasicStagger();
+      resetGrid();
+      console.log('✅ Stagger Children tests loaded');
+      console.log('📊 Performance budgets: 16ms render, 60fps target');
+      console.log('🎨 Try different variants and directions!');
+    });
+  </script>
+</body>
+</html>
