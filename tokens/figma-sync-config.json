@@ -1,0 +1,35 @@
+{
+  "$schema": "./figma-sync-config.schema.json",
+  "figmaFileKey": "",
+  "syncDirection": "bidirectional",
+  "categories": {
+    "colors": {
+      "enabled": true,
+      "prefix": "color"
+    },
+    "spacing": {
+      "enabled": true,
+      "prefix": "space"
+    },
+    "typography": {
+      "enabled": true,
+      "prefix": "text"
+    },
+    "shadows": {
+      "enabled": true,
+      "prefix": "shadow"
+    },
+    "borderRadius": {
+      "enabled": true,
+      "prefix": "radius"
+    }
+  },
+  "transformations": {
+    "colorFormat": "rgb",
+    "spacingUnit": "px",
+    "fontWeightFormat": "numeric"
+  },
+  "conflictResolution": "manual",
+  "autoSync": false,
+  "syncInterval": 3600000
+}

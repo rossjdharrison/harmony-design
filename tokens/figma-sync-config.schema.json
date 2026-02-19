@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Figma Sync Configuration",
+  "description": "Configuration for bidirectional Figma token synchronization",
+  "type": "object",
+  "required": ["figmaFileKey", "syncDirection"],
+  "properties": {
+    "figmaFileKey": {
+      "type": "string",
+      "description": "Figma file key from the file URL",
+      "pattern": "^[a-zA-Z0-9]+$"
+    },
+    "syncDirection": {
+      "type": "string",
+      "enum": ["pull", "push", "bidirectional"],
+      "description": "Direction of token synchronization"
+    },
+    "categories": {
+      "type": "object",
+      "description": "Token categories to sync",
+      "properties": {
+        "colors": {
+          "$ref": "#/definitions/categoryConfig"
+        },
+        "spacing": {
+          "$ref": "#/definitions/categoryConfig"
+        },
+        "typography": {
+          "$ref": "#/definitions/categoryConfig"
+        },
+        "shadows": {
+          "$ref": "#/definitions/categoryConfig"
+        },
+        "borderRadius": {
+          "$ref": "#/definitions/categoryConfig"
+        }
+      }
+    },
+    "transformations": {
+      "type": "object",
+      "description": "Token transformation rules",
+      "properties": {
+        "colorFormat": {
+          "type": "string",
+          "enum": ["rgb", "rgba", "hex", "hsl"],
+          "default": "rgb"
+        },
+        "spacingUnit": {
+          "type": "string",
+          "enum": ["px", "rem", "em"],
+          "default": "px"
+        },
+        "fontWeightFormat": {
+          "type": "string",
+          "enum": ["numeric", "keyword"],
+          "default": "numeric"
+        }
+      }
+    },
+    "conflictResolution": {
+      "type": "string",
+      "enum": ["manual", "local", "remote"],
+      "description": "How to resolve conflicts during bidirectional sync",
+      "default": "manual"
+    },
+    "autoSync": {
+      "type": "boolean",
+      "description": "Enable automatic synchronization",
+      "default": false
+    },
+    "syncInterval": {
+      "type": "number",
+      "description": "Auto-sync interval in milliseconds",
+      "minimum": 60000,
+      "default": 3600000
+    }
+  },
+  "definitions": {
+    "categoryConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true
+        },
+        "prefix": {
+          "type": "string",
+          "description": "Prefix for token names in this category"
+        }
+      }
+    }
+  }
+}
