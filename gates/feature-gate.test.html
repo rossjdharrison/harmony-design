@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Gate Component Tests</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+
+    .test-case {
+      margin: 15px 0;
+      padding: 15px;
+      background: #f9f9f9;
+      border-left: 4px solid #2196f3;
+      border-radius: 4px;
+    }
+
+    .test-case h3 {
+      margin: 0 0 10px 0;
+      color: #555;
+      font-size: 16px;
+    }
+
+    .feature-content {
+      padding: 10px;
+      background: #e3f2fd;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .fallback-content {
+      padding: 10px;
+      background: #fff3e0;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+
+    .controls {
+      margin: 20px 0;
+      padding: 15px;
+      background: #e8eaf6;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 8px 16px;
+      margin: 5px;
+      border: none;
+      border-radius: 4px;
+      background: #2196f3;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #1976d2;
+    }
+
+    button.danger {
+      background: #f44336;
+    }
+
+    button.danger:hover {
+      background: #d32f2f;
+    }
+
+    .event-log {
+      margin-top: 20px;
+      padding: 15px;
+      background: #263238;
+      color: #aed581;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 2px solid #4caf50;
+      padding-left: 10px;
+    }
+
+    .test-results {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f8e9;
+      border-radius: 4px;
+    }
+
+    .test-result {
+      margin: 5px 0;
+      padding: 5px 10px;
+    }
+
+    .test-result.pass {
+      color: #2e7d32;
+    }
+
+    .test-result.fail {
+      color: #c62828;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚪 Feature Gate Component Tests</h1>
+
+  <!-- Feature Flag Context (required) -->
+  <feature-flag-context></feature-flag-context>
+
+  <div class="controls">
+    <h3>Feature Flag Controls</h3>
+    <button onclick="toggleFeature('new-ui')">Toggle "new-ui"</button>
+    <button onclick="toggleFeature('beta-feature')">Toggle "beta-feature"</button>
+    <button onclick="toggleFeature('experimental')">Toggle "experimental"</button>
+    <button class="danger" onclick="clearEventLog()">Clear Log</button>
+    <button onclick="runTests()">Run Tests</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 1: Basic Gate (Enabled)</h2>
+    <div class="test-case">
+      <h3>Feature: new-ui (should be visible if enabled)</h3>
+      <feature-gate flag="new-ui" debug="true">
+        <div class="feature-content">
+          ✨ New UI Feature - This content is only visible when "new-ui" is enabled
+        </div>
+      </feature-gate>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Gate with Fallback</h2>
+    <div class="test-case">
+      <h3>Feature: beta-feature (with fallback)</h3>
+      <feature-gate flag="beta-feature" fallback="true" debug="true">
+        <div class="feature-content">
+          🎉 Beta Feature - This is the new beta feature!
+        </div>
+        <div class="fallback-content" slot="fallback">
+          ⏳ Coming Soon - This feature is not yet available
+        </div>
+      </feature-gate>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Multiple Gates</h2>
+    <div class="test-case">
+      <h3>Feature: experimental</h3>
+      <feature-gate flag="experimental">
+        <div class="feature-content">
+          🧪 Experimental Feature A
+        </div>
+      </feature-gate>
+    </div>
+    <div class="test-case">
+      <h3>Feature: new-ui (duplicate gate)</h3>
+      <feature-gate flag="new-ui">
+        <div class="feature-content">
+          🎨 New UI Feature (another gate instance)
+        </div>
+      </feature-gate>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Nested Content</h2>
+    <div class="test-case">
+      <h3>Complex content inside gate</h3>
+      <feature-gate flag="new-ui">
+        <div class="feature-content">
+          <h4>Advanced Feature</h4>
+          <p>This gate contains complex nested content:</p>
+          <ul>
+            <li>List item 1</li>
+            <li>List item 2</li>
+            <li>List item 3</li>
+          </ul>
+          <button>Action Button</button>
+        </div>
+      </feature-gate>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div class="event-log" id="eventLog">
+      <div class="event-log-entry">Waiting for events...</div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Automated Test Results</h2>
+    <div class="test-results" id="testResults">
+      <p>Click "Run Tests" to execute automated tests</p>
+    </div>
+  </div>
+
+  <!-- Import dependencies -->
+  <script type="module" src="../contexts/feature-flag-context.js"></script>
+  <script type="module" src="./feature-gate.js"></script>
+
+  <script type="module">
+    // Event logging
+    const eventLog = document.getElementById('eventLog');
+    let eventCount = 0;
+
+    function logEvent(type, detail) {
+      eventCount++;
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.textContent = `[${eventCount}] ${type}: ${JSON.stringify(detail, null, 2)}`;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 20 events
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Listen to all feature gate events
+    document.addEventListener('feature-gate:evaluated', (e) => {
+      logEvent('evaluated', e.detail);
+    });
+
+    document.addEventListener('feature-gate:enabled', (e) => {
+      logEvent('enabled', e.detail);
+    });
+
+    document.addEventListener('feature-gate:disabled', (e) => {
+      logEvent('disabled', e.detail);
+    });
+
+    // Global functions for controls
+    window.toggleFeature = function(flag) {
+      const context = document.querySelector('feature-flag-context');
+      if (context) {
+        const currentValue = context.isEnabled(flag);
+        context.setFlag(flag, !currentValue);
+        logEvent('flag-toggled', { flag, newValue: !currentValue });
+      }
+    };
+
+    window.clearEventLog = function() {
+      eventLog.innerHTML = '<div class="event-log-entry">Log cleared</div>';
+      eventCount = 0;
+    };
+
+    // Automated tests
+    window.runTests = async function() {
+      const results = document.getElementById('testResults');
+      results.innerHTML = '<h3>Running tests...</h3>';
+      
+      const tests = [];
+      const context = document.querySelector('feature-flag-context');
+
+      // Test 1: Gate responds to flag changes
+      tests.push(await (async () => {
+        const gate = document.querySelector('feature-gate[flag="new-ui"]');
+        context.setFlag('new-ui', true);
+        await new Promise(r => setTimeout(r, 50));
+        const enabled1 = gate.isEnabled();
+        
+        context.setFlag('new-ui', false);
+        await new Promise(r => setTimeout(r, 50));
+        const enabled2 = gate.isEnabled();
+        
+        return {
+          name: 'Gate responds to flag changes',
+          pass: enabled1 === true && enabled2 === false,
+          details: `enabled1=${enabled1}, enabled2=${enabled2}`
+        };
+      })());
+
+      // Test 2: Multiple gates with same flag sync
+      tests.push(await (async () => {
+        const gates = document.querySelectorAll('feature-gate[flag="new-ui"]');
+        context.setFlag('new-ui', true);
+        await new Promise(r => setTimeout(r, 50));
+        
+        const allEnabled = Array.from(gates).every(g => g.isEnabled());
+        
+        return {
+          name: 'Multiple gates sync with same flag',
+          pass: allEnabled && gates.length > 1,
+          details: `Found ${gates.length} gates, all enabled: ${allEnabled}`
+        };
+      })());
+
+      // Test 3: Fallback slot visibility
+      tests.push(await (async () => {
+        const gate = document.querySelector('feature-gate[flag="beta-feature"]');
+        context.setFlag('beta-feature', false);
+        await new Promise(r => setTimeout(r, 50));
+        
+        const fallbackSlot = gate.shadowRoot.querySelector('slot[name="fallback"]');
+        const isVisible = fallbackSlot && fallbackSlot.style.display !== 'none';
+        
+        return {
+          name: 'Fallback slot shows when feature disabled',
+          pass: isVisible,
+          details: `Fallback visible: ${isVisible}`
+        };
+      })());
+
+      // Test 4: Events published correctly
+      tests.push(await (async () => {
+        let eventReceived = false;
+        const handler = () => { eventReceived = true; };
+        
+        document.addEventListener('feature-gate:enabled', handler, { once: true });
+        context.setFlag('experimental', true);
+        await new Promise(r => setTimeout(r, 50));
+        
+        document.removeEventListener('feature-gate:enabled', handler);
+        
+        return {
+          name: 'Events published on state change',
+          pass: eventReceived,
+          details: `Event received: ${eventReceived}`
+        };
+      })());
+
+      // Test 5: Performance (evaluation < 1ms)
+      tests.push(await (async () => {
+        const gate = document.querySelector('feature-gate[flag="new-ui"]');
+        const start = performance.now();
+        gate.refresh();
+        const duration = performance.now() - start;
+        
+        return {
+          name: 'Evaluation performance < 1ms',
+          pass: duration < 1,
+          details: `Duration: ${duration.toFixed(3)}ms`
+        };
+      })());
+
+      // Display results
+      const passCount = tests.filter(t => t.pass).length;
+      const totalCount = tests.length;
+      
+      results.innerHTML = `
+        <h3>Test Results: ${passCount}/${totalCount} passed</h3>
+        ${tests.map(t => `
+          <div class="test-result ${t.pass ? 'pass' : 'fail'}">
+            ${t.pass ? '✅' : '❌'} ${t.name}
+            <br><small>${t.details}</small>
+          </div>
+        `).join('')}
+      `;
+
+      logEvent('tests-completed', { passed: passCount, total: totalCount });
+    };
+
+    // Initialize with some flags enabled
+    window.addEventListener('DOMContentLoaded', () => {
+      const context = document.querySelector('feature-flag-context');
+      if (context) {
+        context.setFlag('new-ui', true);
+        context.setFlag('beta-feature', false);
+        context.setFlag('experimental', false);
+        logEvent('initialization', { message: 'Feature flags initialized' });
+      }
+    });
+  </script>
+</body>
+</html>
