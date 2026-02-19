@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>I18n Demo - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      color: #6366f1;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: #f9fafb;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #6366f1;
+      color: white;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #4f46e5;
+    }
+
+    button.active {
+      background: #10b981;
+    }
+
+    .section {
+      margin-bottom: 2rem;
+    }
+
+    .section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #374151;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+
+    .translation-grid {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 0.5rem 1rem;
+      font-size: 0.875rem;
+    }
+
+    .translation-grid .key {
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .translation-grid .value {
+      color: #111827;
+    }
+
+    .info {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 1rem;
+      margin-bottom: 2rem;
+      border-radius: 4px;
+    }
+
+    .interpolation-demo {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 4px;
+    }
+
+    .interpolation-demo code {
+      background: #fff;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .locale-info {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem;
+      background: #f3f4f6;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+
+    .locale-info div {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .locale-info .label {
+      font-size: 0.75rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .locale-info .value {
+      font-size: 1rem;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌍 Internationalization (i18n) Demo</h1>
+    
+    <div class="info">
+      <strong>About:</strong> This demo shows the i18n system with translations for English, German, Japanese, and Chinese.
+      Click the buttons below to switch languages and see all UI strings update automatically.
+    </div>
+
+    <div class="locale-info">
+      <div>
+        <span class="label">Current Locale</span>
+        <span class="value" id="current-locale">-</span>
+      </div>
+      <div>
+        <span class="label">Language</span>
+        <span class="value" id="current-language">-</span>
+      </div>
+      <div>
+        <span class="label">Loaded Locales</span>
+        <span class="value" id="loaded-count">-</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button data-locale="en">English</button>
+      <button data-locale="de">Deutsch</button>
+      <button data-locale="ja">日本語</button>
+      <button data-locale="zh">中文</button>
+    </div>
+
+    <div class="section">
+      <h2>Common Strings</h2>
+      <div class="translation-grid" id="common-strings"></div>
+    </div>
+
+    <div class="section">
+      <h2>Audio Controls</h2>
+      <div class="translation-grid" id="audio-strings"></div>
+    </div>
+
+    <div class="section">
+      <h2>UI Controls</h2>
+      <div class="translation-grid" id="control-strings"></div>
+    </div>
+
+    <div class="section">
+      <h2>Validation Messages</h2>
+      <div class="translation-grid" id="validation-strings"></div>
+      <div class="interpolation-demo">
+        <strong>Interpolation Example:</strong><br>
+        <code>i18n.t('validation.minValue', { min: 0 })</code> → 
+        <span id="interpolation-example"></span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Accessibility Labels</h2>
+      <div class="translation-grid" id="a11y-strings"></div>
+    </div>
+
+    <div class="section">
+      <h2>Theme Strings</h2>
+      <div class="translation-grid" id="theme-strings"></div>
+    </div>
+
+    <div class="section">
+      <h2>Error Messages</h2>
+      <div class="translation-grid" id="error-strings"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import i18n from '../core/i18n.js';
+
+    // Wait for i18n to initialize
+    await i18n.initialize(i18n.detectBrowserLocale());
+
+    const sections = {
+      'common-strings': ['loading', 'error', 'success', 'cancel', 'confirm', 'close', 'save', 'delete', 'edit'],
+      'audio-strings': ['play', 'pause', 'stop', 'record', 'mute', 'solo', 'volume', 'pan', 'tempo'],
+      'control-strings': ['fader', 'knob', 'toggle', 'button', 'slider'],
+      'validation-strings': ['required', 'invalid', 'outOfRange'],
+      'a11y-strings': ['skipToContent', 'openMenu', 'closeMenu', 'toggleTheme'],
+      'theme-strings': ['light', 'dark', 'auto', 'switchTheme'],
+      'error-strings': ['networkError', 'loadFailed', 'saveFailed', 'permissionDenied', 'notFound', 'timeout']
+    };
+
+    function updateUI() {
+      // Update locale info
+      document.getElementById('current-locale').textContent = i18n.getCurrentLocale();
+      document.getElementById('current-language').textContent = i18n.getLanguageName();
+      document.getElementById('loaded-count').textContent = i18n.getLoadedLocales().length;
+
+      // Update all sections
+      for (const [sectionId, keys] of Object.entries(sections)) {
+        const container = document.getElementById(sectionId);
+        const category = sectionId.replace('-strings', '').replace('a11y', 'accessibility').replace('control', 'controls');
+        
+        container.innerHTML = keys.map(key => `
+          <div class="key">${key}:</div>
+          <div class="value">${i18n.t(`${category}.${key}`)}</div>
+        `).join('');
+      }
+
+      // Update interpolation example
+      document.getElementById('interpolation-example').textContent = 
+        i18n.t('validation.minValue', { min: 0 });
+
+      // Update active button
+      document.querySelectorAll('button[data-locale]').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.locale === i18n.getCurrentLocale());
+      });
+    }
+
+    // Locale switcher buttons
+    document.querySelectorAll('button[data-locale]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const locale = button.dataset.locale;
+        const success = await i18n.setLocale(locale);
+        if (success) {
+          updateUI();
+        }
+      });
+    });
+
+    // Listen for locale changes
+    window.addEventListener('locale-changed', (e) => {
+      console.log('Locale changed:', e.detail);
+    });
+
+    // Initial render
+    updateUI();
+  </script>
+</body>
+</html>

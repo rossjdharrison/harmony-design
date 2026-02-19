@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "locale": "en",
+    "language": "English",
+    "version": "1.0.0"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "reset": "Reset",
+    "apply": "Apply"
+  },
+  "audio": {
+    "play": "Play",
+    "pause": "Pause",
+    "stop": "Stop",
+    "record": "Record",
+    "mute": "Mute",
+    "solo": "Solo",
+    "volume": "Volume",
+    "pan": "Pan",
+    "tempo": "Tempo",
+    "bpm": "BPM",
+    "track": "Track",
+    "clip": "Clip",
+    "timeline": "Timeline",
+    "mixer": "Mixer"
+  },
+  "controls": {
+    "fader": "Fader",
+    "knob": "Knob",
+    "toggle": "Toggle",
+    "button": "Button",
+    "slider": "Slider"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalid": "Invalid value",
+    "outOfRange": "Value out of range",
+    "minValue": "Minimum value is {min}",
+    "maxValue": "Maximum value is {max}"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to content",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "toggleTheme": "Toggle theme",
+    "increaseValue": "Increase value",
+    "decreaseValue": "Decrease value"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto",
+    "switchTheme": "Switch theme"
+  },
+  "errors": {
+    "networkError": "Network error occurred",
+    "loadFailed": "Failed to load",
+    "saveFailed": "Failed to save",
+    "permissionDenied": "Permission denied",
+    "notFound": "Not found",
+    "timeout": "Request timeout"
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "locale": "de",
+    "language": "Deutsch",
+    "version": "1.0.0"
+  },
+  "common": {
+    "loading": "Laden...",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "add": "Hinzufügen",
+    "remove": "Entfernen",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "sort": "Sortieren",
+    "reset": "Zurücksetzen",
+    "apply": "Anwenden"
+  },
+  "audio": {
+    "play": "Abspielen",
+    "pause": "Pause",
+    "stop": "Stopp",
+    "record": "Aufnehmen",
+    "mute": "Stumm",
+    "solo": "Solo",
+    "volume": "Lautstärke",
+    "pan": "Balance",
+    "tempo": "Tempo",
+    "bpm": "BPM",
+    "track": "Spur",
+    "clip": "Clip",
+    "timeline": "Zeitleiste",
+    "mixer": "Mischpult"
+  },
+  "controls": {
+    "fader": "Fader",
+    "knob": "Regler",
+    "toggle": "Schalter",
+    "button": "Taste",
+    "slider": "Schieberegler"
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "invalid": "Ungültiger Wert",
+    "outOfRange": "Wert außerhalb des Bereichs",
+    "minValue": "Mindestwert ist {min}",
+    "maxValue": "Maximalwert ist {max}"
+  },
+  "accessibility": {
+    "skipToContent": "Zum Inhalt springen",
+    "openMenu": "Menü öffnen",
+    "closeMenu": "Menü schließen",
+    "toggleTheme": "Design wechseln",
+    "increaseValue": "Wert erhöhen",
+    "decreaseValue": "Wert verringern"
+  },
+  "theme": {
+    "light": "Hell",
+    "dark": "Dunkel",
+    "auto": "Automatisch",
+    "switchTheme": "Design wechseln"
+  },
+  "errors": {
+    "networkError": "Netzwerkfehler aufgetreten",
+    "loadFailed": "Laden fehlgeschlagen",
+    "saveFailed": "Speichern fehlgeschlagen",
+    "permissionDenied": "Zugriff verweigert",
+    "notFound": "Nicht gefunden",
+    "timeout": "Zeitüberschreitung"
+  }
+}

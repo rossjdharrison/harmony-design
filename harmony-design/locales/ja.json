@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "locale": "ja",
+    "language": "日本語",
+    "version": "1.0.0"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "close": "閉じる",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集",
+    "add": "追加",
+    "remove": "削除",
+    "search": "検索",
+    "filter": "フィルター",
+    "sort": "並び替え",
+    "reset": "リセット",
+    "apply": "適用"
+  },
+  "audio": {
+    "play": "再生",
+    "pause": "一時停止",
+    "stop": "停止",
+    "record": "録音",
+    "mute": "ミュート",
+    "solo": "ソロ",
+    "volume": "音量",
+    "pan": "パン",
+    "tempo": "テンポ",
+    "bpm": "BPM",
+    "track": "トラック",
+    "clip": "クリップ",
+    "timeline": "タイムライン",
+    "mixer": "ミキサー"
+  },
+  "controls": {
+    "fader": "フェーダー",
+    "knob": "ノブ",
+    "toggle": "トグル",
+    "button": "ボタン",
+    "slider": "スライダー"
+  },
+  "validation": {
+    "required": "この項目は必須です",
+    "invalid": "無効な値",
+    "outOfRange": "範囲外の値",
+    "minValue": "最小値は{min}です",
+    "maxValue": "最大値は{max}です"
+  },
+  "accessibility": {
+    "skipToContent": "コンテンツへスキップ",
+    "openMenu": "メニューを開く",
+    "closeMenu": "メニューを閉じる",
+    "toggleTheme": "テーマを切り替え",
+    "increaseValue": "値を増やす",
+    "decreaseValue": "値を減らす"
+  },
+  "theme": {
+    "light": "ライト",
+    "dark": "ダーク",
+    "auto": "自動",
+    "switchTheme": "テーマを切り替え"
+  },
+  "errors": {
+    "networkError": "ネットワークエラーが発生しました",
+    "loadFailed": "読み込みに失敗しました",
+    "saveFailed": "保存に失敗しました",
+    "permissionDenied": "アクセスが拒否されました",
+    "notFound": "見つかりません",
+    "timeout": "タイムアウト"
+  }
+}
