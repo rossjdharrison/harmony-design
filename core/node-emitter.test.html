@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodeEmitter Tests - Harmony Design System</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-suite {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      padding: 10px;
+      margin: 10px 0;
+      border-left: 4px solid #ccc;
+      background: #f9f9f9;
+    }
+    .test-case.pass {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    .test-case.fail {
+      border-left-color: #f44336;
+      background: #fef1f0;
+    }
+    .test-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    .test-result {
+      font-size: 0.9em;
+      color: #666;
+    }
+    .summary {
+      font-size: 1.2em;
+      font-weight: 600;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    .summary.success {
+      background: #4caf50;
+      color: white;
+    }
+    .summary.failure {
+      background: #f44336;
+      color: white;
+    }
+    .event-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 10px;
+    }
+    .event-log-entry {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #007acc;
+      padding-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 NodeEmitter Tests</h1>
+  <div id="test-container"></div>
+  <div id="event-log-container"></div>
+
+  <script type="module">
+    import { NodeEmitter } from './node-emitter.js';
+    import { GraphEvent } from './graph-event.js';
+    import { EventEnvelope } from './event-envelope.js';
+
+    const testContainer = document.getElementById('test-container');
+    const eventLogContainer = document.getElementById('event-log-container');
+    let totalTests = 0;
+    let passedTests = 0;
+    const eventLog = [];
+
+    function logEvent(message, data) {
+      eventLog.push({ message, data, timestamp: Date.now() });
+    }
+
+    function renderEventLog() {
+      const logHtml = `
+        <div class="test-suite">
+          <h2>Event Log</h2>
+          <div class="event-log">
+            ${eventLog.map(entry => `
+              <div class="event-log-entry">
+                [${new Date(entry.timestamp).toISOString()}] ${entry.message}
+                ${entry.data ? `<br><pre>${JSON.stringify(entry.data, null, 2)}</pre>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      eventLogContainer.innerHTML = logHtml;
+    }
+
+    function assert(condition, message) {
+      totalTests++;
+      const testCase = document.createElement('div');
+      testCase.className = `test-case ${condition ? 'pass' : 'fail'}`;
+      
+      const testName = document.createElement('div');
+      testName.className = 'test-name';
+      testName.textContent = message;
+      
+      const testResult = document.createElement('div');
+      testResult.className = 'test-result';
+      testResult.textContent = condition ? '✓ PASS' : '✗ FAIL';
+      
+      testCase.appendChild(testName);
+      testCase.appendChild(testResult);
+      testContainer.appendChild(testCase);
+      
+      if (condition) passedTests++;
+      
+      return condition;
+    }
+
+    function createTestSuite(name) {
+      const suite = document.createElement('div');
+      suite.className = 'test-suite';
+      suite.innerHTML = `<h2>${name}</h2>`;
+      testContainer.appendChild(suite);
+      return suite;
+    }
+
+    // Test Suite 1: Basic Initialization
+    createTestSuite('Basic Initialization');
+
+    try {
+      const emitter = new NodeEmitter({
+        nodeId: 'test-node-1',
+        nodeType: 'audio'
+      });
+      assert(emitter.nodeId === 'test-node-1', 'Should set nodeId correctly');
+      assert(emitter.nodeType === 'audio', 'Should set nodeType correctly');
+      logEvent('Created emitter', { nodeId: emitter.nodeId, nodeType: emitter.nodeType });
+    } catch (error) {
+      assert(false, `Initialization failed: ${error.message}`);
+    }
+
+    try {
+      new NodeEmitter({ nodeType: 'audio' });
+      assert(false, 'Should throw error when nodeId is missing');
+    } catch (error) {
+      assert(error.message.includes('nodeId'), 'Should throw error when nodeId is missing');
+    }
+
+    try {
+      new NodeEmitter({ nodeId: 'test' });
+      assert(false, 'Should throw error when nodeType is missing');
+    } catch (error) {
+      assert(error.message.includes('nodeType'), 'Should throw error when nodeType is missing');
+    }
+
+    // Test Suite 2: Event Emission
+    createTestSuite('Event Emission');
+
+    const emitter1 = new NodeEmitter({
+      nodeId: 'test-node-2',
+      nodeType: 'control'
+    });
+
+    const envelope1 = emitter1.emit('test:event', { value: 42 });
+    assert(envelope1 instanceof EventEnvelope, 'Should return EventEnvelope');
+    assert(envelope1.event instanceof GraphEvent, 'Envelope should contain GraphEvent');
+    assert(envelope1.event.type === 'test:event', 'Event type should match');
+    assert(envelope1.event.payload.value === 42, 'Payload should match');
+    assert(envelope1.metadata.source === 'test-node-2', 'Envelope source should match nodeId');
+    assert(envelope1.metadata.sourceType === 'control', 'Envelope sourceType should match nodeType');
+    logEvent('Emitted event', { type: envelope1.event.type, payload: envelope1.event.payload });
+
+    // Test Suite 3: Propagation ID
+    createTestSuite('Propagation ID');
+
+    const emitter2 = new NodeEmitter({
+      nodeId: 'test-node-3',
+      nodeType: 'audio'
+    });
+
+    const envelope2 = emitter2.emit('test:event', {});
+    assert(envelope2.metadata.propagationId, 'Should auto-generate propagation ID');
+    assert(envelope2.metadata.propagationId.startsWith('test-node-3:'), 'Propagation ID should start with nodeId');
+    logEvent('Auto-generated propagation ID', { propagationId: envelope2.metadata.propagationId });
+
+    const customPropId = 'custom-prop-123';
+    const envelope3 = emitter2.emit('test:event', {}, { propagationId: customPropId });
+    assert(envelope3.metadata.propagationId === customPropId, 'Should use custom propagation ID');
+    logEvent('Custom propagation ID', { propagationId: envelope3.metadata.propagationId });
+
+    const envelope4 = emitter2.emit('test:event', {});
+    assert(envelope4.metadata.propagationId !== envelope2.metadata.propagationId, 'Each event should have unique propagation ID');
+
+    // Test Suite 4: Chained Emission
+    createTestSuite('Chained Emission');
+
+    const emitter3 = new NodeEmitter({
+      nodeId: 'test-node-4',
+      nodeType: 'midi'
+    });
+
+    const parentEnvelope = emitter3.emit('parent:event', {});
+    const childEnvelope = emitter3.emitChained('child:event', {}, parentEnvelope.metadata.propagationId);
+    
+    assert(childEnvelope.metadata.propagationId.includes(parentEnvelope.metadata.propagationId), 
+      'Chained propagation ID should contain parent ID');
+    assert(childEnvelope.metadata.propagationId.includes('>'), 
+      'Chained propagation ID should contain chain separator');
+    logEvent('Chained emission', { 
+      parent: parentEnvelope.metadata.propagationId, 
+      child: childEnvelope.metadata.propagationId 
+    });
+
+    // Test Suite 5: Local Listeners
+    createTestSuite('Local Listeners');
+
+    const emitter4 = new NodeEmitter({
+      nodeId: 'test-node-5',
+      nodeType: 'control'
+    });
+
+    let listenerCalled = false;
+    let receivedEnvelope = null;
+
+    const unsubscribe = emitter4.on('test:listener', (envelope) => {
+      listenerCalled = true;
+      receivedEnvelope = envelope;
+    });
+
+    emitter4.emit('test:listener', { data: 'test' }, { skipEventBus: true });
+    assert(listenerCalled, 'Listener should be called');
+    assert(receivedEnvelope !== null, 'Listener should receive envelope');
+    assert(receivedEnvelope.event.payload.data === 'test', 'Listener should receive correct payload');
+    logEvent('Listener called', { payload: receivedEnvelope.event.payload });
+
+    listenerCalled = false;
+    unsubscribe();
+    emitter4.emit('test:listener', { data: 'test2' }, { skipEventBus: true });
+    assert(!listenerCalled, 'Unsubscribed listener should not be called');
+
+    // Test Suite 6: Multiple Listeners
+    createTestSuite('Multiple Listeners');
+
+    const emitter5 = new NodeEmitter({
+      nodeId: 'test-node-6',
+      nodeType: 'audio'
+    });
+
+    let listener1Called = false;
+    let listener2Called = false;
+
+    emitter5.on('test:multi', () => { listener1Called = true; });
+    emitter5.on('test:multi', () => { listener2Called = true; });
+
+    emitter5.emit('test:multi', {}, { skipEventBus: true });
+    assert(listener1Called, 'First listener should be called');
+    assert(listener2Called, 'Second listener should be called');
+    assert(emitter5.listenerCount('test:multi') === 2, 'Should have 2 listeners');
+
+    // Test Suite 7: Once Listener
+    createTestSuite('Once Listener');
+
+    const emitter6 = new NodeEmitter({
+      nodeId: 'test-node-7',
+      nodeType: 'control'
+    });
+
+    let onceCallCount = 0;
+    emitter6.once('test:once', () => { onceCallCount++; });
+
+    emitter6.emit('test:once', {}, { skipEventBus: true });
+    emitter6.emit('test:once', {}, { skipEventBus: true });
+    assert(onceCallCount === 1, 'Once listener should only be called once');
+
+    // Test Suite 8: EventBus Integration
+    createTestSuite('EventBus Integration');
+
+    let eventBusReceived = null;
+    const mockEventBusPublish = (envelope) => {
+      eventBusReceived = envelope;
+    };
+
+    const emitter7 = new NodeEmitter({
+      nodeId: 'test-node-8',
+      nodeType: 'audio',
+      eventBusPublish: mockEventBusPublish
+    });
+
+    emitter7.emit('test:eventbus', { value: 100 });
+    assert(eventBusReceived !== null, 'EventBus publish should be called');
+    assert(eventBusReceived.event.payload.value === 100, 'EventBus should receive correct payload');
+    logEvent('EventBus publish', { payload: eventBusReceived.event.payload });
+
+    eventBusReceived = null;
+    emitter7.emit('test:skip', { value: 200 }, { skipEventBus: true });
+    assert(eventBusReceived === null, 'EventBus publish should be skipped when requested');
+
+    // Test Suite 9: Listener Management
+    createTestSuite('Listener Management');
+
+    const emitter8 = new NodeEmitter({
+      nodeId: 'test-node-9',
+      nodeType: 'midi'
+    });
+
+    emitter8.on('test:event1', () => {});
+    emitter8.on('test:event2', () => {});
+    emitter8.on('test:event2', () => {});
+
+    const eventTypes = emitter8.eventTypes();
+    assert(eventTypes.includes('test:event1'), 'Should list event1');
+    assert(eventTypes.includes('test:event2'), 'Should list event2');
+    assert(emitter8.listenerCount('test:event2') === 2, 'Should count multiple listeners');
+
+    emitter8.off('test:event1');
+    assert(emitter8.listenerCount('test:event1') === 0, 'Should remove all listeners for event type');
+
+    emitter8.removeAllListeners();
+    assert(emitter8.eventTypes().length === 0, 'Should remove all listeners');
+
+    // Test Suite 10: Error Handling
+    createTestSuite('Error Handling');
+
+    const emitter9 = new NodeEmitter({
+      nodeId: 'test-node-10',
+      nodeType: 'control'
+    });
+
+    try {
+      emitter9.on('test:invalid', 'not-a-function');
+      assert(false, 'Should throw error for invalid callback');
+    } catch (error) {
+      assert(error.message.includes('function'), 'Should throw error for invalid callback');
+    }
+
+    let errorThrown = false;
+    emitter9.on('test:error', () => {
+      throw new Error('Listener error');
+    });
+
+    try {
+      emitter9.emit('test:error', {}, { skipEventBus: true });
+      // Should not throw, errors should be caught
+      assert(true, 'Should catch listener errors gracefully');
+    } catch (error) {
+      assert(false, 'Should not propagate listener errors');
+    }
+
+    // Test Suite 11: Disposal
+    createTestSuite('Disposal');
+
+    const emitter10 = new NodeEmitter({
+      nodeId: 'test-node-11',
+      nodeType: 'audio',
+      eventBusPublish: mockEventBusPublish
+    });
+
+    emitter10.on('test:dispose', () => {});
+    emitter10.dispose();
+
+    assert(emitter10.listenerCount('test:dispose') === 0, 'Should remove all listeners on dispose');
+    assert(emitter10._eventBusPublish === null, 'Should clear EventBus reference on dispose');
+
+    // Summary
+    const summary = document.createElement('div');
+    summary.className = `summary ${passedTests === totalTests ? 'success' : 'failure'}`;
+    summary.textContent = `${passedTests} / ${totalTests} tests passed`;
+    testContainer.appendChild(summary);
+
+    renderEventLog();
+
+    console.log(`NodeEmitter Tests: ${passedTests}/${totalTests} passed`);
+  </script>
+</body>
+</html>
