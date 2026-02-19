@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarmonyFocusRing - Test Suite</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #0066cc;
+      padding-bottom: 0.5rem;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-top: 1rem;
+    }
+
+    .test-item {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .test-item label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    button, input, select {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #f0f0f0;
+    }
+
+    .status {
+      padding: 1rem;
+      margin-top: 1rem;
+      border-radius: 4px;
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+
+    .status.error {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .code {
+      background: #f5f5f5;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      overflow-x: auto;
+      margin-top: 0.5rem;
+    }
+
+    .event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #f9f9f9;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+    }
+
+    .event-log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .event-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .keyboard-hint {
+      background: #fff3cd;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 4px solid #ffc107;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 HarmonyFocusRing - Test Suite</h1>
+
+  <div class="keyboard-hint">
+    <strong>⌨️ Keyboard Testing:</strong> Use Tab key to navigate between elements. 
+    Focus rings should appear for keyboard navigation but not for mouse clicks.
+  </div>
+
+  <!-- Basic Styles Test -->
+  <div class="test-section">
+    <h2>1. Focus Ring Styles</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Outline Style (Default)</label>
+        <harmony-focus-ring style="outline">
+          <button id="btn-outline">Focus Me (Outline)</button>
+        </harmony-focus-ring>
+        <div class="code">&lt;harmony-focus-ring style="outline"&gt;</div>
+      </div>
+
+      <div class="test-item">
+        <label>Ring Style (Circular)</label>
+        <harmony-focus-ring style="ring">
+          <button id="btn-ring">Focus Me (Ring)</button>
+        </harmony-focus-ring>
+        <div class="code">&lt;harmony-focus-ring style="ring"&gt;</div>
+      </div>
+
+      <div class="test-item">
+        <label>Glow Style (Shadow)</label>
+        <harmony-focus-ring style="glow">
+          <button id="btn-glow">Focus Me (Glow)</button>
+        </harmony-focus-ring>
+        <div class="code">&lt;harmony-focus-ring style="glow"&gt;</div>
+      </div>
+
+      <div class="test-item">
+        <label>None Style (Invisible)</label>
+        <harmony-focus-ring style="none">
+          <button id="btn-none">Focus Me (None)</button>
+        </harmony-focus-ring>
+        <div class="code">&lt;harmony-focus-ring style="none"&gt;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customization Test -->
+  <div class="test-section">
+    <h2>2. Custom Configuration</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Custom Width (4px)</label>
+        <harmony-focus-ring style="outline" width="4">
+          <button>Thick Focus Ring</button>
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>Custom Offset (8px)</label>
+        <harmony-focus-ring style="outline" offset="8">
+          <button>Large Offset</button>
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>Custom Color (Red)</label>
+        <harmony-focus-ring style="outline" color="#ff0000">
+          <button>Red Focus Ring</button>
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>No Animation</label>
+        <harmony-focus-ring style="outline" animated="false">
+          <button>Instant Focus</button>
+        </harmony-focus-ring>
+      </div>
+    </div>
+  </div>
+
+  <!-- Different Element Types -->
+  <div class="test-section">
+    <h2>3. Different Element Types</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Button</label>
+        <harmony-focus-ring>
+          <button>Button Element</button>
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>Input</label>
+        <harmony-focus-ring>
+          <input type="text" placeholder="Text input">
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>Select</label>
+        <harmony-focus-ring>
+          <select>
+            <option>Option 1</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+          </select>
+        </harmony-focus-ring>
+      </div>
+
+      <div class="test-item">
+        <label>Link</label>
+        <harmony-focus-ring>
+          <a href="#" onclick="event.preventDefault()">Link Element</a>
+        </harmony-focus-ring>
+      </div>
+    </div>
+  </div>
+
+  <!-- Programmatic Control -->
+  <div class="test-section">
+    <h2>4. Programmatic Control</h2>
+    <harmony-focus-ring id="programmatic-ring" style="outline">
+      <button id="target-button">Target Button</button>
+    </harmony-focus-ring>
+    
+    <div class="controls">
+      <button onclick="showRing()">Show Ring</button>
+      <button onclick="hideRing()">Hide Ring</button>
+      <button onclick="toggleRing()">Toggle Ring</button>
+      <button onclick="changeStyle()">Change Style</button>
+      <button onclick="changeColor()">Change Color</button>
+    </div>
+
+    <div id="programmatic-status" class="status">
+      Ready for programmatic control tests
+    </div>
+  </div>
+
+  <!-- Event Monitoring -->
+  <div class="test-section">
+    <h2>5. Event Monitoring</h2>
+    <harmony-focus-ring id="event-ring" style="outline">
+      <button>Focus to Trigger Events</button>
+    </harmony-focus-ring>
+    
+    <div id="event-log" class="event-log">
+      <div>Event log will appear here...</div>
+    </div>
+    <button onclick="clearEventLog()" style="margin-top: 1rem;">Clear Log</button>
+  </div>
+
+  <!-- Accessibility Test -->
+  <div class="test-section">
+    <h2>6. Accessibility Features</h2>
+    <div class="test-grid">
+      <div class="test-item">
+        <label>Keyboard Navigation Only</label>
+        <harmony-focus-ring>
+          <button>Tab to Focus</button>
+        </harmony-focus-ring>
+        <p style="font-size: 0.9rem; color: #666;">
+          Focus ring should appear when tabbing, not when clicking
+        </p>
+      </div>
+
+      <div class="test-item">
+        <label>High Contrast Mode</label>
+        <harmony-focus-ring>
+          <button>Test in High Contrast</button>
+        </harmony-focus-ring>
+        <p style="font-size: 0.9rem; color: #666;">
+          Enable high contrast mode in OS settings to test
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Test -->
+  <div class="test-section">
+    <h2>7. Performance Test</h2>
+    <div id="perf-container"></div>
+    <div class="controls">
+      <button onclick="createManyRings(10)">Create 10 Rings</button>
+      <button onclick="createManyRings(50)">Create 50 Rings</button>
+      <button onclick="createManyRings(100)">Create 100 Rings</button>
+      <button onclick="clearPerfTest()">Clear</button>
+    </div>
+    <div id="perf-status" class="status">
+      Click a button to test performance with multiple focus rings
+    </div>
+  </div>
+
+  <script type="module">
+    import HarmonyFocusRing from './harmony-focus-ring.js';
+
+    // Global test functions
+    window.showRing = function() {
+      const ring = document.getElementById('programmatic-ring');
+      ring.show(true);
+      updateStatus('Focus ring shown programmatically');
+    };
+
+    window.hideRing = function() {
+      const ring = document.getElementById('programmatic-ring');
+      ring.hide();
+      updateStatus('Focus ring hidden programmatically');
+    };
+
+    window.toggleRing = function() {
+      const ring = document.getElementById('programmatic-ring');
+      const isVisible = ring.getAttribute('visible') === 'true';
+      if (isVisible) {
+        ring.hide();
+        updateStatus('Focus ring toggled OFF');
+      } else {
+        ring.show(true);
+        updateStatus('Focus ring toggled ON');
+      }
+    };
+
+    window.changeStyle = function() {
+      const ring = document.getElementById('programmatic-ring');
+      const styles = ['outline', 'ring', 'glow', 'none'];
+      const currentStyle = ring.getAttribute('style') || 'outline';
+      const currentIndex = styles.indexOf(currentStyle);
+      const nextStyle = styles[(currentIndex + 1) % styles.length];
+      ring.setAttribute('style', nextStyle);
+      updateStatus(`Style changed to: ${nextStyle}`);
+    };
+
+    window.changeColor = function() {
+      const ring = document.getElementById('programmatic-ring');
+      const colors = ['#0066cc', '#ff0000', '#00cc66', '#ff6600', '#cc00ff'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      ring.setAttribute('color', randomColor);
+      updateStatus(`Color changed to: ${randomColor}`);
+    };
+
+    function updateStatus(message, type = 'success') {
+      const status = document.getElementById('programmatic-status');
+      status.textContent = message;
+      status.className = `status ${type}`;
+    }
+
+    // Event monitoring
+    const eventRing = document.getElementById('event-ring');
+    eventRing.addEventListener('focus-ring-shown', (e) => {
+      logEvent('focus-ring-shown', e.detail);
+    });
+
+    eventRing.addEventListener('focus-ring-hidden', (e) => {
+      logEvent('focus-ring-hidden', e.detail);
+    });
+
+    function logEvent(eventName, detail) {
+      const log = document.getElementById('event-log');
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${eventName} - ${JSON.stringify(detail || {})}`;
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    window.clearEventLog = function() {
+      const log = document.getElementById('event-log');
+      log.innerHTML = '<div>Event log cleared...</div>';
+    };
+
+    // Performance test
+    window.createManyRings = function(count) {
+      const container = document.getElementById('perf-container');
+      const startTime = performance.now();
+      
+      for (let i = 0; i < count; i++) {
+        const ring = document.createElement('harmony-focus-ring');
+        ring.setAttribute('style', 'outline');
+        
+        const button = document.createElement('button');
+        button.textContent = `Button ${i + 1}`;
+        button.style.margin = '0.25rem';
+        
+        ring.appendChild(button);
+        container.appendChild(ring);
+      }
+      
+      const endTime = performance.now();
+      const duration = (endTime - startTime).toFixed(2);
+      
+      const status = document.getElementById('perf-status');
+      status.textContent = `Created ${count} focus rings in ${duration}ms`;
+      status.className = duration < 100 ? 'status success' : 'status error';
+    };
+
+    window.clearPerfTest = function() {
+      const container = document.getElementById('perf-container');
+      container.innerHTML = '';
+      const status = document.getElementById('perf-status');
+      status.textContent = 'Performance test cleared';
+      status.className = 'status';
+    };
+
+    // Run initial tests
+    console.log('HarmonyFocusRing test suite loaded');
+    console.log('Use Tab key to navigate and test keyboard focus');
+  </script>
+</body>
+</html>
