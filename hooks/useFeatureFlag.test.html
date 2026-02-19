@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useFeatureFlag Hook Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #1a1a1a;
+    }
+    .test-result {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .pass {
+      background: #1a3a1a;
+      color: #4ade80;
+      border-left: 4px solid #22c55e;
+    }
+    .fail {
+      background: #3a1a1a;
+      color: #f87171;
+      border-left: 4px solid #ef4444;
+    }
+    .info {
+      background: #1a2a3a;
+      color: #60a5fa;
+      border-left: 4px solid #3b82f6;
+    }
+    h1 { color: #60a5fa; }
+    h2 { color: #a78bfa; margin-top: 1.5rem; }
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .flag-list {
+      list-style: none;
+      padding: 0;
+    }
+    .flag-item {
+      padding: 0.5rem;
+      margin: 0.25rem 0;
+      background: #2a2a2a;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .flag-enabled { color: #4ade80; }
+    .flag-disabled { color: #f87171; }
+  </style>
+</head>
+<body>
+  <h1>🚩 useFeatureFlag Hook Tests</h1>
+  
+  <div class="test-section">
+    <h2>Test Environment</h2>
+    <div id="environment-info"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Basic Hook Tests</h2>
+    <div id="basic-tests"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Multiple Flag Tests</h2>
+    <div id="multiple-tests"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Runtime Toggle Tests</h2>
+    <button id="toggle-test-flag">Toggle Test Flag</button>
+    <button id="toggle-experimental">Toggle Experimental</button>
+    <div id="toggle-tests"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>All Feature Flags</h2>
+    <div id="all-flags"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Error Handling Tests</h2>
+    <div id="error-tests"></div>
+  </div>
+
+  <script type="module">
+    import { useFeatureFlag, useAllFeatureFlags, useFeatureFlags, useAnyFeatureFlag, useFeatureFlagToggle } from './useFeatureFlag.js';
+    import { FeatureFlagContext } from '../contexts/FeatureFlagContext.js';
+
+    const results = {
+      basic: [],
+      multiple: [],
+      toggle: [],
+      error: []
+    };
+
+    function log(category, message, pass = true) {
+      results[category].push({ message, pass });
+    }
+
+    function renderResults(containerId, category) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = results[category]
+        .map(r => `<div class="test-result ${r.pass ? 'pass' : 'fail'}">${r.message}</div>`)
+        .join('');
+    }
+
+    // Initialize feature flag context with test data
+    const testFlags = new Map([
+      ['test-feature', true],
+      ['experimental-feature', false],
+      ['new-mixer-ui', true],
+      ['gpu-acceleration', true],
+      ['legacy-mode', false]
+    ]);
+
+    // Create a mock context for testing
+    const mockContext = {
+      isEnabled(key) {
+        return testFlags.get(key);
+      },
+      getAllFlags() {
+        return new Map(testFlags);
+      },
+      toggleFlag(key, enabled) {
+        testFlags.set(key, enabled);
+        renderAllFlags();
+        renderToggleTests();
+      }
+    };
+
+    // Mock the context use method
+    FeatureFlagContext.use = () => mockContext;
+
+    // Display environment info
+    document.getElementById('environment-info').innerHTML = `
+      <div class="test-result info">Test Flags Initialized: ${testFlags.size} flags</div>
+      <div class="test-result info">Context: Mock (for testing)</div>
+    `;
+
+    // Basic Tests
+    function runBasicTests() {
+      try {
+        const testEnabled = useFeatureFlag('test-feature');
+        log('basic', `✓ useFeatureFlag('test-feature') = ${testEnabled}`, testEnabled === true);
+      } catch (e) {
+        log('basic', `✗ Basic test failed: ${e.message}`, false);
+      }
+
+      try {
+        const expDisabled = useFeatureFlag('experimental-feature');
+        log('basic', `✓ useFeatureFlag('experimental-feature') = ${expDisabled}`, expDisabled === false);
+      } catch (e) {
+        log('basic', `✗ Disabled flag test failed: ${e.message}`, false);
+      }
+
+      try {
+        const withDefault = useFeatureFlag('non-existent-flag', true);
+        log('basic', `✓ useFeatureFlag('non-existent-flag', true) = ${withDefault} (default)`, withDefault === true);
+      } catch (e) {
+        log('basic', `✗ Default value test failed: ${e.message}`, false);
+      }
+
+      try {
+        const withoutDefault = useFeatureFlag('another-missing-flag');
+        log('basic', `✓ useFeatureFlag('another-missing-flag') = ${withoutDefault} (default false)`, withoutDefault === false);
+      } catch (e) {
+        log('basic', `✗ Missing flag test failed: ${e.message}`, false);
+      }
+
+      renderResults('basic-tests', 'basic');
+    }
+
+    // Multiple Flag Tests
+    function runMultipleTests() {
+      try {
+        const allEnabled = useFeatureFlags('test-feature', 'new-mixer-ui', 'gpu-acceleration');
+        log('multiple', `✓ useFeatureFlags (all enabled) = ${allEnabled}`, allEnabled === true);
+      } catch (e) {
+        log('multiple', `✗ All enabled test failed: ${e.message}`, false);
+      }
+
+      try {
+        const mixedFlags = useFeatureFlags('test-feature', 'experimental-feature');
+        log('multiple', `✓ useFeatureFlags (mixed) = ${mixedFlags}`, mixedFlags === false);
+      } catch (e) {
+        log('multiple', `✗ Mixed flags test failed: ${e.message}`, false);
+      }
+
+      try {
+        const anyEnabled = useAnyFeatureFlag('experimental-feature', 'legacy-mode', 'test-feature');
+        log('multiple', `✓ useAnyFeatureFlag (has enabled) = ${anyEnabled}`, anyEnabled === true);
+      } catch (e) {
+        log('multiple', `✗ Any enabled test failed: ${e.message}`, false);
+      }
+
+      try {
+        const noneEnabled = useAnyFeatureFlag('experimental-feature', 'legacy-mode');
+        log('multiple', `✓ useAnyFeatureFlag (none enabled) = ${noneEnabled}`, noneEnabled === false);
+      } catch (e) {
+        log('multiple', `✗ None enabled test failed: ${e.message}`, false);
+      }
+
+      renderResults('multiple-tests', 'multiple');
+    }
+
+    // Toggle Tests
+    function renderToggleTests() {
+      const testFlag = useFeatureFlag('test-feature');
+      const expFlag = useFeatureFlag('experimental-feature');
+      
+      document.getElementById('toggle-tests').innerHTML = `
+        <div class="test-result info">test-feature: <span class="${testFlag ? 'flag-enabled' : 'flag-disabled'}">${testFlag}</span></div>
+        <div class="test-result info">experimental-feature: <span class="${expFlag ? 'flag-enabled' : 'flag-disabled'}">${expFlag}</span></div>
+      `;
+    }
+
+    document.getElementById('toggle-test-flag').addEventListener('click', () => {
+      const toggle = useFeatureFlagToggle();
+      const current = useFeatureFlag('test-feature');
+      toggle('test-feature', !current);
+      log('toggle', `✓ Toggled test-feature to ${!current}`, true);
+    });
+
+    document.getElementById('toggle-experimental').addEventListener('click', () => {
+      const toggle = useFeatureFlagToggle();
+      const current = useFeatureFlag('experimental-feature');
+      toggle('experimental-feature', !current);
+      log('toggle', `✓ Toggled experimental-feature to ${!current}`, true);
+    });
+
+    // All Flags Display
+    function renderAllFlags() {
+      const allFlags = useAllFeatureFlags();
+      const flagItems = Array.from(allFlags.entries())
+        .map(([key, value]) => `
+          <li class="flag-item">
+            <span>${key}</span>
+            <span class="${value ? 'flag-enabled' : 'flag-disabled'}">${value ? '✓ Enabled' : '✗ Disabled'}</span>
+          </li>
+        `)
+        .join('');
+      
+      document.getElementById('all-flags').innerHTML = `
+        <div class="test-result info">Total Flags: ${allFlags.size}</div>
+        <ul class="flag-list">${flagItems}</ul>
+      `;
+    }
+
+    // Error Handling Tests
+    function runErrorTests() {
+      // Test invalid key type
+      try {
+        useFeatureFlag(123);
+        log('error', '✗ Should throw TypeError for non-string key', false);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          log('error', `✓ Correctly threw TypeError: ${e.message}`, true);
+        } else {
+          log('error', `✗ Wrong error type: ${e.constructor.name}`, false);
+        }
+      }
+
+      // Test empty key
+      try {
+        useFeatureFlag('');
+        log('error', '✗ Should throw TypeError for empty key', false);
+      } catch (e) {
+        if (e instanceof TypeError) {
+          log('error', `✓ Correctly threw TypeError for empty key`, true);
+        } else {
+          log('error', `✗ Wrong error type: ${e.constructor.name}`, false);
+        }
+      }
+
+      // Test context requirement
+      const originalUse = FeatureFlagContext.use;
+      FeatureFlagContext.use = () => null;
+      
+      try {
+        useFeatureFlag('test');
+        log('error', '✗ Should throw Error when context missing', false);
+      } catch (e) {
+        if (e.message.includes('FeatureFlagContext.Provider')) {
+          log('error', `✓ Correctly threw Error for missing context`, true);
+        } else {
+          log('error', `✗ Wrong error message: ${e.message}`, false);
+        }
+      }
+      
+      FeatureFlagContext.use = originalUse;
+
+      renderResults('error-tests', 'error');
+    }
+
+    // Run all tests
+    runBasicTests();
+    runMultipleTests();
+    renderToggleTests();
+    renderAllFlags();
+    runErrorTests();
+
+    console.log('✓ All useFeatureFlag hook tests completed');
+  </script>
+</body>
+</html>
