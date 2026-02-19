@@ -1,0 +1,89 @@
+{
+  "$schema": "./token-schema.json",
+  "namespace": "spacing",
+  "version": "1.0.0",
+  "tokens": {
+    "spacing-0": {
+      "value": "0",
+      "type": "dimension",
+      "unit": "px",
+      "description": "No spacing - use for flush layouts"
+    },
+    "spacing-1": {
+      "value": "4",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Extra small spacing - tight layouts, icon gaps"
+    },
+    "spacing-2": {
+      "value": "8",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Small spacing - compact UI elements"
+    },
+    "spacing-3": {
+      "value": "12",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Medium-small spacing - form field gaps"
+    },
+    "spacing-4": {
+      "value": "16",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Base spacing unit - standard component padding"
+    },
+    "spacing-5": {
+      "value": "24",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Medium spacing - section gaps"
+    },
+    "spacing-6": {
+      "value": "32",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Large spacing - major layout divisions"
+    },
+    "spacing-7": {
+      "value": "48",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Extra large spacing - page sections"
+    },
+    "spacing-8": {
+      "value": "64",
+      "type": "dimension",
+      "unit": "px",
+      "description": "XXL spacing - major page divisions"
+    },
+    "spacing-9": {
+      "value": "96",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Huge spacing - hero sections, landing pages"
+    },
+    "spacing-10": {
+      "value": "128",
+      "type": "dimension",
+      "unit": "px",
+      "description": "Maximum spacing - dramatic layouts"
+    }
+  },
+  "metadata": {
+    "scale": "base-4",
+    "purpose": "Defines consistent spacing scale for layout and component spacing",
+    "usage": [
+      "Component padding and margins",
+      "Layout grid gaps",
+      "Section spacing",
+      "Vertical rhythm"
+    ],
+    "notes": [
+      "Base unit is 4px for alignment with 8px grid",
+      "Scale follows exponential growth for visual hierarchy",
+      "Use spacing-4 (16px) as default for most components",
+      "Audio UI may use tighter spacing (spacing-1, spacing-2) for dense controls"
+    ]
+  }
+}
