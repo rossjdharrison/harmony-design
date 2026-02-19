@@ -33,9 +33,26 @@ jobs:
           const fs = require('fs');
           const path = require('path');
 
-          const BAD_IMPORT = /import\s+.*from\s+['"](?!\.|\/)([^'"]+)['"]/;
+          // Captures the module specifier so we can check it against the built-in allowlist.
+          const BAD_IMPORT = /import\s+.*from\s+['"](?!\.|\/|node:)([^'"]+)['"]/;
+
+          // Node.js built-in modules are not npm packages — never flag them.
+          // Also handles the node: prefix form (node:fs, node:path, etc.).
+          const NODE_BUILTINS = new Set([
+            'assert', 'async_hooks', 'buffer', 'child_process', 'cluster',
+            'console', 'constants', 'crypto', 'dgram', 'diagnostics_channel',
+            'dns', 'domain', 'events', 'fs', 'http', 'http2', 'https',
+            'inspector', 'module', 'net', 'os', 'path', 'perf_hooks',
+            'process', 'punycode', 'querystring', 'readline', 'repl',
+            'stream', 'string_decoder', 'sys', 'timers', 'tls', 'trace_events',
+            'tty', 'url', 'util', 'v8', 'vm', 'wasi', 'worker_threads', 'zlib',
+          ]);
+
           const EXTENSIONS = new Set(['.js', '.mjs', '.cjs']);
-          const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'generated']);
+          // scripts/ — tooling helpers that legitimately use built-ins and invoke npm/yarn.
+          // Test files — policy explicitly permits npm packages for testing frameworks.
+          const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'generated', 'scripts']);
+          const IGNORE_FILE_PATTERNS = ['.test.', '.spec.', '.stories.'];
 
           let violations = 0;
 
@@ -45,12 +62,16 @@ jobs:
               const full = path.join(dir, entry.name);
               if (entry.isDirectory()) { walk(full); continue; }
               if (!EXTENSIONS.has(path.extname(entry.name))) continue;
+              if (IGNORE_FILE_PATTERNS.some(p => entry.name.includes(p))) continue;
               const src = fs.readFileSync(full, 'utf8');
               src.split('\n').forEach((line, i) => {
-                if (BAD_IMPORT.test(line)) {
-                  console.error(`VIOLATION ${full}:${i+1}: ${line.trim()}`);
-                  violations++;
-                }
+                const m = BAD_IMPORT.exec(line);
+                if (!m) return;
+                const specifier = m[1];
+                // Skip Node.js built-ins (bare name or first path segment)
+                if (NODE_BUILTINS.has(specifier.split('/')[0])) return;
+                console.error(`VIOLATION ${full}:${i+1}: ${line.trim()}`);
+                violations++;
               });
             }
           }
@@ -67,12 +88,21 @@ jobs:
         run: |
           node --input-type=commonjs - <<'EOF'
           const { execSync } = require('child_process');
-          const patterns = ['import.*react', 'import.*vue', 'import.*svelte', 'import.*angular'];
+          // Match the framework package *itself*, not tools built on it.
+          // e.g. from 'react'  YES / from '@testing-library/react' NO
+          //      from 'vue'    YES / from 'eslint-plugin-vue'       NO
+          // Patterns anchor to a quote boundary so partial names don't match.
+          const patterns = [
+            "from [\"']react(-dom)?[\"'/]",
+            "from [\"']vue[\"'/]",
+            "from [\"']svelte[\"'/]",
+            "from [\"']@angular/core[\"'/]",
+          ];
           let found = false;
           for (const p of patterns) {
             try {
               const r = execSync(
-                `grep -rn --include="*.js" --include="*.mjs" -i "${p}" . || true`
+                `grep -rn --include="*.js" --include="*.mjs" -iE "${p}" --exclude-dir=node_modules --exclude-dir=scripts --exclude-dir=.git . || true`
               ).toString().trim();
               if (r) { console.error('Framework import found:', r); found = true; }
             } catch {}
