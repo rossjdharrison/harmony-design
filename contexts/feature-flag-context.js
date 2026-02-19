@@ -1,303 +1,310 @@
 /**
- * @fileoverview Feature Flag Context - Vanilla JS context for feature flag state management
+ * Feature Flag Context
+ * 
+ * React context for managing feature flags across the application.
+ * Provides methods to check, enable, disable, and toggle feature flags.
+ * 
  * @module contexts/feature-flag-context
- * 
- * Provides a Web Component-based context for managing feature flags across the application.
- * Uses EventBus for state propagation and follows vanilla JS patterns (no React).
- * 
- * @see {@link ../../DESIGN_SYSTEM.md#Feature-Flags} for feature flag documentation
- * @see {@link ../config/feature-flags.js} for feature flag configuration
- * @see {@link ../core/event-bus.js} for EventBus implementation
- */
-
-import { getFeatureFlags } from '../config/feature-flags.js';
-
-/**
- * @typedef {Object} FeatureFlagState
- * @property {Object<string, boolean>} flags - Map of feature flag names to enabled state
- * @property {Function} isEnabled - Check if a feature flag is enabled
- * @property {Function} subscribe - Subscribe to feature flag changes
- * @property {Function} unsubscribe - Unsubscribe from feature flag changes
+ * @see {@link file://../DESIGN_SYSTEM.md#feature-flags} - Feature flag documentation
+ * @see {@link file://../types/feature-flags.d.ts} - TypeScript type definitions
+ * @see {@link file://../hooks/use-feature-flag.js} - Feature flag hook
+ * @see {@link file://../gates/feature-gate.js} - Feature gate component
  */
 
 /**
- * Feature Flag Context Web Component
- * Provides feature flag state to child components via custom events and context API
+ * @typedef {import('../types/feature-flags').FeatureFlagKey} FeatureFlagKey
+ * @typedef {import('../types/feature-flags').FeatureFlag} FeatureFlag
+ * @typedef {import('../types/feature-flags').FeatureFlagConfig} FeatureFlagConfig
+ * @typedef {import('../types/feature-flags').FeatureFlagContextValue} FeatureFlagContextValue
+ */
+
+import { isFeatureFlagKey, validateDependencies } from '../types/feature-flags.js';
+
+/**
+ * Default feature flag configuration
+ * @type {FeatureFlagConfig}
+ */
+const DEFAULT_FLAGS = {
+  'new-ui': {
+    key: 'new-ui',
+    name: 'New UI',
+    description: 'Enable the new user interface',
+    enabled: false
+  },
+  'advanced-audio': {
+    key: 'advanced-audio',
+    name: 'Advanced Audio',
+    description: 'Enable advanced audio processing features',
+    enabled: false
+  },
+  'gpu-acceleration': {
+    key: 'gpu-acceleration',
+    name: 'GPU Acceleration',
+    description: 'Enable GPU-accelerated rendering',
+    enabled: false
+  },
+  'experimental-waveform': {
+    key: 'experimental-waveform',
+    name: 'Experimental Waveform',
+    description: 'Enable experimental waveform visualization',
+    enabled: false,
+    dependencies: ['gpu-acceleration']
+  },
+  'beta-collaboration': {
+    key: 'beta-collaboration',
+    name: 'Beta Collaboration',
+    description: 'Enable beta collaboration features',
+    enabled: false
+  },
+  'debug-mode': {
+    key: 'debug-mode',
+    name: 'Debug Mode',
+    description: 'Enable debug mode with additional logging',
+    enabled: false
+  },
+  'performance-metrics': {
+    key: 'performance-metrics',
+    name: 'Performance Metrics',
+    description: 'Enable performance metrics collection',
+    enabled: false
+  },
+  'accessibility-enhancements': {
+    key: 'accessibility-enhancements',
+    name: 'Accessibility Enhancements',
+    description: 'Enable experimental accessibility features',
+    enabled: false
+  }
+};
+
+/**
+ * Feature Flag Context Element
+ * 
+ * Web component that provides feature flag context to child elements.
  * 
  * @example
  * <feature-flag-context>
- *   <my-component></my-component>
+ *   <feature-gate feature="new-ui">
+ *     <p>New UI content</p>
+ *   </feature-gate>
  * </feature-flag-context>
- * 
- * // In child component:
- * const context = this.closest('feature-flag-context');
- * const isEnabled = context.isEnabled('newFeature');
  */
 class FeatureFlagContext extends HTMLElement {
   constructor() {
     super();
-    
-    /**
-     * @private
-     * @type {Object<string, boolean>}
-     */
-    this._flags = {};
-    
-    /**
-     * @private
-     * @type {Set<Function>}
-     */
-    this._subscribers = new Set();
-    
-    /**
-     * @private
-     * @type {AbortController|null}
-     */
-    this._abortController = null;
+    this.attachShadow({ mode: 'open' });
+
+    /** @type {FeatureFlagConfig} */
+    this._flags = { ...DEFAULT_FLAGS };
+
+    this._loadFlags();
+    this._render();
   }
 
   /**
-   * Initialize component when connected to DOM
-   */
-  connectedCallback() {
-    this._abortController = new AbortController();
-    this._loadFeatureFlags();
-    this._setupEventListeners();
-    
-    // Provide context to child components
-    this.setAttribute('role', 'none');
-    this.style.display = 'contents'; // Don't affect layout
-  }
-
-  /**
-   * Cleanup when disconnected from DOM
-   */
-  disconnectedCallback() {
-    if (this._abortController) {
-      this._abortController.abort();
-      this._abortController = null;
-    }
-    this._subscribers.clear();
-  }
-
-  /**
-   * Load feature flags from configuration
+   * Load flags from localStorage
    * @private
    */
-  async _loadFeatureFlags() {
+  _loadFlags() {
     try {
-      this._flags = await getFeatureFlags();
-      this._notifySubscribers();
-      this._dispatchStateChange();
+      const stored = localStorage.getItem('harmony-feature-flags');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        this._flags = { ...DEFAULT_FLAGS, ...parsed };
+      }
     } catch (error) {
-      console.error('[FeatureFlagContext] Failed to load feature flags:', error);
-      this._flags = {};
+      console.error('Failed to load feature flags:', error);
     }
   }
 
   /**
-   * Setup event listeners for feature flag updates
+   * Save flags to localStorage
    * @private
    */
-  _setupEventListeners() {
-    // Listen for feature flag updates via EventBus
-    window.addEventListener(
-      'feature-flag:updated',
-      this._handleFeatureFlagUpdate.bind(this),
-      { signal: this._abortController.signal }
-    );
-
-    // Listen for environment changes that might affect feature flags
-    window.addEventListener(
-      'environment:changed',
-      this._handleEnvironmentChange.bind(this),
-      { signal: this._abortController.signal }
-    );
-  }
-
-  /**
-   * Handle feature flag update events
-   * @private
-   * @param {CustomEvent} event - Feature flag update event
-   */
-  _handleFeatureFlagUpdate(event) {
-    const { flagName, enabled } = event.detail;
-    
-    if (typeof flagName === 'string' && typeof enabled === 'boolean') {
-      this._flags[flagName] = enabled;
-      this._notifySubscribers();
-      this._dispatchStateChange();
+  _saveFlags() {
+    try {
+      localStorage.setItem('harmony-feature-flags', JSON.stringify(this._flags));
+    } catch (error) {
+      console.error('Failed to save feature flags:', error);
     }
   }
 
   /**
-   * Handle environment change events
-   * @private
-   * @param {CustomEvent} event - Environment change event
+   * Check if a feature is enabled
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
+   * @returns {boolean} True if the feature is enabled
    */
-  _handleEnvironmentChange(event) {
-    // Reload feature flags when environment changes
-    this._loadFeatureFlags();
+  isEnabled(key) {
+    if (!isFeatureFlagKey(key)) {
+      console.warn(`Invalid feature flag key: ${key}`);
+      return false;
+    }
+
+    const flag = this._flags[key];
+    if (!flag) {
+      return false;
+    }
+
+    // Check dependencies
+    if (flag.dependencies && flag.dependencies.length > 0) {
+      if (!validateDependencies(key, flag.dependencies, this._flags)) {
+        return false;
+      }
+    }
+
+    return flag.enabled;
   }
 
   /**
-   * Check if a feature flag is enabled
-   * @public
-   * @param {string} flagName - Name of the feature flag
-   * @returns {boolean} True if flag is enabled, false otherwise
+   * Enable a feature flag
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
    */
-  isEnabled(flagName) {
-    return this._flags[flagName] === true;
+  enable(key) {
+    if (!isFeatureFlagKey(key)) {
+      console.warn(`Invalid feature flag key: ${key}`);
+      return;
+    }
+
+    const flag = this._flags[key];
+    if (!flag) {
+      console.warn(`Feature flag not found: ${key}`);
+      return;
+    }
+
+    // Check dependencies before enabling
+    if (flag.dependencies && flag.dependencies.length > 0) {
+      if (!validateDependencies(key, flag.dependencies, this._flags)) {
+        console.warn(`Cannot enable ${key}: dependencies not met`);
+        return;
+      }
+    }
+
+    flag.enabled = true;
+    this._saveFlags();
+    this._dispatchChange(key, true);
   }
 
   /**
-   * Get all feature flags
-   * @public
-   * @returns {Object<string, boolean>} Map of all feature flags
+   * Disable a feature flag
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
+   */
+  disable(key) {
+    if (!isFeatureFlagKey(key)) {
+      console.warn(`Invalid feature flag key: ${key}`);
+      return;
+    }
+
+    const flag = this._flags[key];
+    if (!flag) {
+      console.warn(`Feature flag not found: ${key}`);
+      return;
+    }
+
+    flag.enabled = false;
+    this._saveFlags();
+    this._dispatchChange(key, false);
+  }
+
+  /**
+   * Toggle a feature flag
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
+   */
+  toggle(key) {
+    if (this.isEnabled(key)) {
+      this.disable(key);
+    } else {
+      this.enable(key);
+    }
+  }
+
+  /**
+   * Get flag configuration
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
+   * @returns {FeatureFlag | undefined} Flag configuration
+   */
+  getFlag(key) {
+    if (!isFeatureFlagKey(key)) {
+      return undefined;
+    }
+    return this._flags[key];
+  }
+
+  /**
+   * Update flag configuration
+   * 
+   * @param {FeatureFlagKey} key - Feature flag key
+   * @param {Partial<FeatureFlag>} updates - Updates to apply
+   */
+  updateFlag(key, updates) {
+    if (!isFeatureFlagKey(key)) {
+      console.warn(`Invalid feature flag key: ${key}`);
+      return;
+    }
+
+    const flag = this._flags[key];
+    if (!flag) {
+      console.warn(`Feature flag not found: ${key}`);
+      return;
+    }
+
+    Object.assign(flag, updates);
+    this._saveFlags();
+    this._dispatchChange(key, flag.enabled);
+  }
+
+  /**
+   * Get all flags
+   * 
+   * @returns {FeatureFlagConfig} All feature flags
    */
   getAllFlags() {
     return { ...this._flags };
   }
 
   /**
-   * Subscribe to feature flag changes
-   * @public
-   * @param {Function} callback - Callback function to invoke on changes
-   * @returns {Function} Unsubscribe function
-   */
-  subscribe(callback) {
-    if (typeof callback !== 'function') {
-      console.error('[FeatureFlagContext] Subscribe callback must be a function');
-      return () => {};
-    }
-
-    this._subscribers.add(callback);
-
-    // Immediately invoke with current state
-    callback(this._flags);
-
-    // Return unsubscribe function
-    return () => {
-      this._subscribers.delete(callback);
-    };
-  }
-
-  /**
-   * Unsubscribe a callback from feature flag changes
-   * @public
-   * @param {Function} callback - Callback function to remove
-   */
-  unsubscribe(callback) {
-    this._subscribers.delete(callback);
-  }
-
-  /**
-   * Notify all subscribers of state changes
+   * Dispatch feature flag change event
+   * 
    * @private
+   * @param {FeatureFlagKey} key - Feature flag key
+   * @param {boolean} enabled - New enabled state
    */
-  _notifySubscribers() {
-    const flags = { ...this._flags };
-    this._subscribers.forEach(callback => {
-      try {
-        callback(flags);
-      } catch (error) {
-        console.error('[FeatureFlagContext] Subscriber callback error:', error);
-      }
-    });
-  }
-
-  /**
-   * Dispatch state change event for child components
-   * @private
-   */
-  _dispatchStateChange() {
-    this.dispatchEvent(new CustomEvent('feature-flags:changed', {
-      bubbles: true,
-      composed: true,
+  _dispatchChange(key, enabled) {
+    const event = new CustomEvent('feature-flag-changed', {
       detail: {
-        flags: { ...this._flags },
+        type: 'feature-flag-changed',
+        key,
+        enabled,
         timestamp: Date.now()
-      }
-    }));
+      },
+      bubbles: true,
+      composed: true
+    });
+
+    this.dispatchEvent(event);
   }
 
   /**
-   * Update a feature flag programmatically
-   * @public
-   * @param {string} flagName - Name of the feature flag
-   * @param {boolean} enabled - Whether the flag should be enabled
+   * Render the component
+   * @private
    */
-  updateFlag(flagName, enabled) {
-    if (typeof flagName !== 'string') {
-      console.error('[FeatureFlagContext] Flag name must be a string');
-      return;
-    }
+  _render() {
+    if (!this.shadowRoot) return;
 
-    if (typeof enabled !== 'boolean') {
-      console.error('[FeatureFlagContext] Enabled value must be a boolean');
-      return;
-    }
-
-    this._flags[flagName] = enabled;
-    this._notifySubscribers();
-    this._dispatchStateChange();
-
-    // Publish to EventBus for other components
-    window.dispatchEvent(new CustomEvent('feature-flag:updated', {
-      detail: { flagName, enabled }
-    }));
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: contents;
+        }
+      </style>
+      <slot></slot>
+    `;
   }
 }
 
-// Register the custom element
-if (!customElements.get('feature-flag-context')) {
-  customElements.define('feature-flag-context', FeatureFlagContext);
-}
-
-/**
- * Utility function to get the nearest feature flag context
- * @param {HTMLElement} element - Element to start searching from
- * @returns {FeatureFlagContext|null} The nearest feature flag context or null
- */
-export function getFeatureFlagContext(element) {
-  if (!element) {
-    console.error('[FeatureFlagContext] Element is required');
-    return null;
-  }
-
-  const context = element.closest('feature-flag-context');
-  
-  if (!context) {
-    console.warn('[FeatureFlagContext] No feature flag context found in component tree');
-  }
-
-  return context;
-}
-
-/**
- * Utility hook-like function for components to use feature flags
- * Returns an object with feature flag utilities
- * @param {HTMLElement} element - Component element
- * @returns {FeatureFlagState} Feature flag state and utilities
- */
-export function useFeatureFlags(element) {
-  const context = getFeatureFlagContext(element);
-
-  if (!context) {
-    return {
-      flags: {},
-      isEnabled: () => false,
-      subscribe: () => () => {},
-      unsubscribe: () => {}
-    };
-  }
-
-  return {
-    flags: context.getAllFlags(),
-    isEnabled: (flagName) => context.isEnabled(flagName),
-    subscribe: (callback) => context.subscribe(callback),
-    unsubscribe: (callback) => context.unsubscribe(callback)
-  };
-}
+customElements.define('feature-flag-context', FeatureFlagContext);
 
 export { FeatureFlagContext };
