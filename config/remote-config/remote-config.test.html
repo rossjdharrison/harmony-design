@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Remote Config Service - Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .status {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    
+    .status.info {
+      background: #e7f3ff;
+      border: 1px solid #b3d9ff;
+    }
+    
+    .status.success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .flags-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    .flag-item {
+      padding: 0.75rem;
+      background: #f8f9fa;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .flag-name {
+      font-weight: 500;
+      color: #333;
+    }
+    
+    .flag-value {
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    
+    .flag-value.enabled {
+      background: #28a745;
+      color: white;
+    }
+    
+    .flag-value.disabled {
+      background: #6c757d;
+      color: white;
+    }
+    
+    .log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+    
+    .log-entry {
+      margin-bottom: 0.25rem;
+    }
+    
+    .log-entry.error {
+      color: #f48771;
+    }
+    
+    .log-entry.success {
+      color: #89d185;
+    }
+    
+    .log-entry.info {
+      color: #9cdcfe;
+    }
+    
+    input[type="text"] {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .input-group {
+      margin-bottom: 1rem;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Remote Config Service Test</h1>
+
+  <div class="test-section">
+    <h2>Configuration</h2>
+    <div class="input-group">
+      <label for="endpoint">Remote Config Endpoint:</label>
+      <input type="text" id="endpoint" value="/api/remote-config" placeholder="Enter endpoint URL">
+    </div>
+    <div class="input-group">
+      <label for="pollInterval">Poll Interval (ms):</label>
+      <input type="text" id="pollInterval" value="10000" placeholder="10000">
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Service Controls</h2>
+    <div class="controls">
+      <button id="initBtn">Initialize Service</button>
+      <button id="fetchBtn" disabled>Fetch Config</button>
+      <button id="startPollingBtn" disabled>Start Polling</button>
+      <button id="stopPollingBtn" disabled>Stop Polling</button>
+      <button id="refreshBtn" disabled>Force Refresh</button>
+      <button id="clearCacheBtn">Clear Cache</button>
+      <button id="destroyBtn" disabled>Destroy Service</button>
+    </div>
+    <div id="serviceStatus" class="status info">Service not initialized</div>
+  </div>
+
+  <div class="test-section">
+    <h2>Current Feature Flags</h2>
+    <div id="flagsContainer" class="flags-list">
+      <div style="grid-column: 1/-1; text-align: center; color: #999;">
+        No flags loaded
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Activity Log</h2>
+    <div id="logContainer" class="log"></div>
+  </div>
+
+  <script type="module">
+    import { RemoteConfigService } from './remote-config-service.js';
+
+    let service = null;
+    const logContainer = document.getElementById('logContainer');
+    const serviceStatus = document.getElementById('serviceStatus');
+    const flagsContainer = document.getElementById('flagsContainer');
+
+    // Buttons
+    const initBtn = document.getElementById('initBtn');
+    const fetchBtn = document.getElementById('fetchBtn');
+    const startPollingBtn = document.getElementById('startPollingBtn');
+    const stopPollingBtn = document.getElementById('stopPollingBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    const destroyBtn = document.getElementById('destroyBtn');
+
+    // Inputs
+    const endpointInput = document.getElementById('endpoint');
+    const pollIntervalInput = document.getElementById('pollInterval');
+
+    function log(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStatus(message, type = 'info') {
+      serviceStatus.textContent = message;
+      serviceStatus.className = `status ${type}`;
+    }
+
+    function updateFlags() {
+      if (!service) {
+        flagsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">Service not initialized</div>';
+        return;
+      }
+
+      const flags = service.getAllFlags();
+      const flagNames = Object.keys(flags);
+
+      if (flagNames.length === 0) {
+        flagsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #999;">No flags loaded</div>';
+        return;
+      }
+
+      flagsContainer.innerHTML = flagNames.map(name => `
+        <div class="flag-item">
+          <span class="flag-name">${name}</span>
+          <span class="flag-value ${flags[name] ? 'enabled' : 'disabled'}">
+            ${flags[name] ? 'ENABLED' : 'DISABLED'}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function enableServiceButtons(enabled) {
+      fetchBtn.disabled = !enabled;
+      startPollingBtn.disabled = !enabled;
+      stopPollingBtn.disabled = !enabled;
+      refreshBtn.disabled = !enabled;
+      destroyBtn.disabled = !enabled;
+    }
+
+    // Initialize service
+    initBtn.addEventListener('click', () => {
+      const endpoint = endpointInput.value.trim();
+      const pollInterval = parseInt(pollIntervalInput.value, 10);
+
+      if (!endpoint) {
+        log('Error: Endpoint is required', 'error');
+        updateStatus('Error: Endpoint is required', 'error');
+        return;
+      }
+
+      try {
+        service = new RemoteConfigService({
+          endpoint,
+          pollInterval,
+          timeout: 5000,
+          enablePolling: false, // Start manually
+          onUpdate: (config) => {
+            log(`Config updated: version ${config.version}, ${Object.keys(config.flags).length} flags`, 'success');
+            updateFlags();
+            updateStatus(`Config loaded: version ${config.version}`, 'success');
+          },
+          onError: (error) => {
+            log(`Error: ${error.message}`, 'error');
+            updateStatus(`Error: ${error.message}`, 'error');
+          }
+        });
+
+        log('Service initialized', 'success');
+        updateStatus('Service initialized (not polling)', 'success');
+        enableServiceButtons(true);
+        initBtn.disabled = true;
+        updateFlags();
+
+      } catch (error) {
+        log(`Initialization error: ${error.message}`, 'error');
+        updateStatus(`Initialization error: ${error.message}`, 'error');
+      }
+    });
+
+    // Fetch config
+    fetchBtn.addEventListener('click', async () => {
+      log('Fetching config...');
+      updateStatus('Fetching config...', 'info');
+      
+      try {
+        await service.fetch();
+        log('Config fetched successfully', 'success');
+      } catch (error) {
+        log(`Fetch failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Start polling
+    startPollingBtn.addEventListener('click', () => {
+      service.startPolling();
+      log('Polling started', 'success');
+      updateStatus('Service polling active', 'success');
+    });
+
+    // Stop polling
+    stopPollingBtn.addEventListener('click', () => {
+      service.stopPolling();
+      log('Polling stopped', 'info');
+      updateStatus('Service polling stopped', 'info');
+    });
+
+    // Force refresh
+    refreshBtn.addEventListener('click', async () => {
+      log('Forcing refresh...');
+      updateStatus('Forcing refresh...', 'info');
+      
+      try {
+        await service.refresh();
+        log('Refresh completed', 'success');
+      } catch (error) {
+        log(`Refresh failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Clear cache
+    clearCacheBtn.addEventListener('click', () => {
+      if (service) {
+        service.clearCache();
+      } else {
+        // Clear without service instance
+        try {
+          localStorage.removeItem('harmony:remote-config');
+        } catch (e) {
+          // Ignore
+        }
+      }
+      log('Cache cleared', 'info');
+      updateStatus('Cache cleared', 'info');
+      updateFlags();
+    });
+
+    // Destroy service
+    destroyBtn.addEventListener('click', () => {
+      if (service) {
+        service.destroy();
+        service = null;
+      }
+      log('Service destroyed', 'info');
+      updateStatus('Service destroyed', 'info');
+      enableServiceButtons(false);
+      initBtn.disabled = false;
+      updateFlags();
+    });
+
+    // Initial log
+    log('Remote Config Service Test ready');
+    log('Note: This test uses a mock endpoint. Update the endpoint to test with real service.');
+  </script>
+</body>
+</html>
