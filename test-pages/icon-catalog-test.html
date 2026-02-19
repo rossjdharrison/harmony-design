@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Catalog Test - Harmony Design System</title>
+  <style>
+    :root {
+      --color-background: #ffffff;
+      --color-text-primary: #333333;
+      --color-text-secondary: #666666;
+      --color-border: #e0e0e0;
+      --color-primary: #007bff;
+      --color-success-light: #d4edda;
+      --color-info-light: #d1ecf1;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: var(--color-background);
+      color: var(--color-text-primary);
+    }
+    
+    h1 {
+      margin-bottom: 24px;
+    }
+    
+    .test-section {
+      margin-bottom: 48px;
+      padding: 24px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: var(--color-text-primary);
+    }
+    
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    
+    .icon-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .icon-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .icon-label {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      text-align: center;
+      word-break: break-word;
+    }
+    
+    .search-wrapper {
+      margin-bottom: 24px;
+    }
+    
+    .search-input {
+      width: 100%;
+      max-width: 500px;
+      padding: 12px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .search-input:focus {
+      border-color: var(--color-primary);
+    }
+    
+    .result-count {
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+    
+    .status {
+      padding: 12px;
+      margin-bottom: 16px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .status.success {
+      background: var(--color-success-light);
+      color: #155724;
+    }
+    
+    .status.info {
+      background: var(--color-info-light);
+      color: #0c5460;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎨 Icon Catalog Test</h1>
+  
+  <div class="status info">
+    <strong>Test Instructions:</strong>
+    <ul style="margin: 8px 0 0 0; padding-left: 20px;">
+      <li>Verify all icons render correctly</li>
+      <li>Test search functionality (type in search box)</li>
+      <li>Click icons to copy names (should flash green)</li>
+      <li>Check hover states (cards should lift on hover)</li>
+      <li>Verify performance (should be smooth at 60fps)</li>
+    </ul>
+  </div>
+  
+  <div class="test-section">
+    <h2>Searchable Icon Catalog</h2>
+    
+    <div class="search-wrapper">
+      <input 
+        type="text" 
+        class="search-input" 
+        id="searchInput"
+        placeholder="Search icons... (e.g., 'play', 'edit', 'volume')"
+      >
+      <div class="result-count" id="resultCount"></div>
+    </div>
+    
+    <div class="icon-grid" id="iconGrid"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Size Variants</h2>
+    <div style="display: flex; gap: 24px; align-items: center; flex-wrap: wrap;">
+      <div style="text-align: center;">
+        <harmony-icon icon="play" size="16"></harmony-icon>
+        <div class="icon-label">16px</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="play" size="24"></harmony-icon>
+        <div class="icon-label">24px</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="play" size="32"></harmony-icon>
+        <div class="icon-label">32px</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="play" size="48"></harmony-icon>
+        <div class="icon-label">48px</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="play" size="64"></harmony-icon>
+        <div class="icon-label">64px</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Color Variants</h2>
+    <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+      <div style="text-align: center;">
+        <harmony-icon icon="heart" size="32" color="#007bff"></harmony-icon>
+        <div class="icon-label">Primary</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="heart" size="32" color="#28a745"></harmony-icon>
+        <div class="icon-label">Success</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="heart" size="32" color="#ffc107"></harmony-icon>
+        <div class="icon-label">Warning</div>
+      </div>
+      <div style="text-align: center;">
+        <harmony-icon icon="heart" size="32" color="#dc3545"></harmony-icon>
+        <div class="icon-label">Danger</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { IconType } from '../primitives/icons/icon-types.js';
+    import '../primitives/icons/harmony-icon.js';
+    
+    // Get all icon types
+    const allIcons = Object.values(IconType);
+    const iconGrid = document.getElementById('iconGrid');
+    const searchInput = document.getElementById('searchInput');
+    const resultCount = document.getElementById('resultCount');
+    
+    // Create icon card
+    function createIconCard(iconType) {
+      const card = document.createElement('div');
+      card.className = 'icon-card';
+      card.dataset.iconName = iconType.toLowerCase();
+      
+      const icon = document.createElement('harmony-icon');
+      icon.setAttribute('icon', iconType);
+      icon.setAttribute('size', '32');
+      
+      const label = document.createElement('div');
+      label.className = 'icon-label';
+      label.textContent = iconType;
+      
+      card.appendChild(icon);
+      card.appendChild(label);
+      
+      // Click to copy
+      card.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(iconType);
+          const originalBg = card.style.background;
+          card.style.background = 'var(--color-success-light)';
+          setTimeout(() => {
+            card.style.background = originalBg;
+          }, 300);
+          console.log(`Copied: ${iconType}`);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      });
+      
+      return card;
+    }
+    
+    // Render icons
+    function renderIcons(iconsToShow) {
+      iconGrid.innerHTML = '';
+      iconsToShow.forEach(iconType => {
+        iconGrid.appendChild(createIconCard(iconType));
+      });
+      resultCount.textContent = `Showing ${iconsToShow.length} of ${allIcons.length} icons`;
+    }
+    
+    // Initial render
+    renderIcons(allIcons);
+    
+    // Search functionality
+    searchInput.addEventListener('input', (e) => {
+      const searchTerm = e.target.value.toLowerCase().trim();
+      
+      if (!searchTerm) {
+        renderIcons(allIcons);
+        return;
+      }
+      
+      const filteredIcons = allIcons.filter(iconType => 
+        iconType.toLowerCase().includes(searchTerm)
+      );
+      
+      renderIcons(filteredIcons);
+    });
+    
+    console.log('✅ Icon catalog test loaded');
+    console.log(`📊 Total icons: ${allIcons.length}`);
+  </script>
+</body>
+</html>
