@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GraphEvent Type Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    
+    h1 {
+      color: #60a5fa;
+      border-bottom: 2px solid #374151;
+      padding-bottom: 0.5rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      background: #262626;
+      border-radius: 8px;
+      border-left: 4px solid #60a5fa;
+    }
+    
+    .test-case {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #1f1f1f;
+      border-radius: 4px;
+    }
+    
+    .test-case h3 {
+      margin-top: 0;
+      color: #93c5fd;
+    }
+    
+    .pass {
+      color: #4ade80;
+      font-weight: bold;
+    }
+    
+    .fail {
+      color: #f87171;
+      font-weight: bold;
+    }
+    
+    pre {
+      background: #0a0a0a;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid #374151;
+    }
+    
+    code {
+      color: #fbbf24;
+    }
+    
+    .stats {
+      display: flex;
+      gap: 2rem;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #1f1f1f;
+      border-radius: 4px;
+    }
+    
+    .stat {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .stat-label {
+      font-size: 0.875rem;
+      color: #9ca3af;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>GraphEvent Type Tests</h1>
+  
+  <div class="stats" id="stats">
+    <div class="stat">
+      <span class="stat-label">Total Tests</span>
+      <span class="stat-value" id="total">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Passed</span>
+      <span class="stat-value pass" id="passed">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">Failed</span>
+      <span class="stat-value fail" id="failed">0</span>
+    </div>
+  </div>
+  
+  <div id="results"></div>
+
+  <script type="module">
+    import {
+      createGraphEvent,
+      validateGraphEvent,
+      deriveGraphEvent,
+      cloneGraphEvent,
+      serializeGraphEvent,
+      deserializeGraphEvent,
+      GraphEventTypes
+    } from './graph-event.js';
+
+    const results = document.getElementById('results');
+    const statsTotal = document.getElementById('total');
+    const statsPassed = document.getElementById('passed');
+    const statsFailed = document.getElementById('failed');
+    
+    let totalTests = 0;
+    let passedTests = 0;
+    let failedTests = 0;
+
+    function updateStats() {
+      statsTotal.textContent = totalTests;
+      statsPassed.textContent = passedTests;
+      statsFailed.textContent = failedTests;
+    }
+
+    function runTest(name, testFn) {
+      totalTests++;
+      const testCase = document.createElement('div');
+      testCase.className = 'test-case';
+      
+      const title = document.createElement('h3');
+      title.textContent = name;
+      testCase.appendChild(title);
+      
+      try {
+        const result = testFn();
+        passedTests++;
+        
+        const status = document.createElement('div');
+        status.className = 'pass';
+        status.textContent = '✓ PASS';
+        testCase.appendChild(status);
+        
+        if (result) {
+          const output = document.createElement('pre');
+          output.textContent = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+          testCase.appendChild(output);
+        }
+      } catch (error) {
+        failedTests++;
+        
+        const status = document.createElement('div');
+        status.className = 'fail';
+        status.textContent = '✗ FAIL';
+        testCase.appendChild(status);
+        
+        const errorOutput = document.createElement('pre');
+        errorOutput.textContent = error.message;
+        errorOutput.style.color = '#f87171';
+        testCase.appendChild(errorOutput);
+      }
+      
+      results.appendChild(testCase);
+      updateStats();
+    }
+
+    function createSection(title) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      
+      const heading = document.createElement('h2');
+      heading.textContent = title;
+      section.appendChild(heading);
+      
+      results.appendChild(section);
+      return section;
+    }
+
+    // Test Suite
+    console.log('Starting GraphEvent Type Tests...');
+
+    // Basic Creation Tests
+    (() => {
+      const section = createSection('Basic Event Creation');
+      const oldResults = results;
+      results = section;
+
+      runTest('Create basic GraphEvent', () => {
+        const event = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event'
+        });
+        
+        if (!event.id) throw new Error('Missing id');
+        if (!event.timestamp) throw new Error('Missing timestamp');
+        if (event.source_node !== 'node_123') throw new Error('Wrong source_node');
+        if (event.event_type !== 'test.event') throw new Error('Wrong event_type');
+        if (!event.propagation_id) throw new Error('Missing propagation_id');
+        
+        return event;
+      });
+
+      runTest('Create GraphEvent with payload', () => {
+        const event = createGraphEvent({
+          source_node: 'node_456',
+          event_type: 'node.value_changed',
+          payload: { old_value: 0.5, new_value: 0.8 }
+        });
+        
+        if (event.payload.old_value !== 0.5) throw new Error('Wrong old_value');
+        if (event.payload.new_value !== 0.8) throw new Error('Wrong new_value');
+        
+        return event;
+      });
+
+      runTest('Create GraphEvent with custom propagation_id', () => {
+        const customPropId = 'custom_prop_123';
+        const event = createGraphEvent({
+          source_node: 'node_789',
+          event_type: 'test.event',
+          propagation_id: customPropId
+        });
+        
+        if (event.propagation_id !== customPropId) {
+          throw new Error('Custom propagation_id not preserved');
+        }
+        
+        return event;
+      });
+
+      runTest('Fail without source_node', () => {
+        try {
+          createGraphEvent({
+            event_type: 'test.event'
+          });
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('source_node')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Correctly rejected missing source_node';
+        }
+      });
+
+      runTest('Fail without event_type', () => {
+        try {
+          createGraphEvent({
+            source_node: 'node_123'
+          });
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('event_type')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Correctly rejected missing event_type';
+        }
+      });
+
+      results = oldResults;
+    })();
+
+    // Validation Tests
+    (() => {
+      const section = createSection('Event Validation');
+      const oldResults = results;
+      results = section;
+
+      runTest('Validate correct GraphEvent', () => {
+        const event = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event'
+        });
+        
+        const isValid = validateGraphEvent(event);
+        if (!isValid) throw new Error('Valid event rejected');
+        
+        return 'Event validated successfully';
+      });
+
+      runTest('Reject non-object', () => {
+        try {
+          validateGraphEvent('not an object');
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('must be an object')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Correctly rejected non-object';
+        }
+      });
+
+      runTest('Reject missing fields', () => {
+        try {
+          validateGraphEvent({
+            id: 'test_id',
+            timestamp: Date.now()
+            // missing other required fields
+          });
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('missing required field')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Correctly rejected incomplete event';
+        }
+      });
+
+      runTest('Reject invalid timestamp', () => {
+        try {
+          validateGraphEvent({
+            id: 'test_id',
+            timestamp: -1,
+            source_node: 'node_123',
+            event_type: 'test.event',
+            payload: {},
+            propagation_id: 'prop_123'
+          });
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('timestamp')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Correctly rejected invalid timestamp';
+        }
+      });
+
+      results = oldResults;
+    })();
+
+    // Derivation Tests
+    (() => {
+      const section = createSection('Event Derivation');
+      const oldResults = results;
+      results = section;
+
+      runTest('Derive event maintains propagation_id', () => {
+        const parentEvent = createGraphEvent({
+          source_node: 'node_1',
+          event_type: 'parent.event'
+        });
+        
+        const derivedEvent = deriveGraphEvent(parentEvent, {
+          source_node: 'node_2',
+          event_type: 'derived.event',
+          payload: { from: 'node_1' }
+        });
+        
+        if (derivedEvent.propagation_id !== parentEvent.propagation_id) {
+          throw new Error('Propagation ID not maintained');
+        }
+        
+        if (derivedEvent.id === parentEvent.id) {
+          throw new Error('Event ID should be different');
+        }
+        
+        return { parent: parentEvent, derived: derivedEvent };
+      });
+
+      runTest('Derive event with new payload', () => {
+        const parentEvent = createGraphEvent({
+          source_node: 'node_1',
+          event_type: 'parent.event',
+          payload: { value: 100 }
+        });
+        
+        const derivedEvent = deriveGraphEvent(parentEvent, {
+          source_node: 'node_2',
+          event_type: 'derived.event',
+          payload: { value: 200, multiplied: true }
+        });
+        
+        if (derivedEvent.payload.value !== 200) {
+          throw new Error('New payload not applied');
+        }
+        
+        return derivedEvent;
+      });
+
+      results = oldResults;
+    })();
+
+    // Cloning Tests
+    (() => {
+      const section = createSection('Event Cloning');
+      const oldResults = results;
+      results = section;
+
+      runTest('Clone event preserves all fields', () => {
+        const original = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event',
+          payload: { value: 42 }
+        });
+        
+        const cloned = cloneGraphEvent(original);
+        
+        if (cloned.id !== original.id) throw new Error('ID not preserved');
+        if (cloned.timestamp !== original.timestamp) throw new Error('Timestamp not preserved');
+        if (cloned.source_node !== original.source_node) throw new Error('Source node not preserved');
+        if (cloned.event_type !== original.event_type) throw new Error('Event type not preserved');
+        if (cloned.propagation_id !== original.propagation_id) throw new Error('Propagation ID not preserved');
+        
+        return 'All fields preserved';
+      });
+
+      runTest('Clone with overrides', () => {
+        const original = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event',
+          payload: { value: 42 }
+        });
+        
+        const cloned = cloneGraphEvent(original, {
+          event_type: 'modified.event',
+          payload: { value: 100 }
+        });
+        
+        if (cloned.event_type !== 'modified.event') {
+          throw new Error('Override not applied');
+        }
+        if (cloned.payload.value !== 100) {
+          throw new Error('Payload override not applied');
+        }
+        if (cloned.id !== original.id) {
+          throw new Error('ID should be preserved');
+        }
+        
+        return cloned;
+      });
+
+      runTest('Clone creates deep copy of payload', () => {
+        const original = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event',
+          payload: { nested: { value: 42 } }
+        });
+        
+        const cloned = cloneGraphEvent(original);
+        cloned.payload.nested.value = 100;
+        
+        if (original.payload.nested.value !== 42) {
+          throw new Error('Original payload was mutated');
+        }
+        
+        return 'Payload deep copied';
+      });
+
+      results = oldResults;
+    })();
+
+    // Serialization Tests
+    (() => {
+      const section = createSection('Event Serialization');
+      const oldResults = results;
+      results = section;
+
+      runTest('Serialize and deserialize event', () => {
+        const original = createGraphEvent({
+          source_node: 'node_123',
+          event_type: 'test.event',
+          payload: { value: 42, nested: { data: 'test' } }
+        });
+        
+        const serialized = serializeGraphEvent(original);
+        const deserialized = deserializeGraphEvent(serialized);
+        
+        if (deserialized.id !== original.id) throw new Error('ID mismatch');
+        if (deserialized.timestamp !== original.timestamp) throw new Error('Timestamp mismatch');
+        if (deserialized.source_node !== original.source_node) throw new Error('Source node mismatch');
+        if (deserialized.event_type !== original.event_type) throw new Error('Event type mismatch');
+        if (deserialized.payload.value !== original.payload.value) throw new Error('Payload mismatch');
+        if (deserialized.propagation_id !== original.propagation_id) throw new Error('Propagation ID mismatch');
+        
+        return 'Round-trip successful';
+      });
+
+      runTest('Deserialize validates structure', () => {
+        const invalidJson = '{"id": "test", "incomplete": true}';
+        
+        try {
+          deserializeGraphEvent(invalidJson);
+          throw new Error('Should have thrown error');
+        } catch (error) {
+          if (!error.message.includes('Failed to deserialize')) {
+            throw new Error('Wrong error message');
+          }
+          return 'Invalid structure rejected';
+        }
+      });
+
+      results = oldResults;
+    })();
+
+    // Event Types Constants
+    (() => {
+      const section = createSection('Event Type Constants');
+      const oldResults = results;
+      results = section;
+
+      runTest('GraphEventTypes constants exist', () => {
+        const requiredTypes = [
+          'NODE_CREATED',
+          'NODE_UPDATED',
+          'NODE_DELETED',
+          'EDGE_CREATED',
+          'GRAPH_INITIALIZED',
+          'PROPAGATION_STARTED'
+        ];
+        
+        for (const type of requiredTypes) {
+          if (!(type in GraphEventTypes)) {
+            throw new Error(`Missing event type: ${type}`);
+          }
+        }
+        
+        return Object.keys(GraphEventTypes).length + ' event types defined';
+      });
+
+      runTest('Use GraphEventTypes constants', () => {
+        const event = createGraphEvent({
+          source_node: 'node_123',
+          event_type: GraphEventTypes.NODE_VALUE_CHANGED,
+          payload: { value: 0.5 }
+        });
+        
+        if (event.event_type !== 'node.value_changed') {
+          throw new Error('Constant value mismatch');
+        }
+        
+        return event;
+      });
+
+      results = oldResults;
+    })();
+
+    console.log(`Tests complete: ${passedTests}/${totalTests} passed`);
+  </script>
+</body>
+</html>
