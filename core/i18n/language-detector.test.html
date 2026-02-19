@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Language Detector Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+
+    h1 {
+      color: #4a9eff;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .test-section {
+      background: #2a2a2a;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid #3a3a3a;
+    }
+
+    .test-section h2 {
+      color: #4a9eff;
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-label {
+      color: #888;
+      font-weight: 500;
+    }
+
+    .info-value {
+      color: #e0e0e0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    button {
+      background: #4a9eff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #3a8eef;
+    }
+
+    button:active {
+      background: #2a7edf;
+    }
+
+    button.secondary {
+      background: #555;
+    }
+
+    button.secondary:hover {
+      background: #666;
+    }
+
+    .event-log {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+
+    .event-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      background: #2a2a2a;
+      border-radius: 4px;
+      border-left: 3px solid #4a9eff;
+    }
+
+    .event-time {
+      color: #888;
+      font-size: 0.8rem;
+    }
+
+    .event-type {
+      color: #4a9eff;
+      font-weight: bold;
+    }
+
+    .event-detail {
+      color: #e0e0e0;
+      margin-top: 0.25rem;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: #2d5016;
+      color: #7dff7d;
+    }
+
+    .status.error {
+      background: #5d1616;
+      color: #ff7d7d;
+    }
+
+    .status.info {
+      background: #162d5d;
+      color: #7daaff;
+    }
+
+    .supported-languages {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .language-tag {
+      background: #3a3a3a;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .test-result {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 4px;
+      background: #2a2a2a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Language Detector Test</h1>
+  <p class="subtitle">Browser language detection and persistence</p>
+
+  <div class="test-section">
+    <h2>Current State</h2>
+    <div class="info-grid">
+      <span class="info-label">Current Language:</span>
+      <span class="info-value" id="current-language">-</span>
+
+      <span class="info-label">Browser Language:</span>
+      <span class="info-value" id="browser-language">-</span>
+
+      <span class="info-label">Stored Language:</span>
+      <span class="info-value" id="stored-language">-</span>
+    </div>
+
+    <h3>Supported Languages</h3>
+    <div class="supported-languages" id="supported-languages"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Language Selection</h2>
+    <p>Click a button to change the language:</p>
+    <div class="button-group" id="language-buttons"></div>
+    <div class="button-group">
+      <button class="secondary" id="reset-button">Reset to Default</button>
+      <button class="secondary" id="clear-storage-button">Clear Storage</button>
+    </div>
+    <div id="change-result" class="test-result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Validation Tests</h2>
+    <div class="button-group">
+      <button id="test-invalid-language">Test Invalid Language</button>
+      <button id="test-empty-language">Test Empty Language</button>
+      <button id="test-case-insensitive">Test Case Insensitive</button>
+      <button id="test-persistence">Test Persistence</button>
+    </div>
+    <div id="test-result" class="test-result" style="display: none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <button class="secondary" id="clear-log-button">Clear Log</button>
+    <div class="event-log" id="event-log"></div>
+  </div>
+
+  <script type="module">
+    import { LanguageDetector, languageDetector } from './language-detector.js';
+    import { EventBus } from '../event-bus.js';
+
+    // DOM elements
+    const currentLanguageEl = document.getElementById('current-language');
+    const browserLanguageEl = document.getElementById('browser-language');
+    const storedLanguageEl = document.getElementById('stored-language');
+    const supportedLanguagesEl = document.getElementById('supported-languages');
+    const languageButtonsEl = document.getElementById('language-buttons');
+    const eventLogEl = document.getElementById('event-log');
+    const changeResultEl = document.getElementById('change-result');
+    const testResultEl = document.getElementById('test-result');
+
+    // Initialize display
+    function updateDisplay() {
+      currentLanguageEl.textContent = languageDetector.getCurrentLanguage();
+      browserLanguageEl.textContent = navigator.language || 'N/A';
+      storedLanguageEl.textContent = localStorage.getItem('harmony-language') || 'None';
+    }
+
+    // Display supported languages
+    function displaySupportedLanguages() {
+      const languages = languageDetector.getSupportedLanguages();
+      supportedLanguagesEl.innerHTML = languages
+        .map(lang => `<span class="language-tag">${lang}</span>`)
+        .join('');
+    }
+
+    // Create language selection buttons
+    function createLanguageButtons() {
+      const languages = languageDetector.getSupportedLanguages();
+      languageButtonsEl.innerHTML = languages
+        .map(lang => `<button data-language="${lang}">${lang.toUpperCase()}</button>`)
+        .join('');
+
+      languageButtonsEl.addEventListener('click', (e) => {
+        if (e.target.dataset.language) {
+          try {
+            const changed = languageDetector.setLanguage(e.target.dataset.language);
+            showResult(changeResultEl, 
+              changed ? 'success' : 'info',
+              changed ? `Language changed to: ${e.target.dataset.language}` : 'Language already set'
+            );
+            updateDisplay();
+          } catch (error) {
+            showResult(changeResultEl, 'error', `Error: ${error.message}`);
+          }
+        }
+      });
+    }
+
+    // Show result message
+    function showResult(element, type, message) {
+      element.style.display = 'block';
+      element.innerHTML = `<span class="status ${type}">${message}</span>`;
+      setTimeout(() => {
+        element.style.display = 'none';
+      }, 5000);
+    }
+
+    // Log event to display
+    function logEvent(type, detail) {
+      const entry = document.createElement('div');
+      entry.className = 'event-entry';
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = `
+        <div class="event-time">${time}</div>
+        <div class="event-type">${type}</div>
+        <div class="event-detail">${JSON.stringify(detail, null, 2)}</div>
+      `;
+      eventLogEl.insertBefore(entry, eventLogEl.firstChild);
+    }
+
+    // Subscribe to language change events
+    EventBus.subscribe('LanguageChanged', (event) => {
+      logEvent('LanguageChanged', event.detail);
+    });
+
+    // Reset button
+    document.getElementById('reset-button').addEventListener('click', () => {
+      const newLanguage = languageDetector.resetToDefault();
+      showResult(changeResultEl, 'info', `Reset to: ${newLanguage}`);
+      updateDisplay();
+    });
+
+    // Clear storage button
+    document.getElementById('clear-storage-button').addEventListener('click', () => {
+      localStorage.removeItem('harmony-language');
+      updateDisplay();
+      showResult(changeResultEl, 'info', 'Storage cleared (reload page to re-detect)');
+    });
+
+    // Clear log button
+    document.getElementById('clear-log-button').addEventListener('click', () => {
+      eventLogEl.innerHTML = '';
+    });
+
+    // Test: Invalid language
+    document.getElementById('test-invalid-language').addEventListener('click', () => {
+      try {
+        languageDetector.setLanguage('invalid');
+        showResult(testResultEl, 'error', 'Test FAILED: Should have thrown error');
+      } catch (error) {
+        showResult(testResultEl, 'success', `Test PASSED: ${error.message}`);
+      }
+    });
+
+    // Test: Empty language
+    document.getElementById('test-empty-language').addEventListener('click', () => {
+      try {
+        languageDetector.setLanguage('');
+        showResult(testResultEl, 'error', 'Test FAILED: Should have thrown error');
+      } catch (error) {
+        showResult(testResultEl, 'success', `Test PASSED: ${error.message}`);
+      }
+    });
+
+    // Test: Case insensitive
+    document.getElementById('test-case-insensitive').addEventListener('click', () => {
+      try {
+        const changed = languageDetector.setLanguage('EN');
+        const current = languageDetector.getCurrentLanguage();
+        if (current === 'en') {
+          showResult(testResultEl, 'success', 'Test PASSED: Case insensitive works');
+        } else {
+          showResult(testResultEl, 'error', `Test FAILED: Expected 'en', got '${current}'`);
+        }
+        updateDisplay();
+      } catch (error) {
+        showResult(testResultEl, 'error', `Test FAILED: ${error.message}`);
+      }
+    });
+
+    // Test: Persistence
+    document.getElementById('test-persistence').addEventListener('click', () => {
+      const testLang = 'es';
+      languageDetector.setLanguage(testLang);
+      const stored = localStorage.getItem('harmony-language');
+      if (stored === testLang) {
+        showResult(testResultEl, 'success', `Test PASSED: Language persisted to localStorage`);
+      } else {
+        showResult(testResultEl, 'error', `Test FAILED: Expected '${testLang}', got '${stored}'`);
+      }
+      updateDisplay();
+    });
+
+    // Initialize
+    updateDisplay();
+    displaySupportedLanguages();
+    createLanguageButtons();
+    logEvent('System', { message: 'Language Detector initialized', language: languageDetector.getCurrentLanguage() });
+  </script>
+</body>
+</html>
