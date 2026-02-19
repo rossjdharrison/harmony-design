@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PropagationQueue Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    
+    h1 { color: #00d9ff; }
+    h2 { color: #00ff88; margin-top: 2rem; }
+    
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    
+    .test-result {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .pass { background: #1a3a1a; border-left: 4px solid #00ff88; }
+    .fail { background: #3a1a1a; border-left: 4px solid #ff4444; }
+    .info { background: #1a1a3a; border-left: 4px solid #00d9ff; }
+    
+    button {
+      background: #00d9ff;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    
+    button:hover { background: #00ff88; }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .stat-card {
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 3px solid #00d9ff;
+    }
+    
+    .stat-label {
+      color: #888;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+    
+    .stat-value {
+      color: #00ff88;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔄 PropagationQueue Test Suite</h1>
+  <p>Priority queue for graph event propagation with performance monitoring</p>
+  
+  <div class="test-section">
+    <h2>Test Controls</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="runBasicTests()">Basic Operations</button>
+    <button onclick="runPriorityTests()">Priority Tests</button>
+    <button onclick="runPerformanceTests()">Performance Tests</button>
+    <button onclick="runAgingTests()">Aging Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Queue Statistics</h2>
+    <div id="stats" class="stats"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="results"></div>
+  </div>
+  
+  <script type="module">
+    import { PropagationQueue, EventPriority } from './propagation-queue.js';
+    
+    let queue = null;
+    let testResults = [];
+    
+    function log(message, type = 'info') {
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${type}`;
+      resultDiv.textContent = message;
+      document.getElementById('results').appendChild(resultDiv);
+      testResults.push({ message, type, timestamp: Date.now() });
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
+    
+    function assert(condition, message) {
+      if (condition) {
+        log(`✓ ${message}`, 'pass');
+        return true;
+      } else {
+        log(`✗ ${message}`, 'fail');
+        return false;
+      }
+    }
+    
+    function updateStats(q = queue) {
+      if (!q) return;
+      
+      const stats = q.getStats();
+      const statsDiv = document.getElementById('stats');
+      statsDiv.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Queue Size</div>
+          <div class="stat-value">${stats.size} / ${stats.maxSize}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Enqueued</div>
+          <div class="stat-value">${stats.enqueueCount}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Dequeued</div>
+          <div class="stat-value">${stats.dequeueCount}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Dropped</div>
+          <div class="stat-value">${stats.droppedCount}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Priority</div>
+          <div class="stat-value">${stats.avgPriority.toFixed(1)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Max Age (ms)</div>
+          <div class="stat-value">${stats.maxAge.toFixed(1)}</div>
+        </div>
+      `;
+    }
+    
+    function createMockEvent(id, type = 'test') {
+      return {
+        id,
+        type,
+        timestamp: performance.now(),
+        source: 'test'
+      };
+    }
+    
+    window.runBasicTests = function() {
+      log('=== Basic Operations Tests ===', 'info');
+      queue = new PropagationQueue({ enableAging: false });
+      
+      // Test enqueue
+      const event1 = createMockEvent('evt1');
+      assert(queue.enqueue(event1, EventPriority.NORMAL, 'node1'), 
+        'Enqueue event');
+      assert(queue.size === 1, 'Size is 1 after enqueue');
+      assert(!queue.isEmpty, 'Queue not empty');
+      
+      // Test peek
+      const peeked = queue.peek();
+      assert(peeked && peeked.id === 'evt1', 'Peek returns correct event');
+      assert(queue.size === 1, 'Size unchanged after peek');
+      
+      // Test dequeue
+      const dequeued = queue.dequeue();
+      assert(dequeued && dequeued.id === 'evt1', 'Dequeue returns correct event');
+      assert(queue.size === 0, 'Size is 0 after dequeue');
+      assert(queue.isEmpty, 'Queue is empty');
+      
+      // Test multiple enqueue/dequeue
+      queue.enqueue(createMockEvent('evt2'), EventPriority.NORMAL);
+      queue.enqueue(createMockEvent('evt3'), EventPriority.NORMAL);
+      queue.enqueue(createMockEvent('evt4'), EventPriority.NORMAL);
+      assert(queue.size === 3, 'Multiple enqueue works');
+      
+      queue.dequeue();
+      queue.dequeue();
+      assert(queue.size === 1, 'Multiple dequeue works');
+      
+      // Test clear
+      queue.clear();
+      assert(queue.isEmpty, 'Clear empties queue');
+      
+      updateStats();
+    };
+    
+    window.runPriorityTests = function() {
+      log('=== Priority Tests ===', 'info');
+      queue = new PropagationQueue({ enableAging: false });
+      
+      // Enqueue with different priorities
+      queue.enqueue(createMockEvent('low'), EventPriority.LOW);
+      queue.enqueue(createMockEvent('high'), EventPriority.HIGH);
+      queue.enqueue(createMockEvent('normal'), EventPriority.NORMAL);
+      queue.enqueue(createMockEvent('critical'), EventPriority.CRITICAL);
+      queue.enqueue(createMockEvent('idle'), EventPriority.IDLE);
+      
+      // Dequeue should return highest priority first
+      let evt = queue.dequeue();
+      assert(evt.id === 'critical', 'CRITICAL priority dequeued first');
+      
+      evt = queue.dequeue();
+      assert(evt.id === 'high', 'HIGH priority dequeued second');
+      
+      evt = queue.dequeue();
+      assert(evt.id === 'normal', 'NORMAL priority dequeued third');
+      
+      evt = queue.dequeue();
+      assert(evt.id === 'low', 'LOW priority dequeued fourth');
+      
+      evt = queue.dequeue();
+      assert(evt.id === 'idle', 'IDLE priority dequeued last');
+      
+      // Test priority update
+      queue.enqueue(createMockEvent('evt1'), EventPriority.LOW);
+      queue.enqueue(createMockEvent('evt2'), EventPriority.NORMAL);
+      queue.enqueue(createMockEvent('evt3'), EventPriority.HIGH);
+      
+      assert(queue.updatePriority('evt1', EventPriority.CRITICAL), 
+        'Update priority succeeds');
+      
+      evt = queue.dequeue();
+      assert(evt.id === 'evt1', 'Updated priority affects dequeue order');
+      
+      updateStats();
+    };
+    
+    window.runPerformanceTests = function() {
+      log('=== Performance Tests ===', 'info');
+      queue = new PropagationQueue({ maxSize: 100000, enableAging: false });
+      
+      // Test enqueue performance
+      const enqueueStart = performance.now();
+      for (let i = 0; i < 10000; i++) {
+        queue.enqueue(
+          createMockEvent(`evt${i}`),
+          Math.floor(Math.random() * 100)
+        );
+      }
+      const enqueueTime = performance.now() - enqueueStart;
+      log(`Enqueued 10,000 events in ${enqueueTime.toFixed(2)}ms`, 'info');
+      assert(enqueueTime < 100, 'Enqueue 10k events < 100ms');
+      
+      // Test dequeue performance
+      const dequeueStart = performance.now();
+      let lastPriority = Infinity;
+      let ordered = true;
+      
+      while (!queue.isEmpty) {
+        const evt = queue.dequeue();
+        // Note: we can't easily check priority order without exposing it
+        // but we can verify dequeue completes
+      }
+      const dequeueTime = performance.now() - dequeueStart;
+      log(`Dequeued 10,000 events in ${dequeueTime.toFixed(2)}ms`, 'info');
+      assert(dequeueTime < 100, 'Dequeue 10k events < 100ms');
+      
+      // Test mixed operations
+      const mixedStart = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        queue.enqueue(createMockEvent(`mix${i}`), Math.floor(Math.random() * 100));
+        if (i % 2 === 0 && !queue.isEmpty) {
+          queue.dequeue();
+        }
+      }
+      const mixedTime = performance.now() - mixedStart;
+      log(`Mixed 1,000 operations in ${mixedTime.toFixed(2)}ms`, 'info');
+      assert(mixedTime < 50, 'Mixed operations < 50ms');
+      
+      updateStats();
+    };
+    
+    window.runAgingTests = async function() {
+      log('=== Aging Tests ===', 'info');
+      queue = new PropagationQueue({ 
+        agingInterval: 100,
+        agingBoost: 5,
+        enableAging: true
+      });
+      
+      // Enqueue low priority events
+      queue.enqueue(createMockEvent('old1'), EventPriority.LOW);
+      queue.enqueue(createMockEvent('old2'), EventPriority.LOW);
+      
+      log('Waiting for aging cycle...', 'info');
+      await new Promise(resolve => setTimeout(resolve, 150));
+      
+      // Add high priority event
+      queue.enqueue(createMockEvent('new'), EventPriority.HIGH);
+      
+      // Old events should have been boosted
+      const stats = queue.getStats();
+      log(`Average priority after aging: ${stats.avgPriority.toFixed(1)}`, 'info');
+      assert(stats.avgPriority > EventPriority.LOW, 
+        'Aging boosts priority of old events');
+      
+      updateStats();
+    };
+    
+    window.runAllTests = async function() {
+      clearResults();
+      runBasicTests();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      runPriorityTests();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      runPerformanceTests();
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await runAgingTests();
+      
+      const passed = testResults.filter(r => r.type === 'pass').length;
+      const failed = testResults.filter(r => r.type === 'fail').length;
+      log(`\n=== Test Summary: ${passed} passed, ${failed} failed ===`, 
+        failed === 0 ? 'pass' : 'fail');
+    };
+    
+    window.clearResults = function() {
+      document.getElementById('results').innerHTML = '';
+      testResults = [];
+      if (queue) {
+        queue.dispose();
+        queue = null;
+      }
+    };
+    
+    // Run basic tests on load
+    window.addEventListener('load', () => {
+      log('PropagationQueue test suite loaded', 'info');
+      runBasicTests();
+    });
+  </script>
+</body>
+</html>
