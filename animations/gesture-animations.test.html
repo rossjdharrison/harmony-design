@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gesture Animations Test - Harmony Design System</title>
+  <style>
+    :root {
+      --color-primary: #6366f1;
+      --color-primary-alpha-10: rgba(99, 102, 241, 0.1);
+      --color-primary-alpha-50: rgba(99, 102, 241, 0.5);
+      --color-background: #ffffff;
+      --color-surface: #f3f4f6;
+      --color-text: #111827;
+      --color-border: #e5e7eb;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--color-background);
+      color: var(--color-text);
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+      color: var(--color-primary);
+    }
+
+    .subtitle {
+      color: #6b7280;
+      margin-bottom: 2rem;
+    }
+
+    .section {
+      margin-bottom: 3rem;
+    }
+
+    .section h2 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .demo-item {
+      background: var(--color-surface);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      text-align: center;
+    }
+
+    .demo-item h3 {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .test-button {
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: none;
+    }
+
+    .test-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-link {
+      color: var(--color-primary);
+      text-decoration: none;
+      font-size: 1.125rem;
+      cursor: pointer;
+    }
+
+    .test-draggable {
+      background: var(--color-primary);
+      color: white;
+      padding: 1rem;
+      border-radius: 6px;
+      cursor: grab;
+      user-select: none;
+      display: inline-block;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      color: #6b7280;
+      margin-top: 1rem;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .metrics {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+
+    .metrics h3 {
+      color: #92400e;
+      margin-bottom: 0.5rem;
+    }
+
+    .metrics p {
+      color: #78350f;
+      font-size: 0.875rem;
+    }
+
+    .controls {
+      background: var(--color-surface);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 2rem;
+    }
+
+    .controls button {
+      background: white;
+      border: 1px solid var(--color-border);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .controls button:hover {
+      background: var(--color-surface);
+    }
+  </style>
+</head>
+<body>
+  <h1>Gesture Animations Test</h1>
+  <p class="subtitle">Interactive demonstration of hover, tap, and drag gesture animations</p>
+
+  <div class="section">
+    <h2>Hover Animations</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>Scale</h3>
+        <button class="test-button" data-hover="scale">Hover Me</button>
+      </div>
+      <div class="demo-item">
+        <h3>Lift</h3>
+        <div class="test-card" data-hover="lift">
+          <p>Card Component</p>
+        </div>
+      </div>
+      <div class="demo-item">
+        <h3>Brighten</h3>
+        <button class="test-button" data-hover="brighten">Hover Me</button>
+      </div>
+      <div class="demo-item">
+        <h3>Underline</h3>
+        <a class="test-link" data-hover="underline">Text Link</a>
+      </div>
+      <div class="demo-item">
+        <h3>Glow</h3>
+        <button class="test-button" data-hover="glow">Hover Me</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Tap Animations</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>Shrink</h3>
+        <button class="test-button" data-tap="shrink">Click Me</button>
+      </div>
+      <div class="demo-item">
+        <h3>Push</h3>
+        <button class="test-button" data-tap="push">Click Me</button>
+      </div>
+      <div class="demo-item">
+        <h3>Flash</h3>
+        <button class="test-button" data-tap="flash">Click Me</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Combined Hover + Tap</h2>
+    <div class="demo-grid">
+      <div class="demo-item">
+        <h3>Scale + Shrink</h3>
+        <button class="test-button" data-hover="scale" data-tap="shrink">Interactive</button>
+      </div>
+      <div class="demo-item">
+        <h3>Lift + Push</h3>
+        <button class="test-button" data-hover="lift" data-tap="push">Interactive</button>
+      </div>
+      <div class="demo-item">
+        <h3>Glow + Flash</h3>
+        <button class="test-button" data-hover="glow" data-tap="flash">Interactive</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Drag Animations</h2>
+    <div class="demo-item">
+      <h3>Draggable Element</h3>
+      <div class="test-draggable" draggable="true" data-drag="elevated">
+        Drag Me
+      </div>
+      <div class="drop-zone">Drop Zone</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button id="toggleDisabled">Toggle Disabled State</button>
+    <button id="measurePerformance">Measure Performance</button>
+  </div>
+
+  <div class="metrics" id="metrics" style="display: none;">
+    <h3>Performance Metrics</h3>
+    <p id="metricsContent"></p>
+  </div>
+
+  <script type="module">
+    import {
+      attachGestureAnimations,
+      createGestureController,
+      HOVER_ANIMATIONS,
+      TAP_ANIMATIONS,
+      DRAG_ANIMATIONS
+    } from './gesture-animations.js';
+
+    // Track all controllers for cleanup and testing
+    const controllers = [];
+
+    // Setup hover animations
+    document.querySelectorAll('[data-hover]').forEach(element => {
+      const variant = element.getAttribute('data-hover');
+      const tapVariant = element.getAttribute('data-tap');
+      
+      const config = { hover: variant };
+      if (tapVariant) config.tap = tapVariant;
+      
+      const cleanup = attachGestureAnimations(element, config);
+      controllers.push({ element, cleanup });
+    });
+
+    // Setup tap-only animations
+    document.querySelectorAll('[data-tap]:not([data-hover])').forEach(element => {
+      const variant = element.getAttribute('data-tap');
+      const cleanup = attachGestureAnimations(element, { tap: variant });
+      controllers.push({ element, cleanup });
+    });
+
+    // Setup drag animations
+    document.querySelectorAll('[data-drag]').forEach(element => {
+      const variant = element.getAttribute('data-drag');
+      const cleanup = attachGestureAnimations(element, { drag: variant });
+      controllers.push({ element, cleanup });
+    });
+
+    // Drop zone handling
+    const dropZone = document.querySelector('.drop-zone');
+    if (dropZone) {
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = 'var(--color-primary-alpha-10)';
+        dropZone.style.borderColor = 'var(--color-primary)';
+      });
+
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.style.backgroundColor = '';
+        dropZone.style.borderColor = '';
+      });
+
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.backgroundColor = '';
+        dropZone.style.borderColor = '';
+        dropZone.textContent = 'Dropped! 🎉';
+        setTimeout(() => {
+          dropZone.textContent = 'Drop Zone';
+        }, 2000);
+      });
+    }
+
+    // Toggle disabled state
+    let isDisabled = false;
+    document.getElementById('toggleDisabled').addEventListener('click', () => {
+      isDisabled = !isDisabled;
+      
+      controllers.forEach(({ element }) => {
+        const controller = createGestureController(element, {
+          hover: element.getAttribute('data-hover'),
+          tap: element.getAttribute('data-tap'),
+          drag: element.getAttribute('data-drag'),
+          disabled: isDisabled
+        });
+        controller.setDisabled(isDisabled);
+      });
+
+      document.getElementById('toggleDisabled').textContent = 
+        isDisabled ? 'Enable Animations' : 'Toggle Disabled State';
+    });
+
+    // Performance measurement
+    document.getElementById('measurePerformance').addEventListener('click', () => {
+      const metrics = document.getElementById('metrics');
+      const metricsContent = document.getElementById('metricsContent');
+      
+      // Measure animation frame time
+      let frameCount = 0;
+      let totalTime = 0;
+      const startTime = performance.now();
+      
+      const measureFrame = () => {
+        const frameStart = performance.now();
+        frameCount++;
+        
+        if (frameCount < 60) {
+          requestAnimationFrame(() => {
+            const frameEnd = performance.now();
+            totalTime += (frameEnd - frameStart);
+            measureFrame();
+          });
+        } else {
+          const avgFrameTime = totalTime / frameCount;
+          const fps = 1000 / avgFrameTime;
+          const testDuration = performance.now() - startTime;
+          
+          metricsContent.innerHTML = `
+            Average frame time: ${avgFrameTime.toFixed(2)}ms<br>
+            Estimated FPS: ${fps.toFixed(1)}<br>
+            Test duration: ${testDuration.toFixed(0)}ms<br>
+            Target: &lt;16ms per frame (60fps)<br>
+            Status: ${avgFrameTime < 16 ? '✅ PASS' : '❌ FAIL'}
+          `;
+          metrics.style.display = 'block';
+        }
+      };
+      
+      measureFrame();
+    });
+
+    // Log loaded animations
+    console.log('Gesture Animations Test Loaded');
+    console.log('Hover variants:', Object.keys(HOVER_ANIMATIONS));
+    console.log('Tap variants:', Object.keys(TAP_ANIMATIONS));
+    console.log('Drag variants:', Object.keys(DRAG_ANIMATIONS));
+  </script>
+</body>
+</html>
