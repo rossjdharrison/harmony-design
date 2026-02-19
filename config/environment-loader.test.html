@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Environment Loader Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+    
+    h1 {
+      color: #4a9eff;
+      border-bottom: 2px solid #333;
+      padding-bottom: 0.5rem;
+    }
+    
+    h2 {
+      color: #6ab7ff;
+      margin-top: 2rem;
+    }
+    
+    .test-section {
+      background: #252525;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 1rem 0;
+    }
+    
+    .test-result {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .pass {
+      background: #1a4d2e;
+      border-left: 4px solid #4caf50;
+    }
+    
+    .fail {
+      background: #4d1a1a;
+      border-left: 4px solid #f44336;
+    }
+    
+    .info {
+      background: #1a3a4d;
+      border-left: 4px solid #2196f3;
+    }
+    
+    pre {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+    
+    button {
+      background: #4a9eff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    
+    button:hover {
+      background: #6ab7ff;
+    }
+    
+    .summary {
+      background: #2a2a2a;
+      border: 2px solid #4a9eff;
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 2rem 0;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Environment Loader Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Test Controls</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+  
+  <div id="results"></div>
+  
+  <div class="test-section">
+    <h2>Current Environment Configuration</h2>
+    <pre id="config-display">Loading...</pre>
+  </div>
+
+  <script type="module">
+    import {
+      loadEnvironment,
+      getEnvironment,
+      getEnvVar,
+      isDevelopment,
+      isProduction,
+      isTest,
+      clearCache,
+      validateConfig
+    } from './environment-loader.js';
+
+    let testResults = [];
+
+    function logResult(testName, passed, message) {
+      testResults.push({ testName, passed, message });
+      const resultsDiv = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      resultDiv.textContent = `${passed ? '✓' : '✗'} ${testName}: ${message}`;
+      resultsDiv.appendChild(resultDiv);
+    }
+
+    function logInfo(message) {
+      const resultsDiv = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'test-result info';
+      resultDiv.textContent = `ℹ ${message}`;
+      resultsDiv.appendChild(resultDiv);
+    }
+
+    async function testLoadEnvironment() {
+      try {
+        clearCache();
+        const config = await loadEnvironment();
+        
+        const hasRequiredFields = 
+          config.environment &&
+          config.apiUrl &&
+          config.wsUrl &&
+          typeof config.debug === 'boolean' &&
+          config.logLevel &&
+          typeof config.audioBufferSize === 'number';
+        
+        logResult(
+          'Load Environment',
+          hasRequiredFields,
+          hasRequiredFields ? 'Successfully loaded config with all required fields' : 'Missing required fields'
+        );
+        
+        return config;
+      } catch (error) {
+        logResult('Load Environment', false, `Error: ${error.message}`);
+        return null;
+      }
+    }
+
+    async function testGetEnvironment() {
+      try {
+        const config1 = await getEnvironment();
+        const config2 = await getEnvironment();
+        
+        const isCached = config1 === config2;
+        logResult(
+          'Get Environment (Caching)',
+          isCached,
+          isCached ? 'Config is properly cached' : 'Config not cached correctly'
+        );
+      } catch (error) {
+        logResult('Get Environment', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testEnvironmentDetection() {
+      try {
+        const config = await getEnvironment();
+        const validEnvironments = ['development', 'test', 'production'];
+        const isValid = validEnvironments.includes(config.environment);
+        
+        logResult(
+          'Environment Detection',
+          isValid,
+          `Detected environment: ${config.environment}`
+        );
+      } catch (error) {
+        logResult('Environment Detection', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testEnvironmentHelpers() {
+      try {
+        const isDev = await isDevelopment();
+        const isProd = await isProduction();
+        const isTestEnv = await isTest();
+        
+        const exactlyOne = [isDev, isProd, isTestEnv].filter(Boolean).length === 1;
+        
+        logResult(
+          'Environment Helpers',
+          exactlyOne,
+          `isDev: ${isDev}, isProd: ${isProd}, isTest: ${isTestEnv}`
+        );
+      } catch (error) {
+        logResult('Environment Helpers', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testGetEnvVar() {
+      try {
+        const config = await getEnvironment();
+        const apiUrl = await getEnvVar('API_URL', 'default');
+        const nonExistent = await getEnvVar('NON_EXISTENT_VAR', 'default');
+        
+        const apiUrlMatches = apiUrl === config.apiUrl || apiUrl === 'default';
+        const defaultWorks = nonExistent === 'default';
+        
+        logResult(
+          'Get Environment Variable',
+          apiUrlMatches && defaultWorks,
+          `API_URL: ${apiUrl}, Default: ${defaultWorks}`
+        );
+      } catch (error) {
+        logResult('Get Environment Variable', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testValidateConfig() {
+      try {
+        const config = await getEnvironment();
+        const errors = validateConfig(config);
+        
+        logResult(
+          'Validate Config',
+          errors.length === 0,
+          errors.length === 0 ? 'Configuration is valid' : `Errors: ${errors.join(', ')}`
+        );
+      } catch (error) {
+        logResult('Validate Config', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testInvalidConfig() {
+      try {
+        const invalidConfig = {
+          environment: 'invalid',
+          apiUrl: 'not-a-url',
+          wsUrl: 'ws://localhost:3000',
+          debug: false,
+          logLevel: 'invalid',
+          enableAnalytics: false,
+          enableExperiments: false,
+          audioBufferSize: 10000, // Too large
+          audioSampleRate: 1000, // Too low
+          maxPolyphony: 200, // Too high
+          wasmMemoryPages: 100000, // Too high
+          enableGpu: true,
+          raw: {}
+        };
+        
+        const errors = validateConfig(invalidConfig);
+        
+        logResult(
+          'Validate Invalid Config',
+          errors.length > 0,
+          `Found ${errors.length} validation errors (expected)`
+        );
+      } catch (error) {
+        logResult('Validate Invalid Config', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testClearCache() {
+      try {
+        await getEnvironment(); // Load and cache
+        clearCache();
+        const config = await getEnvironment(); // Should reload
+        
+        logResult(
+          'Clear Cache',
+          config !== null,
+          'Cache cleared and reloaded successfully'
+        );
+      } catch (error) {
+        logResult('Clear Cache', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function testPerformance() {
+      try {
+        clearCache();
+        
+        const start = performance.now();
+        await loadEnvironment();
+        const loadTime = performance.now() - start;
+        
+        const cacheStart = performance.now();
+        await getEnvironment();
+        const cacheTime = performance.now() - cacheStart;
+        
+        const loadPassed = loadTime < 10; // Should be < 10ms
+        const cachePassed = cacheTime < 1; // Cached should be < 1ms
+        
+        logResult(
+          'Performance - Initial Load',
+          loadPassed,
+          `${loadTime.toFixed(2)}ms (target: <10ms)`
+        );
+        
+        logResult(
+          'Performance - Cached Access',
+          cachePassed,
+          `${cacheTime.toFixed(2)}ms (target: <1ms)`
+        );
+      } catch (error) {
+        logResult('Performance', false, `Error: ${error.message}`);
+      }
+    }
+
+    async function displayCurrentConfig() {
+      try {
+        const config = await getEnvironment();
+        const display = document.getElementById('config-display');
+        display.textContent = JSON.stringify(config, null, 2);
+      } catch (error) {
+        const display = document.getElementById('config-display');
+        display.textContent = `Error loading config: ${error.message}`;
+      }
+    }
+
+    window.runAllTests = async function() {
+      testResults = [];
+      document.getElementById('results').innerHTML = '<h2>Test Results</h2>';
+      
+      logInfo('Starting Environment Loader Test Suite...');
+      
+      await testLoadEnvironment();
+      await testGetEnvironment();
+      await testEnvironmentDetection();
+      await testEnvironmentHelpers();
+      await testGetEnvVar();
+      await testValidateConfig();
+      await testInvalidConfig();
+      await testClearCache();
+      await testPerformance();
+      
+      const passed = testResults.filter(r => r.passed).length;
+      const total = testResults.length;
+      const percentage = ((passed / total) * 100).toFixed(1);
+      
+      const summaryDiv = document.createElement('div');
+      summaryDiv.className = 'summary';
+      summaryDiv.innerHTML = `
+        <strong>Test Summary:</strong> ${passed}/${total} tests passed (${percentage}%)
+      `;
+      document.getElementById('results').appendChild(summaryDiv);
+      
+      await displayCurrentConfig();
+    };
+
+    window.clearResults = function() {
+      testResults = [];
+      document.getElementById('results').innerHTML = '';
+    };
+
+    // Auto-run tests on load
+    window.addEventListener('DOMContentLoaded', () => {
+      runAllTests();
+    });
+  </script>
+</body>
+</html>
