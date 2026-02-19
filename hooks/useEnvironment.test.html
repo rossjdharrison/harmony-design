@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useEnvironment Hook Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    
+    h1 {
+      color: #00ff88;
+      border-bottom: 2px solid #00ff88;
+      padding-bottom: 0.5rem;
+    }
+    
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    
+    .test-section h2 {
+      color: #00ccff;
+      margin-top: 0;
+    }
+    
+    .result {
+      background: #0d0d0d;
+      border-left: 3px solid #00ff88;
+      padding: 1rem;
+      margin: 0.5rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    
+    .result.error {
+      border-left-color: #ff4444;
+      color: #ff8888;
+    }
+    
+    .result.success {
+      border-left-color: #00ff88;
+      color: #88ffaa;
+    }
+    
+    .config-display {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.5rem 1rem;
+      margin: 1rem 0;
+    }
+    
+    .config-key {
+      color: #00ccff;
+      font-weight: bold;
+    }
+    
+    .config-value {
+      color: #ffaa00;
+      font-family: 'Courier New', monospace;
+    }
+    
+    button {
+      background: #00ff88;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    
+    button:hover {
+      background: #00ccff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 useEnvironment Hook Tests</h1>
+  
+  <div class="test-section">
+    <h2>Basic Hook Usage</h2>
+    <button id="test-basic">Test useEnvironment()</button>
+    <div id="basic-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Environment Value Access</h2>
+    <button id="test-value">Test useEnvironmentValue()</button>
+    <div id="value-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Environment Detection</h2>
+    <button id="test-detection">Test useIsEnvironment()</button>
+    <div id="detection-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Debug Mode Check</h2>
+    <button id="test-debug">Test useDebugMode()</button>
+    <div id="debug-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Audio Configuration</h2>
+    <button id="test-audio">Test useAudioConfig()</button>
+    <div id="audio-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>API Configuration</h2>
+    <button id="test-api">Test useApiConfig()</button>
+    <div id="api-results"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Component Integration Example</h2>
+    <button id="test-component">Test in Web Component</button>
+    <div id="component-results"></div>
+    <div id="component-mount"></div>
+  </div>
+
+  <script type="module">
+    import { ConfigContext } from '../contexts/ConfigContext.js';
+    import { loadEnvironment } from '../config/environment-loader.js';
+    import {
+      useEnvironment,
+      useEnvironmentValue,
+      useIsEnvironment,
+      useDebugMode,
+      useAudioConfig,
+      useApiConfig
+    } from './useEnvironment.js';
+
+    // Initialize environment
+    async function init() {
+      try {
+        const config = await loadEnvironment();
+        ConfigContext.setConfig(config);
+        console.log('✅ Environment initialized:', config);
+      } catch (error) {
+        console.error('❌ Failed to initialize environment:', error);
+      }
+    }
+
+    // Test basic hook usage
+    document.getElementById('test-basic').addEventListener('click', () => {
+      const results = document.getElementById('basic-results');
+      results.innerHTML = '';
+      
+      try {
+        const env = useEnvironment();
+        
+        const display = document.createElement('div');
+        display.className = 'config-display';
+        
+        Object.entries(env).forEach(([key, value]) => {
+          const keyEl = document.createElement('div');
+          keyEl.className = 'config-key';
+          keyEl.textContent = key + ':';
+          
+          const valueEl = document.createElement('div');
+          valueEl.className = 'config-value';
+          valueEl.textContent = JSON.stringify(value);
+          
+          display.appendChild(keyEl);
+          display.appendChild(valueEl);
+        });
+        
+        results.appendChild(display);
+        
+        const success = document.createElement('div');
+        success.className = 'result success';
+        success.textContent = '✅ useEnvironment() returned complete config';
+        results.appendChild(success);
+      } catch (error) {
+        const errorEl = document.createElement('div');
+        errorEl.className = 'result error';
+        errorEl.textContent = `❌ Error: ${error.message}`;
+        results.appendChild(errorEl);
+      }
+    });
+
+    // Test environment value access
+    document.getElementById('test-value').addEventListener('click', () => {
+      const results = document.getElementById('value-results');
+      results.innerHTML = '';
+      
+      const tests = [
+        { key: 'apiUrl', default: 'http://default' },
+        { key: 'audioBufferSize', default: 512 },
+        { key: 'nonExistentKey', default: 'fallback' }
+      ];
+      
+      tests.forEach(({ key, default: defaultValue }) => {
+        const value = useEnvironmentValue(key, defaultValue);
+        
+        const result = document.createElement('div');
+        result.className = 'result';
+        result.textContent = `${key}: ${JSON.stringify(value)}`;
+        results.appendChild(result);
+      });
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ useEnvironmentValue() working with defaults';
+      results.appendChild(success);
+    });
+
+    // Test environment detection
+    document.getElementById('test-detection').addEventListener('click', () => {
+      const results = document.getElementById('detection-results');
+      results.innerHTML = '';
+      
+      const environments = ['development', 'staging', 'production'];
+      
+      environments.forEach(env => {
+        const isEnv = useIsEnvironment(env);
+        
+        const result = document.createElement('div');
+        result.className = 'result';
+        result.textContent = `Is ${env}: ${isEnv}`;
+        results.appendChild(result);
+      });
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ useIsEnvironment() correctly detecting environment';
+      results.appendChild(success);
+    });
+
+    // Test debug mode
+    document.getElementById('test-debug').addEventListener('click', () => {
+      const results = document.getElementById('debug-results');
+      results.innerHTML = '';
+      
+      const debugMode = useDebugMode();
+      
+      const result = document.createElement('div');
+      result.className = 'result';
+      result.textContent = `Debug mode enabled: ${debugMode}`;
+      results.appendChild(result);
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ useDebugMode() returning boolean';
+      results.appendChild(success);
+    });
+
+    // Test audio config
+    document.getElementById('test-audio').addEventListener('click', () => {
+      const results = document.getElementById('audio-results');
+      results.innerHTML = '';
+      
+      const audioConfig = useAudioConfig();
+      
+      const display = document.createElement('div');
+      display.className = 'config-display';
+      
+      Object.entries(audioConfig).forEach(([key, value]) => {
+        const keyEl = document.createElement('div');
+        keyEl.className = 'config-key';
+        keyEl.textContent = key + ':';
+        
+        const valueEl = document.createElement('div');
+        valueEl.className = 'config-value';
+        valueEl.textContent = JSON.stringify(value);
+        
+        display.appendChild(keyEl);
+        display.appendChild(valueEl);
+      });
+      
+      results.appendChild(display);
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ useAudioConfig() returning audio settings';
+      results.appendChild(success);
+    });
+
+    // Test API config
+    document.getElementById('test-api').addEventListener('click', () => {
+      const results = document.getElementById('api-results');
+      results.innerHTML = '';
+      
+      const apiConfig = useApiConfig();
+      
+      const display = document.createElement('div');
+      display.className = 'config-display';
+      
+      Object.entries(apiConfig).forEach(([key, value]) => {
+        const keyEl = document.createElement('div');
+        keyEl.className = 'config-key';
+        keyEl.textContent = key + ':';
+        
+        const valueEl = document.createElement('div');
+        valueEl.className = 'config-value';
+        valueEl.textContent = JSON.stringify(value);
+        
+        display.appendChild(keyEl);
+        display.appendChild(valueEl);
+      });
+      
+      results.appendChild(display);
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ useApiConfig() returning API endpoints';
+      results.appendChild(success);
+    });
+
+    // Test component integration
+    document.getElementById('test-component').addEventListener('click', () => {
+      const results = document.getElementById('component-results');
+      const mount = document.getElementById('component-mount');
+      results.innerHTML = '';
+      mount.innerHTML = '';
+      
+      // Define test component
+      class TestComponent extends HTMLElement {
+        connectedCallback() {
+          this.attachShadow({ mode: 'open' });
+          
+          const env = useEnvironment();
+          const debugMode = useDebugMode();
+          const audioConfig = useAudioConfig();
+          
+          this.shadowRoot.innerHTML = `
+            <style>
+              :host {
+                display: block;
+                padding: 1rem;
+                background: #2a2a2a;
+                border-radius: 4px;
+                margin: 1rem 0;
+              }
+              .info {
+                color: #00ff88;
+                margin: 0.5rem 0;
+              }
+            </style>
+            <div class="info">Environment: ${env.environment}</div>
+            <div class="info">Debug Mode: ${debugMode}</div>
+            <div class="info">Audio Buffer: ${audioConfig.bufferSize}</div>
+            <div class="info">API URL: ${env.apiUrl}</div>
+          `;
+          
+          if (debugMode) {
+            console.log('[TestComponent] Running in debug mode');
+          }
+        }
+      }
+      
+      if (!customElements.get('test-env-component')) {
+        customElements.define('test-env-component', TestComponent);
+      }
+      
+      const component = document.createElement('test-env-component');
+      mount.appendChild(component);
+      
+      const success = document.createElement('div');
+      success.className = 'result success';
+      success.textContent = '✅ Component successfully using useEnvironment hook';
+      results.appendChild(success);
+    });
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>

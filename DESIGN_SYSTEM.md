@@ -1,137 +1,172 @@
 # Harmony Design System
 
-This document describes the Harmony Design System: how it works, how to use it, and how components connect together.
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Architecture](#architecture)
-3. [Configuration System](#configuration-system)
-4. [Component System](#component-system)
-5. [Event System](#event-system)
-6. [Performance Guidelines](#performance-guidelines)
-7. [Development Workflow](#development-workflow)
+A Web Audio DAW design system built with Web Components, Rust/WASM bounded contexts, and GPU-accelerated audio processing.
 
 ## Overview
 
-Harmony is a high-performance design system built with vanilla JavaScript, Web Components, and WebAssembly. It follows strict performance budgets and uses an event-driven architecture.
+Harmony is a modular design system for building professional audio production interfaces. It combines vanilla Web Components for UI with Rust/WASM for audio processing, ensuring high performance and type safety.
 
-**Core Principles:**
-- 60fps rendering (16ms budget)
-- 50MB memory limit
-- 200ms initial load
-- No runtime dependencies
-- Type-safe configuration
+## Core Principles
+
+1. **Performance First**: 16ms render budget, 10ms audio latency, GPU acceleration
+2. **Type Safety**: TypeScript types + Rust schemas with codegen
+3. **Zero Runtime Dependencies**: Vanilla JS/HTML/CSS for UI
+4. **Event-Driven Architecture**: Components publish events, bounded contexts handle logic
+5. **Progressive Enhancement**: Works without JavaScript, enhanced with it
 
 ## Architecture
 
 ### Technology Stack
 
-- **UI Layer**: Vanilla JS + Web Components (Shadow DOM)
-- **Core Logic**: Rust → WebAssembly
-- **State Management**: Event-driven with EventBus
-- **Configuration**: Environment-based typed config
-- **Build Tools**: npm (dev only), Python (scripts only)
+- **UI Layer**: Vanilla Web Components with Shadow DOM
+- **Audio Processing**: Rust → WASM + WebGPU
+- **State Management**: EventBus + Bounded Contexts
+- **Type System**: TypeScript definitions + Rust schemas
+- **Build Tools**: npm for dev tools only (not runtime)
 
-### Directory Structure
+### Bounded Contexts
 
-```
-harmony-design/
-├── components/       # UI components (Web Components)
-├── contexts/         # Context patterns for shared state
-├── config/           # Configuration loaders
-├── types/            # TypeScript type definitions
-├── bounded-contexts/ # Rust business logic → WASM
-├── hooks/            # Reusable component behaviors
-└── styles/           # Global styles and tokens
-```
+Rust-based isolated domains compiled to WASM:
 
-## Configuration System
+- `component-lifecycle`: Component state management
+- Audio processing contexts (see `bounded-contexts/`)
 
-### Configuration Context
+### Event-Driven Communication
 
-The configuration system provides typed, centralized access to environment-based configuration throughout the application.
+Components never call bounded contexts directly. Pattern:
 
-**Files:**
-- [`contexts/config-context.js`](./contexts/config-context.js) - Main context implementation
-- [`config/environment-loader.js`](./config/environment-loader.js) - Loads environment config
-- [`types/environment-types.js`](./types/environment-types.js) - TypeScript types
+1. User interacts with component
+2. Component publishes event to EventBus
+3. EventBus routes to appropriate bounded context
+4. Bounded context processes and publishes result event
+5. Components subscribe to result events and update UI
 
-### Using Configuration
+See `core/event-bus.js` for implementation.
 
-#### Basic Usage
+## Environment Configuration
 
-```javascript
-import { ConfigContext } from './contexts/config-context.js';
+### Overview
 
-// Initialize once at app startup
-const config = ConfigContext.getInstance();
-await config.initialize();
+The environment system provides typed configuration management across development, staging, and production environments. Configuration is loaded from `.env` files and made available through a React-style hook API.
 
-// Access configuration
-const apiUrl = config.get('api.baseUrl');
-const isDebug = config.get('debug.enabled');
-```
+### Files
 
-#### In Components
+- **Types**: `config/environment-types.js` - TypeScript-style JSDoc types
+- **Loader**: `config/environment-loader.js` - Loads and validates environment config
+- **Context**: `contexts/ConfigContext.js` - Global configuration singleton
+- **Hook**: `hooks/useEnvironment.js` - Component access to environment config
+- **Environment Files**:
+  - `.env.development` - Development defaults
+  - `.env.staging` - Staging overrides
+  - `.env.production` - Production overrides
+
+### Using the Environment Hook
+
+The `useEnvironment` hook provides convenient access to environment configuration in Web Components:
 
 ```javascript
-import { useConfig } from './contexts/config-context.js';
+import { useEnvironment } from './hooks/useEnvironment.js';
 
 class MyComponent extends HTMLElement {
   connectedCallback() {
-    // Get config with default fallback
-    const apiUrl = useConfig('api.baseUrl', 'http://localhost:3000');
-    this.render(apiUrl);
+    const env = useEnvironment();
+    console.log('API URL:', env.apiUrl);
+    console.log('Debug mode:', env.enableDebug);
   }
 }
 ```
 
-#### Subscribe to Changes
+### Hook Variants
 
+**Basic Access**:
 ```javascript
-const config = ConfigContext.getInstance();
-const unsubscribe = config.subscribe((newConfig) => {
-  console.log('Config updated:', newConfig);
-});
-
-// Later: unsubscribe();
+const env = useEnvironment(); // Get full config object
 ```
 
-### Configuration Pattern
+**Specific Values**:
+```javascript
+const apiUrl = useEnvironmentValue('apiUrl', 'http://default');
+```
 
-The ConfigContext uses a **singleton pattern** to ensure single source of truth:
+**Environment Detection**:
+```javascript
+if (useIsEnvironment('development')) {
+  // Development-only code
+}
+```
 
-1. **Initialization**: Load config from environment at app startup
-2. **Access**: Use `get()` or `getOrDefault()` for type-safe access
-3. **Subscription**: Subscribe to config changes if needed
-4. **Immutability**: Configuration is read-only after initialization
+**Debug Mode**:
+```javascript
+if (useDebugMode()) {
+  console.log('Debug info...');
+}
+```
 
-**Performance Note:** Config access is synchronous after initialization (no async overhead in render path).
+**Audio Config**:
+```javascript
+const { bufferSize, maxPolyphony } = useAudioConfig();
+```
 
-## Component System
+**API Config**:
+```javascript
+const { apiUrl, wsUrl } = useApiConfig();
+```
 
-### Web Components
+### Configuration Values
 
-All UI components use native Web Components with Shadow DOM.
+Available configuration keys:
 
-**Template:**
+- `apiUrl`: REST API base URL
+- `wsUrl`: WebSocket URL
+- `environment`: Current environment name
+- `enableDebug`: Debug mode flag
+- `enableAnalytics`: Analytics flag
+- `audioBufferSize`: Audio buffer size in samples
+- `maxPolyphony`: Maximum simultaneous voices
+- `logLevel`: Logging level (debug/info/warn/error)
+
+### Initialization
+
+Environment is initialized automatically by `environment-loader.js` which:
+
+1. Detects current environment from `NODE_ENV`
+2. Loads appropriate `.env` file
+3. Validates configuration against schema
+4. Stores in `ConfigContext` for hook access
+
+### Testing
+
+Test the hook in Chrome:
+```bash
+# Serve the test file
+python -m http.server 8000
+
+# Open in browser
+http://localhost:8000/hooks/useEnvironment.test.html
+```
+
+## Component Development
+
+### Web Component Template
 
 ```javascript
-class MyComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
+/**
+ * @fileoverview MyComponent - Brief description
+ * @see {@link ../DESIGN_SYSTEM.md#relevant-section}
+ */
 
+class MyComponent extends HTMLElement {
   connectedCallback() {
+    this.attachShadow({ mode: 'open' });
     this.render();
   }
-
+  
   render() {
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; }
+        :host {
+          display: block;
+        }
       </style>
       <div>Content</div>
     `;
@@ -141,80 +176,55 @@ class MyComponent extends HTMLElement {
 customElements.define('my-component', MyComponent);
 ```
 
-### Component Communication
+### Testing Components
 
-Components **publish events**, never call bounded contexts directly:
+All UI components must be tested in Chrome before task completion:
 
-```javascript
-// Component publishes event
-this.dispatchEvent(new CustomEvent('action-requested', {
-  bubbles: true,
-  composed: true,
-  detail: { action: 'play' }
-}));
+1. Create `.test.html` file alongside component
+2. Test all states: default, hover, focus, active, disabled
+3. Verify performance with DevTools (60fps target)
+4. Check accessibility with screen reader
 
-// EventBus routes to bounded context
-// Bounded context handles and publishes result
-```
-
-## Event System
-
-### EventBus Pattern
-
-See [`components/event-bus-debugger.js`](./components/event-bus-debugger.js) for EventBus implementation.
-
-**Pattern:**
-1. UI component publishes command event
-2. EventBus validates and routes event
-3. Bounded context subscribes to command
-4. Bounded context processes and publishes result event
-5. UI component subscribes to result event
-
-## Performance Guidelines
-
-### Budgets
+## Performance Budgets
 
 - **Render**: 16ms per frame (60fps)
-- **Memory**: 50MB WASM heap
+- **Memory**: 50MB WASM heap max
 - **Load**: 200ms initial load
 - **Audio**: 10ms end-to-end latency
 
-### Best Practices
+## Quality Gates
 
-1. **Avoid layout thrashing**: Batch DOM reads/writes
-2. **Use RAF**: Wrap animations in `requestAnimationFrame`
-3. **Lazy load**: Load components on demand
-4. **Cache config**: Access ConfigContext once, cache result
-5. **Profile regularly**: Use Chrome DevTools Performance panel
+Run before committing:
 
-## Development Workflow
+```bash
+npm run lint
+npm run test
+npm run build
+```
 
-### Testing Components
+## Documentation Standards
 
-All components must be tested in Chrome before completion:
+- Write in B1-level English (clear, simple)
+- Link to code files relatively
+- Keep code in files, not in docs
+- Two-way references between docs and code
 
-1. Open component test file (e.g., `config-context.test.html`)
-2. Test all states: default, hover, focus, active, disabled
-3. Verify performance: 60fps target
-4. Check console for errors
+## Contributing
 
-### Adding Configuration
+1. Check existing structure before creating files
+2. Follow event-driven patterns
+3. No npm runtime dependencies
+4. Test in Chrome before completing
+5. Update this documentation file
 
-1. Add type to [`types/environment-types.js`](./types/environment-types.js)
-2. Add default in [`config/environment-loader.js`](./config/environment-loader.js)
-3. Add environment override in `.env.development`, `.env.staging`, `.env.production`
-4. Access via ConfigContext
+## Resources
 
-### Documentation
-
-When implementing features:
-
-1. Write code in files (not in docs)
-2. Update this document with concept explanation
-3. Link to code files relatively
-4. Keep explanations concise and friendly
+- EventBus: `core/event-bus.js`
+- Type Navigator: `core/type-navigator.js`
+- Environment Config: `hooks/useEnvironment.js`
+- Bounded Contexts: `bounded-contexts/`
+- Components: `components/`
 
 ---
 
-**Last Updated:** 2025-01-XX  
-**Version:** 1.0.0
+For detailed implementation notes, see code files linked throughout this document.
