@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Skeleton - Test Suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #fafafa;
+      color: #212121;
+    }
+
+    /* Design tokens */
+    :root {
+      --surface-1: #ffffff;
+      --surface-2: #e0e0e0;
+      --surface-3: #f5f5f5;
+      --text-primary: #212121;
+      --text-secondary: #757575;
+    }
+
+    .test-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    .test-header h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-bottom: 1.5rem;
+      color: #1976d2;
+      font-size: 1.5rem;
+    }
+
+    .test-section h3 {
+      margin: 1.5rem 0 1rem;
+      color: #424242;
+      font-size: 1.1rem;
+    }
+
+    .test-group {
+      margin-bottom: 2rem;
+    }
+
+    .test-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #fafafa;
+      border-radius: 4px;
+    }
+
+    .test-label {
+      min-width: 200px;
+      font-weight: 500;
+      color: #616161;
+    }
+
+    .test-example {
+      flex: 1;
+    }
+
+    .card-skeleton {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 400px;
+    }
+
+    .profile-skeleton {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .list-skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .test-results {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      border-radius: 4px;
+    }
+
+    .test-results.failed {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+
+    .test-results h3 {
+      margin: 0 0 0.5rem 0;
+      color: #2e7d32;
+    }
+
+    .test-results.failed h3 {
+      color: #c62828;
+    }
+
+    #test-output {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background: #1565c0;
+    }
+
+    button:active {
+      background: #0d47a1;
+    }
+
+    .performance-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1976d2;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: #757575;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-header">
+    <h1>🦴 Harmony Skeleton - Test Suite</h1>
+    <p>Content placeholder with animation - Visual and automated testing</p>
+  </div>
+
+  <div class="test-section">
+    <h2>Variant Tests</h2>
+    
+    <div class="test-group">
+      <h3>Text Variant (Default)</h3>
+      <div class="test-row">
+        <span class="test-label">Single line</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text" width="200px"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Full width</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Custom height</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text" width="300px" height="24px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Circular Variant</h3>
+      <div class="test-row">
+        <span class="test-label">Small (32px)</span>
+        <div class="test-example">
+          <harmony-skeleton variant="circular" size="32px"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Medium (48px, default)</span>
+        <div class="test-example">
+          <harmony-skeleton variant="circular"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Large (64px)</span>
+        <div class="test-example">
+          <harmony-skeleton variant="circular" size="64px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Rectangular Variant</h3>
+      <div class="test-row">
+        <span class="test-label">Card size</span>
+        <div class="test-example">
+          <harmony-skeleton variant="rectangular" width="300px" height="200px"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Banner size</span>
+        <div class="test-example">
+          <harmony-skeleton variant="rectangular" width="100%" height="120px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Animation Tests</h2>
+    
+    <div class="test-group">
+      <h3>Pulse Animation (Default)</h3>
+      <div class="test-row">
+        <span class="test-label">Text with pulse</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text" animation="pulse" width="250px"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Circular with pulse</span>
+        <div class="test-example">
+          <harmony-skeleton variant="circular" animation="pulse" size="48px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Wave Animation</h3>
+      <div class="test-row">
+        <span class="test-label">Text with wave</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text" animation="wave" width="250px"></harmony-skeleton>
+        </div>
+      </div>
+      <div class="test-row">
+        <span class="test-label">Rectangular with wave</span>
+        <div class="test-example">
+          <harmony-skeleton variant="rectangular" animation="wave" width="300px" height="150px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>No Animation</h3>
+      <div class="test-row">
+        <span class="test-label">Static skeleton</span>
+        <div class="test-example">
+          <harmony-skeleton variant="text" animation="none" width="250px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Composition Examples</h2>
+    
+    <div class="test-group">
+      <h3>Profile Card Loading</h3>
+      <div class="card-skeleton">
+        <div class="profile-skeleton">
+          <harmony-skeleton variant="circular" size="64px"></harmony-skeleton>
+          <div style="flex: 1;">
+            <harmony-skeleton variant="text" width="150px" height="20px"></harmony-skeleton>
+            <div style="height: 8px;"></div>
+            <harmony-skeleton variant="text" width="200px" height="16px"></harmony-skeleton>
+          </div>
+        </div>
+        <harmony-skeleton variant="rectangular" width="100%" height="120px"></harmony-skeleton>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>List Loading</h3>
+      <div class="list-skeleton">
+        <harmony-skeleton variant="text" width="100%" height="20px"></harmony-skeleton>
+        <harmony-skeleton variant="text" width="95%" height="20px"></harmony-skeleton>
+        <harmony-skeleton variant="text" width="90%" height="20px"></harmony-skeleton>
+        <harmony-skeleton variant="text" width="85%" height="20px"></harmony-skeleton>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Automated Tests</h2>
+    <div class="controls">
+      <button id="run-tests">Run All Tests</button>
+      <button id="run-performance">Run Performance Tests</button>
+    </div>
+    <div id="test-results"></div>
+  </div>
+
+  <script type="module">
+    import HarmonySkeleton from './harmony-skeleton.js';
+
+    const testResults = document.getElementById('test-results');
+    let testsPassed = 0;
+    let testsFailed = 0;
+
+    function logTest(name, passed, details = '') {
+      const status = passed ? '✓' : '✗';
+      const color = passed ? '#4caf50' : '#f44336';
+      console.log(`${status} ${name}${details ? ': ' + details : ''}`);
+      if (passed) testsPassed++;
+      else testsFailed++;
+    }
+
+    function showResults() {
+      const total = testsPassed + testsFailed;
+      const passed = testsFailed === 0;
+      testResults.innerHTML = `
+        <div class="test-results ${passed ? '' : 'failed'}">
+          <h3>${passed ? '✓' : '✗'} Test Results</h3>
+          <div id="test-output">
+Passed: ${testsPassed}/${total}
+Failed: ${testsFailed}/${total}
+Success Rate: ${((testsPassed/total) * 100).toFixed(1)}%
+          </div>
+        </div>
+      `;
+    }
+
+    async function runTests() {
+      testsPassed = 0;
+      testsFailed = 0;
+      console.log('Starting Harmony Skeleton tests...\n');
+
+      // Test 1: Component registration
+      logTest(
+        'Component Registration',
+        customElements.get('harmony-skeleton') === HarmonySkeleton
+      );
+
+      // Test 2: Component creation
+      const skeleton = document.createElement('harmony-skeleton');
+      logTest('Component Creation', skeleton instanceof HarmonySkeleton);
+
+      // Test 3: Shadow DOM
+      document.body.appendChild(skeleton);
+      await new Promise(resolve => setTimeout(resolve, 0));
+      logTest('Shadow DOM', skeleton.shadowRoot !== null);
+
+      // Test 4: Default variant
+      logTest('Default Variant', skeleton.variant === 'text');
+
+      // Test 5: Default animation
+      logTest('Default Animation', skeleton.animation === 'pulse');
+
+      // Test 6: Variant attribute
+      skeleton.setAttribute('variant', 'circular');
+      logTest('Variant Attribute', skeleton.variant === 'circular');
+
+      // Test 7: Animation attribute
+      skeleton.setAttribute('animation', 'wave');
+      logTest('Animation Attribute', skeleton.animation === 'wave');
+
+      // Test 8: Width attribute
+      skeleton.setAttribute('width', '300px');
+      logTest('Width Attribute', skeleton.width === '300px');
+
+      // Test 9: Size attribute
+      skeleton.setAttribute('size', '64px');
+      logTest('Size Attribute', skeleton.size === '64px');
+
+      // Test 10: Border radius attribute
+      skeleton.setAttribute('border-radius', '12px');
+      logTest('Border Radius Attribute', skeleton.borderRadius === '12px');
+
+      // Test 11: Event dispatch
+      let eventFired = false;
+      const testSkeleton = document.createElement('harmony-skeleton');
+      testSkeleton.addEventListener('skeleton:mounted', () => {
+        eventFired = true;
+      });
+      document.body.appendChild(testSkeleton);
+      await new Promise(resolve => setTimeout(resolve, 10));
+      logTest('Event Dispatch', eventFired);
+
+      // Test 12: Accessibility attributes
+      const skeletonElement = skeleton.shadowRoot.querySelector('.skeleton');
+      logTest('ARIA Role', skeletonElement.getAttribute('role') === 'status');
+      logTest('ARIA Label', skeletonElement.hasAttribute('aria-label'));
+      logTest('ARIA Live', skeletonElement.getAttribute('aria-live') === 'polite');
+
+      // Test 13: CSS class application
+      skeleton.setAttribute('variant', 'circular');
+      skeleton.setAttribute('animation', 'pulse');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const element = skeleton.shadowRoot.querySelector('.skeleton');
+      logTest('Variant Class', element.classList.contains('skeleton--circular'));
+      logTest('Animation Class', element.classList.contains('skeleton--pulse'));
+
+      // Test 14: No animation class
+      skeleton.setAttribute('animation', 'none');
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const noAnimElement = skeleton.shadowRoot.querySelector('.skeleton');
+      logTest(
+        'No Animation Class',
+        !noAnimElement.classList.contains('skeleton--pulse') &&
+        !noAnimElement.classList.contains('skeleton--wave')
+      );
+
+      // Cleanup
+      skeleton.remove();
+      testSkeleton.remove();
+
+      showResults();
+      console.log('\nTests complete!');
+    }
+
+    async function runPerformanceTests() {
+      console.log('Starting performance tests...\n');
+
+      // Test 1: Render time
+      const start = performance.now();
+      const skeleton = document.createElement('harmony-skeleton');
+      document.body.appendChild(skeleton);
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const renderTime = performance.now() - start;
+      console.log(`Render time: ${renderTime.toFixed(2)}ms`);
+      logTest('Render Time < 16ms', renderTime < 16);
+
+      // Test 2: Multiple instances
+      const multiStart = performance.now();
+      const skeletons = [];
+      for (let i = 0; i < 50; i++) {
+        const s = document.createElement('harmony-skeleton');
+        s.setAttribute('variant', i % 3 === 0 ? 'circular' : i % 3 === 1 ? 'rectangular' : 'text');
+        document.body.appendChild(s);
+        skeletons.push(s);
+      }
+      await new Promise(resolve => setTimeout(resolve, 0));
+      const multiTime = performance.now() - multiStart;
+      console.log(`50 instances render time: ${multiTime.toFixed(2)}ms`);
+      logTest('50 Instances < 100ms', multiTime < 100);
+
+      // Test 3: Attribute update performance
+      const updateStart = performance.now();
+      for (let i = 0; i < 100; i++) {
+        skeleton.setAttribute('variant', i % 2 === 0 ? 'text' : 'circular');
+      }
+      const updateTime = performance.now() - updateStart;
+      console.log(`100 attribute updates: ${updateTime.toFixed(2)}ms`);
+      logTest('100 Updates < 50ms', updateTime < 50);
+
+      // Test 4: Memory usage (rough estimate)
+      const memBefore = performance.memory ? performance.memory.usedJSHeapSize : 0;
+      const testSkeletons = [];
+      for (let i = 0; i < 100; i++) {
+        const s = document.createElement('harmony-skeleton');
+        document.body.appendChild(s);
+        testSkeletons.push(s);
+      }
+      await new Promise(resolve => setTimeout(resolve, 100));
+      const memAfter = performance.memory ? performance.memory.usedJSHeapSize : 0;
+      const memDiff = (memAfter - memBefore) / 1024 / 1024;
+      console.log(`Memory for 100 instances: ${memDiff.toFixed(2)}MB`);
+      if (performance.memory) {
+        logTest('Memory < 5MB for 100 instances', memDiff < 5);
+      }
+
+      // Cleanup
+      skeleton.remove();
+      skeletons.forEach(s => s.remove());
+      testSkeletons.forEach(s => s.remove());
+
+      // Display metrics
+      testResults.innerHTML += `
+        <div class="performance-metrics">
+          <div class="metric">
+            <div class="metric-value">${renderTime.toFixed(2)}ms</div>
+            <div class="metric-label">Single Render Time</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${multiTime.toFixed(2)}ms</div>
+            <div class="metric-label">50 Instances</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${updateTime.toFixed(2)}ms</div>
+            <div class="metric-label">100 Updates</div>
+          </div>
+          ${performance.memory ? `
+          <div class="metric">
+            <div class="metric-value">${memDiff.toFixed(2)}MB</div>
+            <div class="metric-label">Memory (100 instances)</div>
+          </div>
+          ` : ''}
+        </div>
+      `;
+
+      console.log('\nPerformance tests complete!');
+    }
+
+    document.getElementById('run-tests').addEventListener('click', runTests);
+    document.getElementById('run-performance').addEventListener('click', runPerformanceTests);
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      setTimeout(runTests, 500);
+    });
+  </script>
+</body>
+</html>
