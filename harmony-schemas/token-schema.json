@@ -1,0 +1,247 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/token-schema.json",
+  "title": "Design Token Schema",
+  "description": "JSON Schema for validating design token files (colors, spacing, typography, etc.)",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reference to this schema for validation"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the token file"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the token collection"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the token collection purpose"
+        },
+        "lastModified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last modification"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or team responsible for tokens"
+        }
+      }
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Token definitions organized by category",
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9-]*$": {
+          "oneOf": [
+            { "$ref": "#/definitions/colorToken" },
+            { "$ref": "#/definitions/spacingToken" },
+            { "$ref": "#/definitions/typographyToken" },
+            { "$ref": "#/definitions/shadowToken" },
+            { "$ref": "#/definitions/durationToken" },
+            { "$ref": "#/definitions/easingToken" },
+            { "$ref": "#/definitions/borderRadiusToken" },
+            { "$ref": "#/definitions/tokenGroup" }
+          ]
+        }
+      }
+    }
+  },
+  "required": ["tokens"],
+  "definitions": {
+    "colorToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "color"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^(#[0-9a-fA-F]{3,8}|rgb\\(|rgba\\(|hsl\\(|hsla\\(|var\\()",
+          "description": "Color value in hex, rgb, rgba, hsl, hsla, or CSS variable format"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "alias": {
+          "type": "string",
+          "description": "Reference to another token"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "spacingToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "spacing"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^(-?\\d+(\\.\\d+)?(px|rem|em|%|vh|vw)|0|var\\()",
+          "description": "Spacing value with unit"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        },
+        "alias": {
+          "type": "string"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "typographyToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "typography"
+        },
+        "value": {
+          "type": "object",
+          "properties": {
+            "fontFamily": {
+              "type": "string"
+            },
+            "fontSize": {
+              "type": "string",
+              "pattern": "^\\d+(\\.\\d+)?(px|rem|em)$"
+            },
+            "fontWeight": {
+              "oneOf": [
+                { "type": "number", "minimum": 100, "maximum": 900 },
+                { "type": "string", "enum": ["normal", "bold", "lighter", "bolder"] }
+              ]
+            },
+            "lineHeight": {
+              "oneOf": [
+                { "type": "number" },
+                { "type": "string" }
+              ]
+            },
+            "letterSpacing": {
+              "type": "string"
+            }
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "shadowToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "shadow"
+        },
+        "value": {
+          "type": "string",
+          "description": "CSS box-shadow value"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "durationToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "duration"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?(ms|s)$",
+          "description": "Duration value in milliseconds or seconds"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "easingToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "easing"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^(linear|ease|ease-in|ease-out|ease-in-out|cubic-bezier\\()",
+          "description": "CSS easing function"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "borderRadiusToken": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "borderRadius"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?(px|rem|em|%)$",
+          "description": "Border radius value"
+        },
+        "description": {
+          "type": "string"
+        },
+        "deprecated": {
+          "type": "boolean"
+        }
+      },
+      "required": ["type", "value"]
+    },
+    "tokenGroup": {
+      "type": "object",
+      "description": "Nested group of tokens",
+      "patternProperties": {
+        "^[a-zA-Z][a-zA-Z0-9-]*$": {
+          "oneOf": [
+            { "$ref": "#/definitions/colorToken" },
+            { "$ref": "#/definitions/spacingToken" },
+            { "$ref": "#/definitions/typographyToken" },
+            { "$ref": "#/definitions/shadowToken" },
+            { "$ref": "#/definitions/durationToken" },
+            { "$ref": "#/definitions/easingToken" },
+            { "$ref": "#/definitions/borderRadiusToken" },
+            { "$ref": "#/definitions/tokenGroup" }
+          ]
+        }
+      }
+    }
+  }
+}

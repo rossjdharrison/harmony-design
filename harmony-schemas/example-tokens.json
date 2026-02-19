@@ -1,0 +1,157 @@
+{
+  "$schema": "./token-schema.json",
+  "version": "1.0.0",
+  "metadata": {
+    "name": "Harmony Design System Tokens",
+    "description": "Core design tokens for the Harmony audio production system",
+    "lastModified": "2024-01-15T10:00:00Z",
+    "author": "Harmony Design Team"
+  },
+  "tokens": {
+    "colors": {
+      "primary": {
+        "type": "color",
+        "value": "#3B82F6",
+        "description": "Primary brand color"
+      },
+      "secondary": {
+        "type": "color",
+        "value": "#8B5CF6",
+        "description": "Secondary accent color"
+      },
+      "background": {
+        "default": {
+          "type": "color",
+          "value": "#0F172A",
+          "description": "Default background"
+        },
+        "elevated": {
+          "type": "color",
+          "value": "#1E293B",
+          "description": "Elevated surface background"
+        }
+      }
+    },
+    "spacing": {
+      "xs": {
+        "type": "spacing",
+        "value": "0.25rem",
+        "description": "Extra small spacing (4px)"
+      },
+      "sm": {
+        "type": "spacing",
+        "value": "0.5rem",
+        "description": "Small spacing (8px)"
+      },
+      "md": {
+        "type": "spacing",
+        "value": "1rem",
+        "description": "Medium spacing (16px)"
+      },
+      "lg": {
+        "type": "spacing",
+        "value": "1.5rem",
+        "description": "Large spacing (24px)"
+      },
+      "xl": {
+        "type": "spacing",
+        "value": "2rem",
+        "description": "Extra large spacing (32px)"
+      }
+    },
+    "typography": {
+      "heading": {
+        "type": "typography",
+        "value": {
+          "fontFamily": "Inter, system-ui, sans-serif",
+          "fontSize": "1.5rem",
+          "fontWeight": 600,
+          "lineHeight": 1.2,
+          "letterSpacing": "-0.02em"
+        },
+        "description": "Heading text style"
+      },
+      "body": {
+        "type": "typography",
+        "value": {
+          "fontFamily": "Inter, system-ui, sans-serif",
+          "fontSize": "1rem",
+          "fontWeight": 400,
+          "lineHeight": 1.5,
+          "letterSpacing": "0"
+        },
+        "description": "Body text style"
+      }
+    },
+    "shadows": {
+      "sm": {
+        "type": "shadow",
+        "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "description": "Small shadow"
+      },
+      "md": {
+        "type": "shadow",
+        "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        "description": "Medium shadow"
+      }
+    },
+    "animation": {
+      "duration": {
+        "fast": {
+          "type": "duration",
+          "value": "150ms",
+          "description": "Fast animation duration"
+        },
+        "normal": {
+          "type": "duration",
+          "value": "300ms",
+          "description": "Normal animation duration"
+        },
+        "slow": {
+          "type": "duration",
+          "value": "500ms",
+          "description": "Slow animation duration"
+        }
+      },
+      "easing": {
+        "default": {
+          "type": "easing",
+          "value": "cubic-bezier(0.4, 0, 0.2, 1)",
+          "description": "Default easing function"
+        },
+        "in": {
+          "type": "easing",
+          "value": "cubic-bezier(0.4, 0, 1, 1)",
+          "description": "Ease in function"
+        },
+        "out": {
+          "type": "easing",
+          "value": "cubic-bezier(0, 0, 0.2, 1)",
+          "description": "Ease out function"
+        }
+      }
+    },
+    "borderRadius": {
+      "sm": {
+        "type": "borderRadius",
+        "value": "0.25rem",
+        "description": "Small border radius"
+      },
+      "md": {
+        "type": "borderRadius",
+        "value": "0.5rem",
+        "description": "Medium border radius"
+      },
+      "lg": {
+        "type": "borderRadius",
+        "value": "1rem",
+        "description": "Large border radius"
+      },
+      "full": {
+        "type": "borderRadius",
+        "value": "9999px",
+        "description": "Fully rounded"
+      }
+    }
+  }
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Validation Test</title>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #0F172A;
+      color: #E2E8F0;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 { color: #3B82F6; }
+    h2 { color: #8B5CF6; margin-top: 2rem; }
+    .test-section {
+      background: #1E293B;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .result {
+      padding: 1rem;
+      border-radius: 0.25rem;
+      margin-top: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+    .success {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid #22C55E;
+      color: #22C55E;
+    }
+    .error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid #EF4444;
+      color: #EF4444;
+    }
+    .info {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid #3B82F6;
+      color: #3B82F6;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    button {
+      background: #3B82F6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 0.5rem;
+    }
+    button:hover {
+      background: #2563EB;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎵 Token Validation Test Suite</h1>
+  <p>Testing JSON Schema validation for design tokens</p>
+
+  <div class="test-section">
+    <h2>Test 1: Valid Token File</h2>
+    <button onclick="testValidTokens()">Run Test</button>
+    <div id="test1-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Invalid Token (Missing Required Field)</h2>
+    <button onclick="testInvalidTokens()">Run Test</button>
+    <div id="test2-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Invalid Color Format</h2>
+    <button onclick="testInvalidColor()">Run Test</button>
+    <div id="test3-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Invalid Spacing Unit</h2>
+    <button onclick="testInvalidSpacing()">Run Test</button>
+    <div id="test4-result"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Load Example Token File</h2>
+    <button onclick="testLoadExampleFile()">Run Test</button>
+    <div id="test5-result"></div>
+  </div>
+
+  <script type="module">
+    import { validateTokenData, createValidationReport, SchemaValidator } from './validate-tokens.js';
+
+    // Load schema
+    let schema;
+    fetch('./token-schema.json')
+      .then(res => res.json())
+      .then(data => {
+        schema = data;
+        console.log('✅ Schema loaded successfully');
+      })
+      .catch(err => {
+        console.error('❌ Failed to load schema:', err);
+      });
+
+    // Test 1: Valid tokens
+    window.testValidTokens = function() {
+      const validTokens = {
+        tokens: {
+          primary: {
+            type: 'color',
+            value: '#3B82F6',
+            description: 'Primary color'
+          },
+          spacing: {
+            md: {
+              type: 'spacing',
+              value: '1rem',
+              description: 'Medium spacing'
+            }
+          }
+        }
+      };
+
+      const result = validateTokenData(validTokens, schema);
+      const report = createValidationReport(result);
+      
+      document.getElementById('test1-result').innerHTML = `
+        <div class="result ${result.valid ? 'success' : 'error'}">
+          <pre>${report}</pre>
+        </div>
+      `;
+    };
+
+    // Test 2: Invalid tokens (missing required field)
+    window.testInvalidTokens = function() {
+      const invalidTokens = {
+        tokens: {
+          primary: {
+            type: 'color'
+            // Missing 'value' field
+          }
+        }
+      };
+
+      const result = validateTokenData(invalidTokens, schema);
+      const report = createValidationReport(result);
+      
+      document.getElementById('test2-result').innerHTML = `
+        <div class="result ${result.valid ? 'success' : 'error'}">
+          <pre>${report}</pre>
+        </div>
+      `;
+    };
+
+    // Test 3: Invalid color format
+    window.testInvalidColor = function() {
+      const invalidColor = {
+        tokens: {
+          primary: {
+            type: 'color',
+            value: 'not-a-color',
+            description: 'Invalid color'
+          }
+        }
+      };
+
+      const result = validateTokenData(invalidColor, schema);
+      const report = createValidationReport(result);
+      
+      document.getElementById('test3-result').innerHTML = `
+        <div class="result ${result.valid ? 'success' : 'error'}">
+          <pre>${report}</pre>
+        </div>
+      `;
+    };
+
+    // Test 4: Invalid spacing unit
+    window.testInvalidSpacing = function() {
+      const invalidSpacing = {
+        tokens: {
+          spacing: {
+            md: {
+              type: 'spacing',
+              value: '16',  // Missing unit
+              description: 'Invalid spacing'
+            }
+          }
+        }
+      };
+
+      const result = validateTokenData(invalidSpacing, schema);
+      const report = createValidationReport(result);
+      
+      document.getElementById('test4-result').innerHTML = `
+        <div class="result ${result.valid ? 'success' : 'error'}">
+          <pre>${report}</pre>
+        </div>
+      `;
+    };
+
+    // Test 5: Load example file
+    window.testLoadExampleFile = async function() {
+      try {
+        const response = await fetch('./example-tokens.json');
+        const tokenData = await response.json();
+        
+        const result = validateTokenData(tokenData, schema);
+        const report = createValidationReport(result);
+        
+        document.getElementById('test5-result').innerHTML = `
+          <div class="result info">
+            <strong>Loaded token file:</strong>
+            <pre>${JSON.stringify(tokenData.metadata, null, 2)}</pre>
+          </div>
+          <div class="result ${result.valid ? 'success' : 'error'}">
+            <pre>${report}</pre>
+          </div>
+        `;
+      } catch (error) {
+        document.getElementById('test5-result').innerHTML = `
+          <div class="result error">
+            <pre>Error loading file: ${error.message}</pre>
+          </div>
+        `;
+      }
+    };
+  </script>
+</body>
+</html>
