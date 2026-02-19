@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+*.min.js
+*.bundle.js
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Rust/WASM
+target/
+**/target/
+*.wasm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# CI/CD
+.github/
+
+# Temporary
+*.tmp
+*.temp
+.cache/
+
+# Documentation backups
+docs-backup-*/
+
+# Test artifacts
+reports/

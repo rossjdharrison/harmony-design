@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/eslintrc",
+  "root": true,
+  "extends": ["./config/eslint.config.js"],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "overrides": [
+    {
+      "files": ["scripts/**/*.js", "*.config.js"],
+      "env": {
+        "node": true
+      }
+    }
+  ]
+}
