@@ -403,3 +403,237 @@ node scripts/extract-translations.js --verbose
 **CI Integration**: Add `--check` flag to pre-commit hook or CI pipeline to prevent missing translations.
 
 **See**: `scripts/README.md` for detailed documentation
+
+## Accessibility - Motion Preferences
+
+The Harmony Design System respects user motion preferences through the `useReducedMotion` hook.
+
+### useReducedMotion Hook
+
+**Purpose:** Detect and respond to the `prefers-reduced-motion` media query for accessibility.
+
+**Location:** [hooks/use-reduced-motion.js](./hooks/use-reduced-motion.js)
+
+**Key Features:**
+- Reactive subscription to motion preference changes
+- Global singleton instance for shared state
+- Helper functions for conditional animations
+- Automatic cleanup of listeners
+
+**Basic Usage:**
+``javascript
+import { useReducedMotion } from './hooks/use-reduced-motion.js';
+
+const motionHook = useReducedMotion();
+
+if (motionHook.prefersReducedMotion) {
+  // Disable or reduce animations
+  element.style.transition = 'none';
+}
+``
+
+**Subscribing to Changes:**
+``javascript
+const unsubscribe = motionHook.subscribe((prefersReduced) => {
+  if (prefersReduced) {
+    disableAnimations();
+  } else {
+    enableAnimations();
+  }
+});
+
+// Cleanup when done
+unsubscribe();
+motionHook.cleanup();
+``
+
+**Helper Functions:**
+
+1. **getAnimationDuration(normalDuration, reducedDuration)** - Returns appropriate duration based on user preference
+2. **applyConditionalAnimation(element, animationClass, reducedClass)** - Applies correct animation class
+3. **getGlobalReducedMotion()** - Returns singleton instance for shared state
+
+**Integration with Animation System:**
+
+The hook works seamlessly with the animation system:
+- [animations/motion-variants.js](./animations/motion-variants.js) - Reusable animation variants
+- [animations/transition-presets.js](./animations/transition-presets.js) - Standard transitions
+
+**Testing:**
+Open [hooks/use-reduced-motion.test.html](./hooks/use-reduced-motion.test.html) in Chrome and use DevTools to emulate motion preferences (Ctrl+Shift+P ? "Emulate CSS prefers-reduced-motion").
+
+**Accessibility Guidelines:**
+1. Always provide a reduced motion alternative for animations
+2. Use the hook in all animated components
+3. Test with motion preferences enabled
+4. Respect user choice - never override reduced motion preference
+
+**Performance:** The hook uses efficient media query listeners with minimal overhead. Cleanup is automatic on page unload but should be called explicitly in long-lived components.
+
+
+
+## Animations
+
+### Gesture Animations
+
+Gesture animations provide visual feedback for user interactions like hovering, tapping, and dragging. All animations are optimized to run at 60fps (under 16ms per frame).
+
+**Implementation:** `animations/gesture-animations.js`
+
+#### Hover Animations
+
+Applied when the pointer enters or leaves interactive elements:
+
+- **scale** - Subtle size increase for buttons and cards
+- **lift** - Elevation with shadow for depth
+- **brighten** - Brightness increase for media elements
+- **underline** - Expanding underline for text links
+- **glow** - Soft glow effect for primary actions
+
+#### Tap Animations
+
+Applied during active press state:
+
+- **shrink** - Scale down for tactile feedback
+- **push** - Push down effect with shadow change
+- **ripple** - Material-style ripple effect
+- **flash** - Quick brightness change for immediate feedback
+
+#### Drag Animations
+
+Applied during drag operations (faders, knobs, timeline items):
+
+- **active** - Cursor and selection changes
+- **elevated** - Lift effect during drag
+- **dragging** - Visual feedback for drag source
+- **ghost** - Placeholder at original position
+- **dropTarget** - Highlight valid drop zones
+
+#### Usage
+
+Use `attachGestureAnimations()` for automatic setup:
+
+```javascript
+import { attachGestureAnimations } from './animations/gesture-animations.js';
+
+const cleanup = attachGestureAnimations(button, {
+  hover: 'lift',
+  tap: 'shrink'
+});
+```
+
+Or use `createGestureController()` for manual control:
+
+```javascript
+import { createGestureController } from './animations/gesture-animations.js';
+
+const controller = createGestureController(element, {
+  hover: 'scale',
+  tap: 'push',
+  disabled: false
+});
+
+element.addEventListener('mouseenter', controller.onHoverEnter);
+element.addEventListener('mouseleave', controller.onHoverExit);
+```
+
+**Testing:** Open `animations/gesture-animations.test.html` in Chrome to see all gesture animations in action.
+
+**Related:**
+- Motion Variants: `animations/motion-variants.js`
+- Transition Presets: `animations/transition-presets.js`
+- Stagger Children: `animations/stagger-children.js`
+
+
+## Motion System
+
+The Harmony Design System uses purposeful motion to enhance user experience while maintaining 60fps performance and respecting accessibility preferences.
+
+### Core Principles
+
+1. **Purposeful**: Every animation has a clear purpose (feedback, transition, hierarchy, or delight)
+2. **Performance First**: Target 60fps using GPU-accelerated properties
+3. **Accessible**: Respect prefers-reduced-motion media query
+
+### Duration Guidelines
+
+- **Instant** (0ms): Immediate state changes
+- **Fast** (100ms): Micro-interactions (hover, focus)
+- **Normal** (200ms): Standard transitions (fade, slide)
+- **Slow** (300ms): Complex animations (expand, morph)
+- **Deliberate** (400ms): Attention-grabbing effects
+
+### Implementation Files
+
+- **Motion Variants** [animations/motion-variants.js](animations/motion-variants.js) - Reusable animation configurations (fade, slide, scale, rotate)
+- **Transition Presets** [animations/transition-presets.js](animations/transition-presets.js) - Standard timing configurations
+- **Gesture Animations** [animations/gesture-animations.js](animations/gesture-animations.js) - Interactive animation helpers (hover, tap, drag)
+- **Stagger Children** [animations/stagger-children.js](animations/stagger-children.js) - Orchestrate list and group animations
+- **Reduced Motion Hook** [hooks/useReducedMotion.js](hooks/useReducedMotion.js) - Accessibility helper for motion preferences
+
+### Usage Example
+
+```javascript
+import { motionVariants } from './animations/motion-variants.js';
+import { TRANSITIONS } from './animations/transition-presets.js';
+import { useReducedMotion } from './hooks/useReducedMotion.js';
+
+// Respect user preferences
+const duration = useReducedMotion() ? 0 : TRANSITIONS.NORMAL.duration;
+
+// Apply animation
+element.animate(
+  motionVariants.fadeIn.keyframes,
+  { ...motionVariants.fadeIn.options, duration }
+);
+```
+
+### Performance Requirements
+
+- Maximum 16ms per frame for 60fps
+- Use GPU-accelerated properties only: 	ransform, opacity
+- Avoid layout-triggering properties: width, height, 	op, left
+- Test with Chrome DevTools Performance panel
+
+### Comprehensive Documentation
+
+For detailed guidelines, easing functions, patterns, and interactive examples, see:
+- [Motion Guidelines](docs/motion-guidelines.md) - Complete animation guidelines
+- [Motion Examples](docs/motion-examples.html) - Interactive demonstrations
+
+### Icon Storybook Catalog
+
+The icon system includes a comprehensive visual catalog in Storybook with search functionality.
+
+**Location**: `primitives/icons/harmony-icon.stories.js`
+
+**Features**:
+- **Visual catalog**: Grid display of all available icons
+- **Search**: Real-time filtering by icon name
+- **Click to copy**: Copy icon name to clipboard
+- **Size variants**: Preview icons at different sizes
+- **Color customization**: Apply custom colors
+- **Grouped categories**: Playback controls, editing tools, etc.
+
+**Usage in Storybook**:
+1. Run Storybook: `npm run storybook`
+2. Navigate to Primitives > Icons
+3. View "Icon Catalog" story for searchable grid
+4. Click any icon to copy its name
+
+**Stories included**:
+- **Default**: Single icon with controls
+- **Sizes**: Icon size variants (16px to 64px)
+- **Playback Controls**: Transport and playback icons
+- **Editing Tools**: Cut, copy, paste, undo, etc.
+- **Icon Catalog**: Complete searchable catalog
+- **Custom Colors**: Color variants
+- **States**: Hover, active, disabled states
+
+**Development workflow**:
+When adding new icons:
+1. Add icon type to `icon-types.js`
+2. Implement SVG in `harmony-icon.js`
+3. Icon automatically appears in catalog
+4. No manual story updates needed
+
