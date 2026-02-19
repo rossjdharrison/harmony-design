@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.system/schemas/edge_subscription.json",
+  "title": "EdgeSubscription",
+  "description": "Defines subscription filters for graph edges with event types, direction, and priority",
+  "type": "object",
+  "required": ["id", "event_types", "direction", "priority"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the edge subscription",
+      "pattern": "^edge-sub-[a-z0-9-]+$"
+    },
+    "event_types": {
+      "type": "array",
+      "description": "Array of event types this subscription filters for",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9]*$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "direction": {
+      "type": "string",
+      "description": "Direction of event flow through the edge",
+      "enum": ["forward", "backward", "bidirectional"]
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Subscription priority for event routing (higher = processed first)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "source_node_id": {
+      "type": "string",
+      "description": "Optional source node filter",
+      "pattern": "^node-[a-z0-9-]+$"
+    },
+    "target_node_id": {
+      "type": "string",
+      "description": "Optional target node filter",
+      "pattern": "^node-[a-z0-9-]+$"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for the subscription",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
