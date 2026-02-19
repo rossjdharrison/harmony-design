@@ -1,96 +1,432 @@
 {
-  "$schema": "./schema.json",
-  "colors": {
-    "primary": {
-      "50": { "value": "#f0f9ff", "type": "color" },
-      "100": { "value": "#e0f2fe", "type": "color" },
-      "200": { "value": "#bae6fd", "type": "color" },
-      "300": { "value": "#7dd3fc", "type": "color" },
-      "400": { "value": "#38bdf8", "type": "color" },
-      "500": { "value": "#0ea5e9", "type": "color" },
-      "600": { "value": "#0284c7", "type": "color" },
-      "700": { "value": "#0369a1", "type": "color" },
-      "800": { "value": "#075985", "type": "color" },
-      "900": { "value": "#0c4a6e", "type": "color" },
-      "950": { "value": "#082f49", "type": "color" }
-    },
-    "neutral": {
-      "50": { "value": "#fafafa", "type": "color" },
-      "100": { "value": "#f5f5f5", "type": "color" },
-      "200": { "value": "#e5e5e5", "type": "color" },
-      "300": { "value": "#d4d4d4", "type": "color" },
-      "400": { "value": "#a3a3a3", "type": "color" },
-      "500": { "value": "#737373", "type": "color" },
-      "600": { "value": "#525252", "type": "color" },
-      "700": { "value": "#404040", "type": "color" },
-      "800": { "value": "#262626", "type": "color" },
-      "900": { "value": "#171717", "type": "color" },
-      "950": { "value": "#0a0a0a", "type": "color" }
-    },
-    "blue": {
-      "50": { "value": "#eff6ff", "type": "color", "description": "Lightest blue for backgrounds and highlights" },
-      "100": { "value": "#dbeafe", "type": "color" },
-      "200": { "value": "#bfdbfe", "type": "color" },
-      "300": { "value": "#93c5fd", "type": "color" },
-      "400": { "value": "#60a5fa", "type": "color" },
-      "500": { "value": "#3b82f6", "type": "color", "description": "Base blue for informational elements" },
-      "600": { "value": "#2563eb", "type": "color" },
-      "700": { "value": "#1d4ed8", "type": "color" },
-      "800": { "value": "#1e40af", "type": "color" },
-      "900": { "value": "#1e3a8a", "type": "color" },
-      "950": { "value": "#172554", "type": "color", "description": "Darkest blue for text on light backgrounds" }
-    },
-    "green": {
-      "50": { "value": "#f0fdf4", "type": "color", "description": "Lightest green for success backgrounds" },
-      "100": { "value": "#dcfce7", "type": "color" },
-      "200": { "value": "#bbf7d0", "type": "color" },
-      "300": { "value": "#86efac", "type": "color" },
-      "400": { "value": "#4ade80", "type": "color" },
-      "500": { "value": "#22c55e", "type": "color", "description": "Base green for success states" },
-      "600": { "value": "#16a34a", "type": "color" },
-      "700": { "value": "#15803d", "type": "color" },
-      "800": { "value": "#166534", "type": "color" },
-      "900": { "value": "#14532d", "type": "color" },
-      "950": { "value": "#052e16", "type": "color", "description": "Darkest green for emphasis" }
-    },
-    "red": {
-      "50": { "value": "#fef2f2", "type": "color", "description": "Lightest red for error backgrounds" },
-      "100": { "value": "#fee2e2", "type": "color" },
-      "200": { "value": "#fecaca", "type": "color" },
-      "300": { "value": "#fca5a5", "type": "color" },
-      "400": { "value": "#f87171", "type": "color" },
-      "500": { "value": "#ef4444", "type": "color", "description": "Base red for error states and destructive actions" },
-      "600": { "value": "#dc2626", "type": "color" },
-      "700": { "value": "#b91c1c", "type": "color" },
-      "800": { "value": "#991b1b", "type": "color" },
-      "900": { "value": "#7f1d1d", "type": "color" },
-      "950": { "value": "#450a0a", "type": "color", "description": "Darkest red for critical emphasis" }
-    },
-    "yellow": {
-      "50": { "value": "#fefce8", "type": "color", "description": "Lightest yellow for warning backgrounds" },
-      "100": { "value": "#fef9c3", "type": "color" },
-      "200": { "value": "#fef08a", "type": "color" },
-      "300": { "value": "#fde047", "type": "color" },
-      "400": { "value": "#facc15", "type": "color" },
-      "500": { "value": "#eab308", "type": "color", "description": "Base yellow for warning states and caution" },
-      "600": { "value": "#ca8a04", "type": "color" },
-      "700": { "value": "#a16207", "type": "color" },
-      "800": { "value": "#854d0e", "type": "color" },
-      "900": { "value": "#713f12", "type": "color" },
-      "950": { "value": "#422006", "type": "color", "description": "Darkest yellow for text emphasis" }
-    },
-    "purple": {
-      "50": { "value": "#faf5ff", "type": "color", "description": "Lightest purple for special highlights" },
-      "100": { "value": "#f3e8ff", "type": "color" },
-      "200": { "value": "#e9d5ff", "type": "color" },
-      "300": { "value": "#d8b4fe", "type": "color" },
-      "400": { "value": "#c084fc", "type": "color" },
-      "500": { "value": "#a855f7", "type": "color", "description": "Base purple for creative and special elements" },
-      "600": { "value": "#9333ea", "type": "color" },
-      "700": { "value": "#7e22ce", "type": "color" },
-      "800": { "value": "#6b21a8", "type": "color" },
-      "900": { "value": "#581c87", "type": "color" },
-      "950": { "value": "#3b0764", "type": "color", "description": "Darkest purple for premium emphasis" }
+  "$schema": "./token-schema.json",
+  "metadata": {
+    "version": "1.0.0",
+    "lastModified": "2025-01-15T00:00:00Z",
+    "description": "Primary color tokens defining the Harmony Design System brand palette"
+  },
+  "tokens": {
+    "color": {
+      "brand": {
+        "primary": {
+          "50": {
+            "value": "#f0f9ff",
+            "type": "color",
+            "description": "Lightest primary brand color"
+          },
+          "100": {
+            "value": "#e0f2fe",
+            "type": "color",
+            "description": "Very light primary brand color"
+          },
+          "200": {
+            "value": "#bae6fd",
+            "type": "color",
+            "description": "Light primary brand color"
+          },
+          "300": {
+            "value": "#7dd3fc",
+            "type": "color",
+            "description": "Medium-light primary brand color"
+          },
+          "400": {
+            "value": "#38bdf8",
+            "type": "color",
+            "description": "Medium primary brand color"
+          },
+          "500": {
+            "value": "#0ea5e9",
+            "type": "color",
+            "description": "Base primary brand color - main brand identity"
+          },
+          "600": {
+            "value": "#0284c7",
+            "type": "color",
+            "description": "Medium-dark primary brand color"
+          },
+          "700": {
+            "value": "#0369a1",
+            "type": "color",
+            "description": "Dark primary brand color"
+          },
+          "800": {
+            "value": "#075985",
+            "type": "color",
+            "description": "Very dark primary brand color"
+          },
+          "900": {
+            "value": "#0c4a6e",
+            "type": "color",
+            "description": "Darkest primary brand color"
+          }
+        },
+        "secondary": {
+          "50": {
+            "value": "#faf5ff",
+            "type": "color",
+            "description": "Lightest secondary brand color"
+          },
+          "100": {
+            "value": "#f3e8ff",
+            "type": "color",
+            "description": "Very light secondary brand color"
+          },
+          "200": {
+            "value": "#e9d5ff",
+            "type": "color",
+            "description": "Light secondary brand color"
+          },
+          "300": {
+            "value": "#d8b4fe",
+            "type": "color",
+            "description": "Medium-light secondary brand color"
+          },
+          "400": {
+            "value": "#c084fc",
+            "type": "color",
+            "description": "Medium secondary brand color"
+          },
+          "500": {
+            "value": "#a855f7",
+            "type": "color",
+            "description": "Base secondary brand color"
+          },
+          "600": {
+            "value": "#9333ea",
+            "type": "color",
+            "description": "Medium-dark secondary brand color"
+          },
+          "700": {
+            "value": "#7e22ce",
+            "type": "color",
+            "description": "Dark secondary brand color"
+          },
+          "800": {
+            "value": "#6b21a8",
+            "type": "color",
+            "description": "Very dark secondary brand color"
+          },
+          "900": {
+            "value": "#581c87",
+            "type": "color",
+            "description": "Darkest secondary brand color"
+          }
+        },
+        "accent": {
+          "50": {
+            "value": "#fdf4ff",
+            "type": "color",
+            "description": "Lightest accent color"
+          },
+          "100": {
+            "value": "#fae8ff",
+            "type": "color",
+            "description": "Very light accent color"
+          },
+          "200": {
+            "value": "#f5d0fe",
+            "type": "color",
+            "description": "Light accent color"
+          },
+          "300": {
+            "value": "#f0abfc",
+            "type": "color",
+            "description": "Medium-light accent color"
+          },
+          "400": {
+            "value": "#e879f9",
+            "type": "color",
+            "description": "Medium accent color"
+          },
+          "500": {
+            "value": "#d946ef",
+            "type": "color",
+            "description": "Base accent color - used for highlights and CTAs"
+          },
+          "600": {
+            "value": "#c026d3",
+            "type": "color",
+            "description": "Medium-dark accent color"
+          },
+          "700": {
+            "value": "#a21caf",
+            "type": "color",
+            "description": "Dark accent color"
+          },
+          "800": {
+            "value": "#86198f",
+            "type": "color",
+            "description": "Very dark accent color"
+          },
+          "900": {
+            "value": "#701a75",
+            "type": "color",
+            "description": "Darkest accent color"
+          }
+        }
+      },
+      "semantic": {
+        "success": {
+          "50": {
+            "value": "#f0fdf4",
+            "type": "color",
+            "description": "Lightest success color"
+          },
+          "100": {
+            "value": "#dcfce7",
+            "type": "color",
+            "description": "Very light success color"
+          },
+          "200": {
+            "value": "#bbf7d0",
+            "type": "color",
+            "description": "Light success color"
+          },
+          "300": {
+            "value": "#86efac",
+            "type": "color",
+            "description": "Medium-light success color"
+          },
+          "400": {
+            "value": "#4ade80",
+            "type": "color",
+            "description": "Medium success color"
+          },
+          "500": {
+            "value": "#22c55e",
+            "type": "color",
+            "description": "Base success color"
+          },
+          "600": {
+            "value": "#16a34a",
+            "type": "color",
+            "description": "Medium-dark success color"
+          },
+          "700": {
+            "value": "#15803d",
+            "type": "color",
+            "description": "Dark success color"
+          },
+          "800": {
+            "value": "#166534",
+            "type": "color",
+            "description": "Very dark success color"
+          },
+          "900": {
+            "value": "#14532d",
+            "type": "color",
+            "description": "Darkest success color"
+          }
+        },
+        "warning": {
+          "50": {
+            "value": "#fffbeb",
+            "type": "color",
+            "description": "Lightest warning color"
+          },
+          "100": {
+            "value": "#fef3c7",
+            "type": "color",
+            "description": "Very light warning color"
+          },
+          "200": {
+            "value": "#fde68a",
+            "type": "color",
+            "description": "Light warning color"
+          },
+          "300": {
+            "value": "#fcd34d",
+            "type": "color",
+            "description": "Medium-light warning color"
+          },
+          "400": {
+            "value": "#fbbf24",
+            "type": "color",
+            "description": "Medium warning color"
+          },
+          "500": {
+            "value": "#f59e0b",
+            "type": "color",
+            "description": "Base warning color"
+          },
+          "600": {
+            "value": "#d97706",
+            "type": "color",
+            "description": "Medium-dark warning color"
+          },
+          "700": {
+            "value": "#b45309",
+            "type": "color",
+            "description": "Dark warning color"
+          },
+          "800": {
+            "value": "#92400e",
+            "type": "color",
+            "description": "Very dark warning color"
+          },
+          "900": {
+            "value": "#78350f",
+            "type": "color",
+            "description": "Darkest warning color"
+          }
+        },
+        "error": {
+          "50": {
+            "value": "#fef2f2",
+            "type": "color",
+            "description": "Lightest error color"
+          },
+          "100": {
+            "value": "#fee2e2",
+            "type": "color",
+            "description": "Very light error color"
+          },
+          "200": {
+            "value": "#fecaca",
+            "type": "color",
+            "description": "Light error color"
+          },
+          "300": {
+            "value": "#fca5a5",
+            "type": "color",
+            "description": "Medium-light error color"
+          },
+          "400": {
+            "value": "#f87171",
+            "type": "color",
+            "description": "Medium error color"
+          },
+          "500": {
+            "value": "#ef4444",
+            "type": "color",
+            "description": "Base error color"
+          },
+          "600": {
+            "value": "#dc2626",
+            "type": "color",
+            "description": "Medium-dark error color"
+          },
+          "700": {
+            "value": "#b91c1c",
+            "type": "color",
+            "description": "Dark error color"
+          },
+          "800": {
+            "value": "#991b1b",
+            "type": "color",
+            "description": "Very dark error color"
+          },
+          "900": {
+            "value": "#7f1d1d",
+            "type": "color",
+            "description": "Darkest error color"
+          }
+        },
+        "info": {
+          "50": {
+            "value": "#eff6ff",
+            "type": "color",
+            "description": "Lightest info color"
+          },
+          "100": {
+            "value": "#dbeafe",
+            "type": "color",
+            "description": "Very light info color"
+          },
+          "200": {
+            "value": "#bfdbfe",
+            "type": "color",
+            "description": "Light info color"
+          },
+          "300": {
+            "value": "#93c5fd",
+            "type": "color",
+            "description": "Medium-light info color"
+          },
+          "400": {
+            "value": "#60a5fa",
+            "type": "color",
+            "description": "Medium info color"
+          },
+          "500": {
+            "value": "#3b82f6",
+            "type": "color",
+            "description": "Base info color"
+          },
+          "600": {
+            "value": "#2563eb",
+            "type": "color",
+            "description": "Medium-dark info color"
+          },
+          "700": {
+            "value": "#1d4ed8",
+            "type": "color",
+            "description": "Dark info color"
+          },
+          "800": {
+            "value": "#1e40af",
+            "type": "color",
+            "description": "Very dark info color"
+          },
+          "900": {
+            "value": "#1e3a8a",
+            "type": "color",
+            "description": "Darkest info color"
+          }
+        }
+      },
+      "neutral": {
+        "50": {
+          "value": "#fafafa",
+          "type": "color",
+          "description": "Lightest neutral color"
+        },
+        "100": {
+          "value": "#f5f5f5",
+          "type": "color",
+          "description": "Very light neutral color"
+        },
+        "200": {
+          "value": "#e5e5e5",
+          "type": "color",
+          "description": "Light neutral color"
+        },
+        "300": {
+          "value": "#d4d4d4",
+          "type": "color",
+          "description": "Medium-light neutral color"
+        },
+        "400": {
+          "value": "#a3a3a3",
+          "type": "color",
+          "description": "Medium neutral color"
+        },
+        "500": {
+          "value": "#737373",
+          "type": "color",
+          "description": "Base neutral color"
+        },
+        "600": {
+          "value": "#525252",
+          "type": "color",
+          "description": "Medium-dark neutral color"
+        },
+        "700": {
+          "value": "#404040",
+          "type": "color",
+          "description": "Dark neutral color"
+        },
+        "800": {
+          "value": "#262626",
+          "type": "color",
+          "description": "Very dark neutral color"
+        },
+        "900": {
+          "value": "#171717",
+          "type": "color",
+          "description": "Darkest neutral color"
+        }
+      }
     }
   }
 }
