@@ -339,3 +339,44 @@ Relates to task-id or issue number.
 
 **Last Updated**: 2024-02-15
 **Version**: 1.0.0
+
+## Environment Configuration
+
+Harmony Design System supports multiple environment configurations through .env files. Each environment has specific overrides tailored to its purpose.
+
+### Available Environments
+
+- **Development** (.env.development) - Local development with hot reload and extensive debugging
+- **Staging** (.env.staging) - Pre-production environment mirroring production with debugging enabled
+- **Production** (.env.production) - Optimized production configuration with minimal logging
+
+### Staging Environment
+
+The staging environment (.env.staging) provides a production-like setup with enhanced debugging capabilities:
+
+**Key Features:**
+- Production-like API endpoints (staging-api.harmonydesign.dev)
+- Full analytics and experiment tracking enabled
+- Debug tools available (Event Bus Debugger, Performance Panel, State Inspector)
+- Comprehensive logging to both console and remote server
+- Preview mode support for testing deployments
+- Same performance budgets as production (16ms render, 50MB memory, 200ms load)
+
+**Use Cases:**
+- Pre-release testing and validation
+- QA verification before production deployment
+- Performance testing under production-like conditions
+- Integration testing with staging APIs
+- Preview deployments for stakeholder review
+
+**Configuration Loading:**
+Environment files are loaded by config/environment-loader.js based on the NODE_ENV variable. The loader merges environment-specific settings with defaults from .env.example.
+
+**Related Files:**
+- .env.staging - Staging environment overrides
+- .env.development - Development environment defaults
+- .env.production - Production environment configuration
+- .env.example - Template with all available variables
+- config/environment-loader.js - Environment configuration loader
+- config/environment.d.ts - TypeScript types for environment variables
+
