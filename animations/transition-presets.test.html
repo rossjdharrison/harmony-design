@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transition Presets Test - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #00ff88;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .test-section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #00ff88;
+    }
+
+    .test-controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      background: #00ff88;
+      color: #0a0a0a;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: transform 150ms ease-out;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn.secondary {
+      background: #333;
+      color: #fff;
+    }
+
+    .demo-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #00ff88, #00ccff);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #0a0a0a;
+      margin: 2rem 0;
+    }
+
+    .property-demos {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .property-demo {
+      background: #222;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #333;
+    }
+
+    .property-demo h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #00ccff;
+    }
+
+    .property-demo .demo-element {
+      width: 80px;
+      height: 80px;
+      background: #00ff88;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .timing-info {
+      background: #2a2a2a;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 3px solid #00ff88;
+      margin-top: 1rem;
+    }
+
+    .timing-info code {
+      color: #00ff88;
+      font-family: 'Courier New', monospace;
+    }
+
+    .preset-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .preset-card {
+      background: #222;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #333;
+      cursor: pointer;
+      transition: border-color 150ms ease-out;
+    }
+
+    .preset-card:hover {
+      border-color: #00ff88;
+    }
+
+    .preset-card h4 {
+      color: #00ff88;
+      margin-bottom: 0.5rem;
+      text-transform: capitalize;
+    }
+
+    .preset-card .duration {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    .preset-card .demo-bar {
+      width: 100%;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      margin-top: 1rem;
+      overflow: hidden;
+    }
+
+    .preset-card .demo-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #00ff88;
+    }
+
+    .status {
+      padding: 0.5rem 1rem;
+      background: #2a2a2a;
+      border-radius: 4px;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #888;
+    }
+
+    .status.active {
+      color: #00ff88;
+      border: 1px solid #00ff88;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Transition Presets Test</h1>
+    <p class="subtitle">Testing standard transition presets: instant, fast, normal, slow, spring</p>
+
+    <!-- Preset Showcase -->
+    <div class="test-section">
+      <h2>Preset Showcase</h2>
+      <p>Click each preset to see its timing in action:</p>
+      <div class="preset-showcase" id="presetShowcase"></div>
+      <div class="status" id="presetStatus">Click a preset to test</div>
+    </div>
+
+    <!-- Property Transitions -->
+    <div class="test-section">
+      <h2>Property Transitions</h2>
+      <p>Testing different CSS properties with the same preset (normal):</p>
+      <div class="property-demos">
+        <div class="property-demo">
+          <h3>Opacity</h3>
+          <div class="demo-element" id="opacityDemo"></div>
+          <button class="btn secondary" onclick="testOpacity()">Toggle</button>
+        </div>
+        <div class="property-demo">
+          <h3>Transform</h3>
+          <div class="demo-element" id="transformDemo"></div>
+          <button class="btn secondary" onclick="testTransform()">Move</button>
+        </div>
+        <div class="property-demo">
+          <h3>Background</h3>
+          <div class="demo-element" id="backgroundDemo"></div>
+          <button class="btn secondary" onclick="testBackground()">Change</button>
+        </div>
+        <div class="property-demo">
+          <h3>Multiple Props</h3>
+          <div class="demo-element" id="multiDemo"></div>
+          <button class="btn secondary" onclick="testMultiple()">Animate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Advanced Tests -->
+    <div class="test-section">
+      <h2>Advanced Tests</h2>
+      <div class="test-controls">
+        <button class="btn" onclick="testSequence()">Test Sequence</button>
+        <button class="btn" onclick="testWaitFor()">Test Wait For Transition</button>
+        <button class="btn" onclick="testCustomPreset()">Test Custom Preset</button>
+        <button class="btn secondary" onclick="testPerformance()">Performance Test</button>
+      </div>
+      <div class="demo-box" id="advancedDemo">Test Box</div>
+      <div class="status" id="advancedStatus">Ready</div>
+    </div>
+
+    <!-- Timing Information -->
+    <div class="test-section">
+      <h2>Timing Information</h2>
+      <div class="timing-info">
+        <p><strong>Instant:</strong> <code>0ms</code> - Immediate state changes</p>
+        <p><strong>Fast:</strong> <code>150ms</code> - Quick feedback, hover states</p>
+        <p><strong>Normal:</strong> <code>300ms</code> - Standard UI transitions</p>
+        <p><strong>Slow:</strong> <code>500ms</code> - Emphasized transitions</p>
+        <p><strong>Spring:</strong> <code>300ms</code> with overshoot - Playful interactions</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      instant,
+      fast,
+      normal,
+      slow,
+      spring,
+      PRESETS,
+      toCSSTransition,
+      applyTransition,
+      removeTransition,
+      waitForTransition,
+      createPreset,
+    } from './transition-presets.js';
+
+    // Make functions available globally for onclick handlers
+    window.testOpacity = testOpacity;
+    window.testTransform = testTransform;
+    window.testBackground = testBackground;
+    window.testMultiple = testMultiple;
+    window.testSequence = testSequence;
+    window.testWaitFor = testWaitFor;
+    window.testCustomPreset = testCustomPreset;
+    window.testPerformance = testPerformance;
+
+    // Initialize preset showcase
+    const presetShowcase = document.getElementById('presetShowcase');
+    const presetStatus = document.getElementById('presetStatus');
+
+    Object.entries(PRESETS).forEach(([name, preset]) => {
+      const card = document.createElement('div');
+      card.className = 'preset-card';
+      card.innerHTML = `
+        <h4>${name}</h4>
+        <div class="duration">${preset.duration}ms</div>
+        <div class="demo-bar">
+          <div class="demo-bar-fill"></div>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        const fill = card.querySelector('.demo-bar-fill');
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        
+        // Force reflow
+        void fill.offsetWidth;
+        
+        fill.style.transition = toCSSTransition(preset, 'width');
+        fill.style.width = '100%';
+        
+        presetStatus.textContent = `${name}: ${preset.duration}ms with ${preset.easing}`;
+        presetStatus.className = 'status active';
+        
+        setTimeout(() => {
+          presetStatus.className = 'status';
+        }, preset.duration + 500);
+      });
+
+      presetShowcase.appendChild(card);
+    });
+
+    // Property transition tests
+    let opacityVisible = true;
+    function testOpacity() {
+      const el = document.getElementById('opacityDemo');
+      applyTransition(el, normal, 'opacity');
+      opacityVisible = !opacityVisible;
+      el.style.opacity = opacityVisible ? '1' : '0.2';
+    }
+
+    let transformMoved = false;
+    function testTransform() {
+      const el = document.getElementById('transformDemo');
+      applyTransition(el, normal, 'transform');
+      transformMoved = !transformMoved;
+      el.style.transform = transformMoved ? 'translateX(50px) rotate(45deg)' : 'translateX(0) rotate(0)';
+    }
+
+    let backgroundChanged = false;
+    function testBackground() {
+      const el = document.getElementById('backgroundDemo');
+      applyTransition(el, normal, 'background-color');
+      backgroundChanged = !backgroundChanged;
+      el.style.backgroundColor = backgroundChanged ? '#00ccff' : '#00ff88';
+    }
+
+    let multiState = false;
+    function testMultiple() {
+      const el = document.getElementById('multiDemo');
+      applyTransition(el, spring, ['opacity', 'transform', 'background-color']);
+      multiState = !multiState;
+      if (multiState) {
+        el.style.opacity = '0.5';
+        el.style.transform = 'scale(1.2) rotate(10deg)';
+        el.style.backgroundColor = '#ff0088';
+      } else {
+        el.style.opacity = '1';
+        el.style.transform = 'scale(1) rotate(0)';
+        el.style.backgroundColor = '#00ff88';
+      }
+    }
+
+    // Advanced tests
+    async function testSequence() {
+      const el = document.getElementById('advancedDemo');
+      const status = document.getElementById('advancedStatus');
+      
+      status.textContent = 'Running sequence...';
+      status.className = 'status active';
+      
+      // Fast fade out
+      applyTransition(el, fast, 'opacity');
+      el.style.opacity = '0';
+      await waitForTransition(el, fast);
+      
+      // Instant move
+      applyTransition(el, instant, 'transform');
+      el.style.transform = 'translateX(100px)';
+      await waitForTransition(el, instant);
+      
+      // Slow fade in
+      applyTransition(el, slow, 'opacity');
+      el.style.opacity = '1';
+      await waitForTransition(el, slow);
+      
+      // Spring return
+      applyTransition(el, spring, 'transform');
+      el.style.transform = 'translateX(0)';
+      await waitForTransition(el, spring);
+      
+      status.textContent = 'Sequence complete!';
+      setTimeout(() => {
+        status.className = 'status';
+        status.textContent = 'Ready';
+      }, 2000);
+    }
+
+    async function testWaitFor() {
+      const el = document.getElementById('advancedDemo');
+      const status = document.getElementById('advancedStatus');
+      
+      status.textContent = 'Waiting for transition...';
+      status.className = 'status active';
+      
+      applyTransition(el, slow, ['transform', 'opacity']);
+      el.style.transform = 'scale(1.5) rotate(180deg)';
+      el.style.opacity = '0.3';
+      
+      await waitForTransition(el, slow);
+      
+      status.textContent = 'Transition complete! Reverting...';
+      
+      el.style.transform = 'scale(1) rotate(0)';
+      el.style.opacity = '1';
+      
+      await waitForTransition(el, slow);
+      
+      status.textContent = 'Done!';
+      setTimeout(() => {
+        status.className = 'status';
+        status.textContent = 'Ready';
+      }, 2000);
+    }
+
+    function testCustomPreset() {
+      const el = document.getElementById('advancedDemo');
+      const status = document.getElementById('advancedStatus');
+      
+      try {
+        const custom = createPreset({
+          duration: 750,
+          easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+          delay: 100,
+        });
+        
+        status.textContent = `Custom preset: ${custom.duration}ms delay ${custom.delay}ms`;
+        status.className = 'status active';
+        
+        applyTransition(el, custom, 'transform');
+        el.style.transform = 'translateY(-50px) scale(1.3)';
+        
+        setTimeout(() => {
+          el.style.transform = 'translateY(0) scale(1)';
+        }, custom.duration + custom.delay + 500);
+        
+        setTimeout(() => {
+          status.className = 'status';
+          status.textContent = 'Ready';
+        }, custom.duration * 2 + custom.delay + 1000);
+      } catch (error) {
+        status.textContent = `Error: ${error.message}`;
+        status.style.color = '#ff0088';
+      }
+    }
+
+    function testPerformance() {
+      const status = document.getElementById('advancedStatus');
+      status.textContent = 'Running performance test...';
+      status.className = 'status active';
+      
+      const iterations = 100;
+      const startTime = performance.now();
+      
+      for (let i = 0; i < iterations; i++) {
+        const testEl = document.createElement('div');
+        applyTransition(testEl, normal, ['opacity', 'transform']);
+        removeTransition(testEl);
+      }
+      
+      const endTime = performance.now();
+      const avgTime = (endTime - startTime) / iterations;
+      
+      status.textContent = `Performance: ${avgTime.toFixed(3)}ms per operation (${iterations} iterations)`;
+      
+      setTimeout(() => {
+        status.className = 'status';
+        status.textContent = 'Ready';
+      }, 3000);
+    }
+
+    console.log('Transition Presets Test loaded');
+    console.log('Available presets:', PRESETS);
+  </script>
+</body>
+</html>
