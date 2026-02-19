@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PeakHold Atom - Test Page</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #1a1a1a;
+      color: #ffffff;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: #2a2a2a;
+      border-radius: 8px;
+      border: 1px solid #3a3a3a;
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #4a9eff;
+    }
+
+    .test-group {
+      margin: 1.5rem 0;
+    }
+
+    .test-group h3 {
+      margin-bottom: 1rem;
+      color: #888;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .demo-row {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #1a1a1a;
+      border-radius: 4px;
+    }
+
+    .demo-label {
+      min-width: 150px;
+      color: #aaa;
+    }
+
+    .meter-container {
+      position: relative;
+      flex: 1;
+      height: 40px;
+      background: #0a0a0a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      background: linear-gradient(to right, #00ff00, #ffff00, #ff0000);
+      transition: width 0.1s ease-out;
+    }
+
+    .vertical-demo {
+      display: flex;
+      gap: 2rem;
+      align-items: flex-end;
+    }
+
+    .vertical-meter {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .vertical-meter-container {
+      position: relative;
+      width: 40px;
+      height: 200px;
+      background: #0a0a0a;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .vertical-meter-fill {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      background: linear-gradient(to top, #00ff00, #ffff00, #ff0000);
+      transition: height 0.1s ease-out;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #4a9eff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    button:hover {
+      background: #6ab0ff;
+    }
+
+    button:active {
+      background: #3a8edf;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 0.5rem;
+      background: #1a1a1a;
+      color: white;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+    }
+
+    .info-box {
+      padding: 1rem;
+      background: #2a3a4a;
+      border-left: 4px solid #4a9eff;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .event-log {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #0a0a0a;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+    }
+
+    .event-log div {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .event-log .event-time {
+      color: #888;
+    }
+
+    .event-log .event-type {
+      color: #4a9eff;
+    }
+
+    .event-log .event-detail {
+      color: #aaa;
+    }
+
+    harmony-peak-hold {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎚️ PeakHold Atom</h1>
+  <p class="subtitle">Peak hold marker with configurable decay</p>
+
+  <div class="info-box">
+    <strong>Performance Targets:</strong>
+    <ul>
+      <li>Render: &lt;1ms per frame</li>
+      <li>Memory: &lt;100KB per instance</li>
+      <li>Animation: 60fps smooth decay</li>
+    </ul>
+  </div>
+
+  <!-- Basic Horizontal -->
+  <div class="test-section">
+    <h2>Horizontal Peak Hold</h2>
+    
+    <div class="test-group">
+      <h3>Default Configuration</h3>
+      <div class="demo-row">
+        <div class="demo-label">Default</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-1"></div>
+          <harmony-peak-hold id="peak-1"></harmony-peak-hold>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Custom Colors</h3>
+      <div class="demo-row">
+        <div class="demo-label">Green</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-2"></div>
+          <harmony-peak-hold id="peak-2" color="#00ff00"></harmony-peak-hold>
+        </div>
+      </div>
+      <div class="demo-row">
+        <div class="demo-label">Blue</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-3"></div>
+          <harmony-peak-hold id="peak-3" color="#00aaff"></harmony-peak-hold>
+        </div>
+      </div>
+      <div class="demo-row">
+        <div class="demo-label">Yellow</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-4"></div>
+          <harmony-peak-hold id="peak-4" color="#ffff00"></harmony-peak-hold>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <h3>Different Thickness</h3>
+      <div class="demo-row">
+        <div class="demo-label">Thin (1px)</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-5"></div>
+          <harmony-peak-hold id="peak-5" thickness="1"></harmony-peak-hold>
+        </div>
+      </div>
+      <div class="demo-row">
+        <div class="demo-label">Medium (3px)</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-6"></div>
+          <harmony-peak-hold id="peak-6" thickness="3"></harmony-peak-hold>
+        </div>
+      </div>
+      <div class="demo-row">
+        <div class="demo-label">Thick (5px)</div>
+        <div class="meter-container">
+          <div class="meter-fill" id="fill-7"></div>
+          <harmony-peak-hold id="peak-7" thickness="5"></harmony-peak-hold>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="simulateAudio()">Simulate Audio</button>
+      <button onclick="stopSimulation()">Stop</button>
+      <button onclick="resetAllPeaks()">Reset All Peaks</button>
+    </div>
+  </div>
+
+  <!-- Vertical -->
+  <div class="test-section">
+    <h2>Vertical Peak Hold</h2>
+    
+    <div class="vertical-demo">
+      <div class="vertical-meter">
+        <div class="vertical-meter-container">
+          <div class="vertical-meter-fill" id="vfill-1"></div>
+          <harmony-peak-hold id="vpeak-1" orientation="vertical"></harmony-peak-hold>
+        </div>
+        <div class="demo-label">Default</div>
+      </div>
+      
+      <div class="vertical-meter">
+        <div class="vertical-meter-container">
+          <div class="vertical-meter-fill" id="vfill-2"></div>
+          <harmony-peak-hold id="vpeak-2" orientation="vertical" color="#00ff00"></harmony-peak-hold>
+        </div>
+        <div class="demo-label">Green</div>
+      </div>
+      
+      <div class="vertical-meter">
+        <div class="vertical-meter-container">
+          <div class="vertical-meter-fill" id="vfill-3"></div>
+          <harmony-peak-hold id="vpeak-3" orientation="vertical" color="#00aaff" thickness="4"></harmony-peak-hold>
+        </div>
+        <div class="demo-label">Thick Blue</div>
+      </div>
+      
+      <div class="vertical-meter">
+        <div class="vertical-meter-container">
+          <div class="vertical-meter-fill" id="vfill-4"></div>
+          <harmony-peak-hold id="vpeak-4" orientation="vertical" disabled></harmony-peak-hold>
+        </div>
+        <div class="demo-label">Disabled Decay</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button onclick="simulateVerticalAudio()">Simulate Audio</button>
+      <button onclick="stopVerticalSimulation()">Stop</button>
+    </div>
+  </div>
+
+  <!-- Interactive Controls -->
+  <div class="test-section">
+    <h2>Interactive Configuration</h2>
+    
+    <div class="demo-row">
+      <div class="demo-label">Interactive Meter</div>
+      <div class="meter-container">
+        <div class="meter-fill" id="fill-interactive"></div>
+        <harmony-peak-hold id="peak-interactive"></harmony-peak-hold>
+      </div>
+    </div>
+
+    <div class="controls">
+      <label>
+        Value:
+        <input type="range" id="value-slider" min="0" max="100" value="0">
+        <input type="number" id="value-input" min="0" max="100" value="0">
+      </label>
+    </div>
+
+    <div class="controls">
+      <label>
+        Decay Rate:
+        <input type="number" id="decay-rate" min="1" max="100" value="20" step="5">
+        units/second
+      </label>
+    </div>
+
+    <div class="controls">
+      <label>
+        Hold Time:
+        <input type="number" id="hold-time" min="0" max="5000" value="1000" step="100">
+        ms
+      </label>
+    </div>
+
+    <div class="controls">
+      <label>
+        <input type="checkbox" id="disable-decay">
+        Disable Decay
+      </label>
+    </div>
+
+    <div class="controls">
+      <button onclick="resetInteractive()">Reset Peak</button>
+    </div>
+  </div>
+
+  <!-- Event Log -->
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div class="event-log" id="event-log"></div>
+    <button onclick="clearLog()">Clear Log</button>
+  </div>
+
+  <script type="module">
+    import './peak-hold.js';
+
+    // Simulation state
+    let simulationInterval = null;
+    let verticalSimulationInterval = null;
+
+    // Get all horizontal peaks and fills
+    const horizontalPeaks = Array.from(document.querySelectorAll('harmony-peak-hold[orientation="horizontal"], harmony-peak-hold:not([orientation])')).slice(0, 7);
+    const horizontalFills = Array.from(document.querySelectorAll('[id^="fill-"]')).slice(0, 7);
+
+    // Get vertical peaks and fills
+    const verticalPeaks = document.querySelectorAll('[id^="vpeak-"]');
+    const verticalFills = document.querySelectorAll('[id^="vfill-"]');
+
+    // Interactive controls
+    const interactivePeak = document.getElementById('peak-interactive');
+    const interactiveFill = document.getElementById('fill-interactive');
+    const valueSlider = document.getElementById('value-slider');
+    const valueInput = document.getElementById('value-input');
+    const decayRateInput = document.getElementById('decay-rate');
+    const holdTimeInput = document.getElementById('hold-time');
+    const disableDecayCheckbox = document.getElementById('disable-decay');
+
+    // Event logging
+    const eventLog = document.getElementById('event-log');
+    let eventCount = 0;
+
+    function logEvent(type, detail) {
+      eventCount++;
+      const time = new Date().toLocaleTimeString();
+      const entry = document.createElement('div');
+      entry.innerHTML = `
+        <span class="event-time">${time}</span>
+        <span class="event-type">${type}</span>
+        <span class="event-detail">${JSON.stringify(detail)}</span>
+      `;
+      eventLog.insertBefore(entry, eventLog.firstChild);
+      
+      // Keep only last 50 events
+      while (eventLog.children.length > 50) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    // Listen to all peak-hold events
+    document.addEventListener('peak-updated', (e) => {
+      logEvent('peak-updated', e.detail);
+    });
+
+    document.addEventListener('peak-reset', (e) => {
+      logEvent('peak-reset', e.detail);
+    });
+
+    // Simulate audio for horizontal meters
+    window.simulateAudio = function() {
+      if (simulationInterval) return;
+      
+      simulationInterval = setInterval(() => {
+        // Random audio-like behavior
+        const value = Math.random() * 100;
+        
+        horizontalPeaks.forEach((peak, index) => {
+          peak.value = value;
+          if (horizontalFills[index]) {
+            horizontalFills[index].style.width = value + '%';
+          }
+        });
+      }, 100);
+    };
+
+    window.stopSimulation = function() {
+      if (simulationInterval) {
+        clearInterval(simulationInterval);
+        simulationInterval = null;
+      }
+    };
+
+    window.resetAllPeaks = function() {
+      horizontalPeaks.forEach(peak => peak.reset());
+    };
+
+    // Simulate audio for vertical meters
+    window.simulateVerticalAudio = function() {
+      if (verticalSimulationInterval) return;
+      
+      verticalSimulationInterval = setInterval(() => {
+        const value = Math.random() * 100;
+        
+        verticalPeaks.forEach((peak, index) => {
+          peak.value = value;
+          if (verticalFills[index]) {
+            verticalFills[index].style.height = value + '%';
+          }
+        });
+      }, 100);
+    };
+
+    window.stopVerticalSimulation = function() {
+      if (verticalSimulationInterval) {
+        clearInterval(verticalSimulationInterval);
+        verticalSimulationInterval = null;
+      }
+    };
+
+    // Interactive controls
+    valueSlider.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      valueInput.value = value;
+      interactivePeak.value = value;
+      interactiveFill.style.width = value + '%';
+    });
+
+    valueInput.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value);
+      valueSlider.value = value;
+      interactivePeak.value = value;
+      interactiveFill.style.width = value + '%';
+    });
+
+    decayRateInput.addEventListener('input', (e) => {
+      interactivePeak.decayRate = parseFloat(e.target.value);
+    });
+
+    holdTimeInput.addEventListener('input', (e) => {
+      interactivePeak.holdTime = parseFloat(e.target.value);
+    });
+
+    disableDecayCheckbox.addEventListener('change', (e) => {
+      interactivePeak.disabled = e.target.checked;
+    });
+
+    window.resetInteractive = function() {
+      interactivePeak.reset();
+    };
+
+    window.clearLog = function() {
+      eventLog.innerHTML = '';
+      eventCount = 0;
+    };
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      stopSimulation();
+      stopVerticalSimulation();
+    });
+
+    console.log('✅ PeakHold test page loaded');
+    console.log('📊 Performance targets: <1ms render, <100KB memory, 60fps animation');
+  </script>
+</body>
+</html>
