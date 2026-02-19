@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useExperiment Hook Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    
+    .status.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .variant-display {
+      padding: 1rem;
+      background: #f8f9fa;
+      border-left: 4px solid #007bff;
+      margin: 1rem 0;
+      font-family: monospace;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      margin-right: 0.5rem;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .event-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+    
+    .event-log .event {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border-left: 3px solid #007bff;
+      padding-left: 0.5rem;
+    }
+    
+    .event-log .event.exposure {
+      border-left-color: #28a745;
+    }
+    
+    .event-log .event.error {
+      border-left-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <h1>useExperiment Hook Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Basic Variant Assignment <span class="status pending" id="test1-status">Pending</span></h2>
+    <p>Tests basic variant retrieval and assignment.</p>
+    <div id="test1-output" class="variant-display"></div>
+    <button onclick="runTest1()">Run Test</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 2: Auto-Track Exposure <span class="status pending" id="test2-status">Pending</span></h2>
+    <p>Tests automatic exposure tracking on initialization.</p>
+    <div id="test2-output" class="variant-display"></div>
+    <button onclick="runTest2()">Run Test</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 3: Manual Exposure Tracking <span class="status pending" id="test3-status">Pending</span></h2>
+    <p>Tests manual exposure tracking with autoTrack disabled.</p>
+    <div id="test3-output" class="variant-display"></div>
+    <button onclick="runTest3()">Run Test</button>
+    <button onclick="trackTest3Exposure()">Track Exposure</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 4: Variant Helper Functions <span class="status pending" id="test4-status">Pending</span></h2>
+    <p>Tests isExperimentVariant and getExperimentConfig helpers.</p>
+    <div id="test4-output" class="variant-display"></div>
+    <button onclick="runTest4()">Run Test</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Test 5: Error Handling <span class="status pending" id="test5-status">Pending</span></h2>
+    <p>Tests behavior when experiment context is unavailable.</p>
+    <div id="test5-output" class="variant-display"></div>
+    <button onclick="runTest5()">Run Test</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div class="event-log" id="event-log"></div>
+    <button onclick="clearEventLog()">Clear Log</button>
+  </div>
+
+  <script type="module">
+    import { 
+      useExperiment, 
+      getExperimentVariant,
+      isExperimentVariant,
+      getExperimentConfig 
+    } from './use-experiment.js';
+
+    // Mock ExperimentContext for testing
+    class MockExperimentContext {
+      constructor() {
+        this.experiments = new Map();
+        this.exposures = new Set();
+        
+        // Set up test experiments
+        this.experiments.set('test-experiment-1', {
+          variant: 'treatment',
+          isControl: false,
+          config: { color: '#ff0000', size: 'large' }
+        });
+        
+        this.experiments.set('test-experiment-2', {
+          variant: 'control',
+          isControl: true,
+          config: { enabled: false }
+        });
+        
+        this.experiments.set('feature-flag', {
+          variant: 'enabled',
+          isControl: false,
+          config: { featureA: true, featureB: false }
+        });
+      }
+      
+      getVariant(experimentId) {
+        return this.experiments.get(experimentId) || null;
+      }
+      
+      trackExposure(experimentId) {
+        this.exposures.add(experimentId);
+        logEvent('exposure', `Tracked exposure for ${experimentId}`);
+      }
+      
+      hasTrackedExposure(experimentId) {
+        return this.exposures.has(experimentId);
+      }
+    }
+
+    // Mock EventBus for testing
+    class MockEventBus {
+      constructor() {
+        this.events = [];
+      }
+      
+      publish(eventType, payload) {
+        this.events.push({ eventType, payload, timestamp: Date.now() });
+        logEvent(eventType, payload);
+      }
+      
+      getEvents(eventType) {
+        return this.events.filter(e => e.eventType === eventType);
+      }
+      
+      clear() {
+        this.events = [];
+      }
+    }
+
+    // Initialize mocks
+    const mockContext = new MockExperimentContext();
+    const mockEventBus = new MockEventBus();
+    
+    window.__HARMONY_EXPERIMENT_CONTEXT__ = mockContext;
+    window.__HARMONY_EVENT_BUS__ = mockEventBus;
+
+    // Export for global access
+    window.useExperiment = useExperiment;
+    window.getExperimentVariant = getExperimentVariant;
+    window.isExperimentVariant = isExperimentVariant;
+    window.getExperimentConfig = getExperimentConfig;
+    window.mockContext = mockContext;
+    window.mockEventBus = mockEventBus;
+
+    // Helper functions
+    function logEvent(type, data) {
+      const log = document.getElementById('event-log');
+      const event = document.createElement('div');
+      event.className = `event ${type.toLowerCase()}`;
+      event.textContent = `[${new Date().toLocaleTimeString()}] ${type}: ${JSON.stringify(data, null, 2)}`;
+      log.appendChild(event);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    window.clearEventLog = function() {
+      document.getElementById('event-log').innerHTML = '';
+      mockEventBus.clear();
+    };
+
+    function setTestStatus(testId, status, message = '') {
+      const statusEl = document.getElementById(`${testId}-status`);
+      statusEl.className = `status ${status}`;
+      statusEl.textContent = status === 'pass' ? 'Pass' : status === 'fail' ? 'Fail' : 'Pending';
+      
+      if (message) {
+        const outputEl = document.getElementById(`${testId}-output`);
+        outputEl.textContent = message;
+      }
+    }
+
+    // Test 1: Basic Variant Assignment
+    window.runTest1 = function() {
+      try {
+        const result = useExperiment('test-experiment-1', { autoTrack: false });
+        
+        const output = `
+Variant: ${result.variant}
+Is Control: ${result.isControl}
+Is Loading: ${result.isLoading}
+Config: ${JSON.stringify(result.config, null, 2)}
+Error: ${result.error}
+        `.trim();
+        
+        const passed = result.variant === 'treatment' && 
+                      result.isControl === false &&
+                      result.isLoading === false &&
+                      result.config.color === '#ff0000';
+        
+        setTestStatus('test1', passed ? 'pass' : 'fail', output);
+      } catch (error) {
+        setTestStatus('test1', 'fail', `Error: ${error.message}`);
+      }
+    };
+
+    // Test 2: Auto-Track Exposure
+    window.runTest2 = function() {
+      try {
+        mockContext.exposures.clear();
+        mockEventBus.clear();
+        
+        const result = useExperiment('test-experiment-2', { autoTrack: true });
+        
+        // Wait for async exposure tracking
+        setTimeout(() => {
+          const exposureEvents = mockEventBus.getEvents('ExperimentExposure');
+          const tracked = mockContext.hasTrackedExposure('test-experiment-2');
+          
+          const output = `
+Variant: ${result.variant}
+Exposure Tracked: ${tracked}
+Exposure Events: ${exposureEvents.length}
+          `.trim();
+          
+          const passed = tracked && exposureEvents.length > 0;
+          setTestStatus('test2', passed ? 'pass' : 'fail', output);
+        }, 100);
+        
+      } catch (error) {
+        setTestStatus('test2', 'fail', `Error: ${error.message}`);
+      }
+    };
+
+    // Test 3: Manual Exposure Tracking
+    let test3Result = null;
+    window.runTest3 = function() {
+      try {
+        mockContext.exposures.clear();
+        mockEventBus.clear();
+        
+        test3Result = useExperiment('test-experiment-1', { autoTrack: false });
+        
+        const tracked = mockContext.hasTrackedExposure('test-experiment-1');
+        
+        const output = `
+Variant: ${test3Result.variant}
+Exposure Tracked (should be false): ${tracked}
+        `.trim();
+        
+        setTestStatus('test3', !tracked ? 'pass' : 'fail', output);
+      } catch (error) {
+        setTestStatus('test3', 'fail', `Error: ${error.message}`);
+      }
+    };
+
+    window.trackTest3Exposure = function() {
+      if (!test3Result) {
+        alert('Run Test 3 first');
+        return;
+      }
+      
+      test3Result.trackExposure();
+      
+      setTimeout(() => {
+        const tracked = mockContext.hasTrackedExposure('test-experiment-1');
+        const exposureEvents = mockEventBus.getEvents('ExperimentExposure');
+        
+        const output = `
+Exposure Tracked (should be true): ${tracked}
+Exposure Events: ${exposureEvents.length}
+        `.trim();
+        
+        document.getElementById('test3-output').textContent = output;
+      }, 100);
+    };
+
+    // Test 4: Variant Helper Functions
+    window.runTest4 = function() {
+      try {
+        const isEnabled = isExperimentVariant('feature-flag', 'enabled', { trackOnMatch: false });
+        const isDisabled = isExperimentVariant('feature-flag', 'disabled', { trackOnMatch: false });
+        const config = getExperimentConfig('feature-flag');
+        
+        const output = `
+isExperimentVariant('feature-flag', 'enabled'): ${isEnabled}
+isExperimentVariant('feature-flag', 'disabled'): ${isDisabled}
+getExperimentConfig('feature-flag'): ${JSON.stringify(config, null, 2)}
+        `.trim();
+        
+        const passed = isEnabled === true && 
+                      isDisabled === false &&
+                      config.featureA === true;
+        
+        setTestStatus('test4', passed ? 'pass' : 'fail', output);
+      } catch (error) {
+        setTestStatus('test4', 'fail', `Error: ${error.message}`);
+      }
+    };
+
+    // Test 5: Error Handling
+    window.runTest5 = function() {
+      try {
+        // Temporarily remove context
+        const originalContext = window.__HARMONY_EXPERIMENT_CONTEXT__;
+        window.__HARMONY_EXPERIMENT_CONTEXT__ = null;
+        
+        const result = useExperiment('nonexistent-experiment', { 
+          autoTrack: false,
+          defaultVariant: 'fallback'
+        });
+        
+        // Restore context
+        window.__HARMONY_EXPERIMENT_CONTEXT__ = originalContext;
+        
+        const output = `
+Variant (should be fallback): ${result.variant}
+Error: ${result.error ? result.error.message : 'null'}
+Is Loading: ${result.isLoading}
+        `.trim();
+        
+        const passed = result.variant === 'fallback' && result.error !== null;
+        
+        setTestStatus('test5', passed ? 'pass' : 'fail', output);
+      } catch (error) {
+        setTestStatus('test5', 'fail', `Error: ${error.message}`);
+      }
+    };
+
+    // Log initial state
+    logEvent('info', 'Test suite initialized');
+  </script>
+</body>
+</html>
