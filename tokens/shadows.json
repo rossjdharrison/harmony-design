@@ -1,0 +1,129 @@
+{
+  "$schema": "./token-schema.json",
+  "version": "1.0.0",
+  "category": "shadows",
+  "description": "Shadow and elevation tokens for depth and layering",
+  "tokens": {
+    "elevation": {
+      "none": {
+        "value": "none",
+        "type": "shadow",
+        "description": "No shadow - flat surface"
+      },
+      "xs": {
+        "value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "type": "shadow",
+        "description": "Extra small elevation - subtle depth for cards and inputs"
+      },
+      "sm": {
+        "value": "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Small elevation - buttons and small cards"
+      },
+      "md": {
+        "value": "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Medium elevation - dropdowns and popovers"
+      },
+      "lg": {
+        "value": "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Large elevation - modals and overlays"
+      },
+      "xl": {
+        "value": "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Extra large elevation - prominent dialogs"
+      },
+      "2xl": {
+        "value": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        "type": "shadow",
+        "description": "Maximum elevation - fullscreen overlays"
+      }
+    },
+    "inner": {
+      "sm": {
+        "value": "inset 0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+        "type": "shadow",
+        "description": "Small inner shadow - subtle inset effect"
+      },
+      "md": {
+        "value": "inset 0 2px 4px 0 rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Medium inner shadow - pressed buttons"
+      }
+    },
+    "focus": {
+      "default": {
+        "value": "0 0 0 3px rgba(59, 130, 246, 0.5)",
+        "type": "shadow",
+        "description": "Default focus ring - accessibility indicator"
+      },
+      "error": {
+        "value": "0 0 0 3px rgba(239, 68, 68, 0.5)",
+        "type": "shadow",
+        "description": "Error focus ring - validation feedback"
+      },
+      "success": {
+        "value": "0 0 0 3px rgba(34, 197, 94, 0.5)",
+        "type": "shadow",
+        "description": "Success focus ring - positive feedback"
+      }
+    },
+    "glow": {
+      "sm": {
+        "value": "0 0 8px rgba(59, 130, 246, 0.4)",
+        "type": "shadow",
+        "description": "Small glow - subtle highlight"
+      },
+      "md": {
+        "value": "0 0 16px rgba(59, 130, 246, 0.5)",
+        "type": "shadow",
+        "description": "Medium glow - active states"
+      },
+      "lg": {
+        "value": "0 0 24px rgba(59, 130, 246, 0.6)",
+        "type": "shadow",
+        "description": "Large glow - prominent highlights"
+      }
+    },
+    "audio": {
+      "waveform": {
+        "value": "0 2px 8px rgba(139, 92, 246, 0.3)",
+        "type": "shadow",
+        "description": "Waveform visualization glow"
+      },
+      "meter": {
+        "value": "0 0 12px rgba(34, 197, 94, 0.4)",
+        "type": "shadow",
+        "description": "Audio meter active glow"
+      },
+      "clip": {
+        "value": "0 2px 4px rgba(0, 0, 0, 0.15), 0 0 8px rgba(139, 92, 246, 0.2)",
+        "type": "shadow",
+        "description": "Audio clip card elevation with subtle glow"
+      }
+    },
+    "transport": {
+      "button": {
+        "value": "0 2px 4px rgba(0, 0, 0, 0.1)",
+        "type": "shadow",
+        "description": "Transport control button elevation"
+      },
+      "buttonActive": {
+        "value": "inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 0 8px rgba(59, 130, 246, 0.4)",
+        "type": "shadow",
+        "description": "Active transport button - pressed with glow"
+      }
+    }
+  },
+  "metadata": {
+    "author": "Harmony Design System",
+    "lastModified": "2025-01-15",
+    "usage": "Import via token-loader.js for runtime access",
+    "performance": {
+      "renderImpact": "low",
+      "notes": "Shadows use CSS box-shadow with GPU acceleration. Multiple shadows may impact composite performance."
+    }
+  }
+}
