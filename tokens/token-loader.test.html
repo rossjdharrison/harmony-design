@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Loader Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 0.5rem;
+    }
+
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+
+    .status.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    pre {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      border-left: 3px solid #007bff;
+    }
+
+    code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .error {
+      color: #d32f2f;
+      background: #ffebee;
+      padding: 0.5rem;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+    }
+
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .metric {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      border-left: 3px solid #28a745;
+    }
+
+    .metric strong {
+      display: block;
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 0.25rem;
+    }
+
+    .metric span {
+      font-size: 1.5em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Token Loader Test Suite</h1>
+
+  <div class="test-section">
+    <h2>Test 1: Load Valid Token File <span class="status pending" id="test1-status">PENDING</span></h2>
+    <button onclick="runTest1()">Run Test</button>
+    <div id="test1-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Validation Error Detection <span class="status pending" id="test2-status">PENDING</span></h2>
+    <button onclick="runTest2()">Run Test</button>
+    <div id="test2-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Token Path Resolution <span class="status pending" id="test3-status">PENDING</span></h2>
+    <button onclick="runTest3()">Run Test</button>
+    <div id="test3-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Reference Resolution <span class="status pending" id="test4-status">PENDING</span></h2>
+    <button onclick="runTest4()">Run Test</button>
+    <div id="test4-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Cache Performance <span class="status pending" id="test5-status">PENDING</span></h2>
+    <button onclick="runTest5()">Run Test</button>
+    <div id="test5-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 6: Preload Multiple Files <span class="status pending" id="test6-status">PENDING</span></h2>
+    <button onclick="runTest6()">Run Test</button>
+    <div id="test6-output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Metrics</h2>
+    <div class="metrics" id="metrics"></div>
+  </div>
+
+  <script type="module">
+    import { TokenLoader, tokenLoader } from './token-loader.js';
+
+    // Create test token data
+    const validTokenData = {
+      colors: {
+        primary: {
+          value: '#007bff',
+          type: 'color',
+          description: 'Primary brand color'
+        },
+        secondary: {
+          value: '#6c757d',
+          type: 'color'
+        }
+      },
+      spacing: {
+        small: {
+          value: '8px',
+          type: 'dimension'
+        },
+        medium: {
+          value: '16px',
+          type: 'dimension'
+        }
+      }
+    };
+
+    const invalidTokenData = {
+      colors: {
+        primary: {
+          // Missing 'value' property
+          type: 'color'
+        }
+      }
+    };
+
+    // Helper to create a Blob URL for test data
+    function createTestFile(data) {
+      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      return URL.createObjectURL(blob);
+    }
+
+    // Test 1: Load valid token file
+    window.runTest1 = async function() {
+      const output = document.getElementById('test1-output');
+      const status = document.getElementById('test1-status');
+      
+      try {
+        const testUrl = createTestFile(validTokenData);
+        const startTime = performance.now();
+        
+        const result = await tokenLoader.load(testUrl);
+        
+        const loadTime = performance.now() - startTime;
+        
+        if (result.success) {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Token file loaded successfully</p>
+            <p>Load time: ${loadTime.toFixed(2)}ms</p>
+            <pre><code>${JSON.stringify(result.data, null, 2)}</code></pre>
+          `;
+        } else {
+          throw new Error('Load failed: ' + (result.error?.message || 'Unknown error'));
+        }
+        
+        URL.revokeObjectURL(testUrl);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test 2: Validation error detection
+    window.runTest2 = async function() {
+      const output = document.getElementById('test2-output');
+      const status = document.getElementById('test2-status');
+      
+      try {
+        const testUrl = createTestFile(invalidTokenData);
+        
+        const result = await tokenLoader.load(testUrl, { cache: false });
+        
+        if (!result.success && result.errors) {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Validation correctly detected errors</p>
+            <p>Errors found: ${result.errors.length}</p>
+            <pre><code>${JSON.stringify(result.errors, null, 2)}</code></pre>
+          `;
+        } else {
+          throw new Error('Validation should have failed but succeeded');
+        }
+        
+        URL.revokeObjectURL(testUrl);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test 3: Token path resolution
+    window.runTest3 = async function() {
+      const output = document.getElementById('test3-output');
+      const status = document.getElementById('test3-status');
+      
+      try {
+        const testUrl = createTestFile(validTokenData);
+        const result = await tokenLoader.load(testUrl, { cache: false });
+        
+        if (!result.success) {
+          throw new Error('Failed to load token data');
+        }
+        
+        const primaryColor = tokenLoader.getToken(result.data, 'colors.primary');
+        const smallSpacing = tokenLoader.getToken(result.data, 'spacing.small');
+        const nonExistent = tokenLoader.getToken(result.data, 'colors.tertiary');
+        
+        if (primaryColor === '#007bff' && smallSpacing === '8px' && nonExistent === undefined) {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Token path resolution working correctly</p>
+            <pre><code>colors.primary → ${primaryColor}
+spacing.small → ${smallSpacing}
+colors.tertiary → ${nonExistent}</code></pre>
+          `;
+        } else {
+          throw new Error('Token resolution returned unexpected values');
+        }
+        
+        URL.revokeObjectURL(testUrl);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test 4: Reference resolution
+    window.runTest4 = async function() {
+      const output = document.getElementById('test4-output');
+      const status = document.getElementById('test4-status');
+      
+      try {
+        const dataWithRefs = {
+          colors: {
+            primary: { value: '#007bff' },
+            link: { value: '{colors.primary}' }
+          }
+        };
+        
+        const testUrl = createTestFile(dataWithRefs);
+        const result = await tokenLoader.load(testUrl, { cache: false });
+        
+        if (!result.success) {
+          throw new Error('Failed to load token data');
+        }
+        
+        const linkColor = tokenLoader.getToken(result.data, 'colors.link');
+        const resolved = tokenLoader.resolveReferences(result.data, linkColor);
+        
+        if (resolved === '#007bff') {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Reference resolution working correctly</p>
+            <pre><code>Original: {colors.primary}
+Resolved: ${resolved}</code></pre>
+          `;
+        } else {
+          throw new Error(`Expected #007bff, got ${resolved}`);
+        }
+        
+        URL.revokeObjectURL(testUrl);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test 5: Cache performance
+    window.runTest5 = async function() {
+      const output = document.getElementById('test5-output');
+      const status = document.getElementById('test5-status');
+      
+      try {
+        tokenLoader.clearCache();
+        const testUrl = createTestFile(validTokenData);
+        
+        // First load (uncached)
+        const start1 = performance.now();
+        await tokenLoader.load(testUrl);
+        const time1 = performance.now() - start1;
+        
+        // Second load (cached)
+        const start2 = performance.now();
+        await tokenLoader.load(testUrl);
+        const time2 = performance.now() - start2;
+        
+        const speedup = time1 / time2;
+        
+        if (time2 < time1) {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Cache improving performance</p>
+            <div class="metrics">
+              <div class="metric">
+                <strong>First Load (Uncached)</strong>
+                <span>${time1.toFixed(2)}ms</span>
+              </div>
+              <div class="metric">
+                <strong>Second Load (Cached)</strong>
+                <span>${time2.toFixed(2)}ms</span>
+              </div>
+              <div class="metric">
+                <strong>Speedup</strong>
+                <span>${speedup.toFixed(1)}x</span>
+              </div>
+            </div>
+          `;
+        } else {
+          throw new Error('Cache not improving performance');
+        }
+        
+        URL.revokeObjectURL(testUrl);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Test 6: Preload multiple files
+    window.runTest6 = async function() {
+      const output = document.getElementById('test6-output');
+      const status = document.getElementById('test6-status');
+      
+      try {
+        tokenLoader.clearCache();
+        
+        const url1 = createTestFile(validTokenData);
+        const url2 = createTestFile({ test: { value: 'data' } });
+        const url3 = createTestFile({ another: { value: 'test' } });
+        
+        const startTime = performance.now();
+        const results = await tokenLoader.preload([url1, url2, url3]);
+        const loadTime = performance.now() - startTime;
+        
+        const successCount = Array.from(results.values()).filter(r => r.success).length;
+        
+        if (successCount === 3) {
+          status.textContent = 'PASS';
+          status.className = 'status pass';
+          output.innerHTML = `
+            <p>✓ Successfully preloaded ${successCount} files</p>
+            <p>Total load time: ${loadTime.toFixed(2)}ms</p>
+            <p>Average per file: ${(loadTime / 3).toFixed(2)}ms</p>
+          `;
+        } else {
+          throw new Error(`Expected 3 successful loads, got ${successCount}`);
+        }
+        
+        URL.revokeObjectURL(url1);
+        URL.revokeObjectURL(url2);
+        URL.revokeObjectURL(url3);
+      } catch (error) {
+        status.textContent = 'FAIL';
+        status.className = 'status fail';
+        output.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+      }
+    };
+
+    // Auto-run all tests
+    setTimeout(async () => {
+      await runTest1();
+      await runTest2();
+      await runTest3();
+      await runTest4();
+      await runTest5();
+      await runTest6();
+      
+      // Update metrics
+      const metricsDiv = document.getElementById('metrics');
+      const passCount = document.querySelectorAll('.status.pass').length;
+      const failCount = document.querySelectorAll('.status.fail').length;
+      
+      metricsDiv.innerHTML = `
+        <div class="metric">
+          <strong>Tests Passed</strong>
+          <span style="color: #28a745">${passCount}</span>
+        </div>
+        <div class="metric">
+          <strong>Tests Failed</strong>
+          <span style="color: #dc3545">${failCount}</span>
+        </div>
+        <div class="metric">
+          <strong>Success Rate</strong>
+          <span>${((passCount / (passCount + failCount)) * 100).toFixed(0)}%</span>
+        </div>
+      `;
+    }, 100);
+  </script>
+</body>
+</html>
