@@ -1,0 +1,64 @@
+{
+  "$schema": "../harmony-schemas/token-schema.json",
+  "type": "spacing",
+  "version": "1.0.0",
+  "baseUnit": 4,
+  "tokens": {
+    "space-1": {
+      "value": "4px",
+      "description": "Smallest spacing unit (1x base)",
+      "category": "micro"
+    },
+    "space-2": {
+      "value": "8px",
+      "description": "Extra small spacing (2x base)",
+      "category": "micro"
+    },
+    "space-3": {
+      "value": "12px",
+      "description": "Small spacing (3x base)",
+      "category": "small"
+    },
+    "space-4": {
+      "value": "16px",
+      "description": "Medium spacing (4x base)",
+      "category": "medium"
+    },
+    "space-6": {
+      "value": "24px",
+      "description": "Large spacing (6x base)",
+      "category": "large"
+    },
+    "space-8": {
+      "value": "32px",
+      "description": "Extra large spacing (8x base)",
+      "category": "large"
+    },
+    "space-12": {
+      "value": "48px",
+      "description": "2X large spacing (12x base)",
+      "category": "macro"
+    },
+    "space-16": {
+      "value": "64px",
+      "description": "3X large spacing (16x base)",
+      "category": "macro"
+    },
+    "layout-gutter": {
+      "value": "24px",
+      "description": "Standard layout gutter",
+      "category": "layout"
+    },
+    "component-padding": {
+      "value": "16px",
+      "description": "Standard component padding",
+      "category": "component"
+    }
+  },
+  "metadata": {
+    "author": "Harmony Design Team",
+    "lastModified": "2024-01-15T10:30:00Z",
+    "source": "Figma Design System",
+    "notes": "Spacing tokens based on 4px grid system"
+  }
+}

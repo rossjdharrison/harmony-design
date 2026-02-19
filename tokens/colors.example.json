@@ -1,0 +1,83 @@
+{
+  "$schema": "../harmony-schemas/token-schema.json",
+  "type": "color",
+  "version": "1.0.0",
+  "tokens": {
+    "primary-500": {
+      "value": "#3b82f6",
+      "description": "Primary brand color",
+      "category": "primary",
+      "wcag": {
+        "aa": true,
+        "aaa": false,
+        "contrastRatio": 4.5
+      }
+    },
+    "primary-600": {
+      "value": "#2563eb",
+      "description": "Primary brand color - darker shade",
+      "category": "primary",
+      "wcag": {
+        "aa": true,
+        "aaa": true,
+        "contrastRatio": 7.2
+      }
+    },
+    "neutral-50": {
+      "value": "#fafafa",
+      "description": "Lightest neutral color",
+      "category": "neutral"
+    },
+    "neutral-900": {
+      "value": "#171717",
+      "description": "Darkest neutral color",
+      "category": "neutral"
+    },
+    "success": {
+      "value": "#22c55e",
+      "description": "Success state color",
+      "category": "semantic",
+      "wcag": {
+        "aa": true,
+        "aaa": false,
+        "contrastRatio": 4.8
+      }
+    },
+    "error": {
+      "value": "#ef4444",
+      "description": "Error state color",
+      "category": "semantic",
+      "wcag": {
+        "aa": true,
+        "aaa": false,
+        "contrastRatio": 4.6
+      }
+    },
+    "warning": {
+      "value": "#f59e0b",
+      "description": "Warning state color",
+      "category": "semantic"
+    },
+    "surface-primary": {
+      "value": "#ffffff",
+      "description": "Primary surface background",
+      "category": "surface"
+    },
+    "text-primary": {
+      "value": "#171717",
+      "description": "Primary text color",
+      "category": "text"
+    },
+    "border-default": {
+      "value": "#e5e5e5",
+      "description": "Default border color",
+      "category": "border"
+    }
+  },
+  "metadata": {
+    "author": "Harmony Design Team",
+    "lastModified": "2024-01-15T10:30:00Z",
+    "source": "Figma Design System",
+    "notes": "Color tokens following WCAG 2.1 guidelines"
+  }
+}

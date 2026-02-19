@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Flag Context Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .status {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin: 0.5rem 0;
+      font-family: monospace;
+    }
+
+    .status.pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .status.fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .flag-list {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+
+    .flag-item {
+      padding: 0.25rem 0;
+    }
+
+    .flag-item.enabled {
+      color: #28a745;
+    }
+
+    .flag-item.disabled {
+      color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚩 Feature Flag Context Tests</h1>
+
+  <div class="test-section">
+    <h2>Test 1: Context Initialization</h2>
+    <div id="test1-output"></div>
+    <button onclick="runTest1()">Run Test</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Feature Flag Checking</h2>
+    <div id="test2-output"></div>
+    <button onclick="runTest2()">Run Test</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Subscribe to Changes</h2>
+    <div id="test3-output"></div>
+    <button onclick="runTest3()">Run Test</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Update Flags</h2>
+    <div id="test4-output"></div>
+    <button onclick="runTest4()">Run Test</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: useFeatureFlags Utility</h2>
+    <div id="test5-output"></div>
+    <button onclick="runTest5()">Run Test</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Interactive Demo</h2>
+    <feature-flag-context id="demo-context">
+      <div id="demo-output" class="flag-list"></div>
+    </feature-flag-context>
+    <button onclick="toggleDemoFlag('testFlag1')">Toggle testFlag1</button>
+    <button onclick="toggleDemoFlag('testFlag2')">Toggle testFlag2</button>
+    <button onclick="addDemoFlag()">Add New Flag</button>
+  </div>
+
+  <script type="module">
+    import { FeatureFlagContext, getFeatureFlagContext, useFeatureFlags } from './feature-flag-context.js';
+
+    // Make functions available globally for onclick handlers
+    window.runTest1 = runTest1;
+    window.runTest2 = runTest2;
+    window.runTest3 = runTest3;
+    window.runTest4 = runTest4;
+    window.runTest5 = runTest5;
+    window.toggleDemoFlag = toggleDemoFlag;
+    window.addDemoFlag = addDemoFlag;
+
+    let demoFlagCounter = 0;
+
+    /**
+     * Test 1: Context Initialization
+     */
+    async function runTest1() {
+      const output = document.getElementById('test1-output');
+      output.innerHTML = '<div class="status info">Running test...</div>';
+
+      try {
+        // Create context element
+        const context = document.createElement('feature-flag-context');
+        document.body.appendChild(context);
+
+        // Wait for initialization
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Check if context is properly initialized
+        const isElement = context instanceof HTMLElement;
+        const isContext = context instanceof FeatureFlagContext;
+        const hasMethod = typeof context.isEnabled === 'function';
+
+        document.body.removeChild(context);
+
+        if (isElement && isContext && hasMethod) {
+          output.innerHTML = '<div class="status pass">✓ Context initialized successfully</div>';
+        } else {
+          output.innerHTML = '<div class="status fail">✗ Context initialization failed</div>';
+        }
+      } catch (error) {
+        output.innerHTML = `<div class="status fail">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    /**
+     * Test 2: Feature Flag Checking
+     */
+    async function runTest2() {
+      const output = document.getElementById('test2-output');
+      output.innerHTML = '<div class="status info">Running test...</div>';
+
+      try {
+        const context = document.createElement('feature-flag-context');
+        document.body.appendChild(context);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Test isEnabled method
+        const result1 = context.isEnabled('nonExistentFlag');
+        const result2 = typeof context.isEnabled('anyFlag') === 'boolean';
+
+        // Add a flag and test
+        context.updateFlag('testFlag', true);
+        const result3 = context.isEnabled('testFlag');
+
+        document.body.removeChild(context);
+
+        if (result1 === false && result2 && result3 === true) {
+          output.innerHTML = '<div class="status pass">✓ Feature flag checking works correctly</div>';
+        } else {
+          output.innerHTML = '<div class="status fail">✗ Feature flag checking failed</div>';
+        }
+      } catch (error) {
+        output.innerHTML = `<div class="status fail">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    /**
+     * Test 3: Subscribe to Changes
+     */
+    async function runTest3() {
+      const output = document.getElementById('test3-output');
+      output.innerHTML = '<div class="status info">Running test...</div>';
+
+      try {
+        const context = document.createElement('feature-flag-context');
+        document.body.appendChild(context);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        let callbackCount = 0;
+        const unsubscribe = context.subscribe((flags) => {
+          callbackCount++;
+        });
+
+        // Should have been called once immediately
+        const initialCall = callbackCount === 1;
+
+        // Update a flag
+        context.updateFlag('testFlag', true);
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // Should have been called again
+        const afterUpdate = callbackCount === 2;
+
+        // Unsubscribe
+        unsubscribe();
+        context.updateFlag('testFlag', false);
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // Should not have been called again
+        const afterUnsubscribe = callbackCount === 2;
+
+        document.body.removeChild(context);
+
+        if (initialCall && afterUpdate && afterUnsubscribe) {
+          output.innerHTML = '<div class="status pass">✓ Subscribe/unsubscribe works correctly</div>';
+        } else {
+          output.innerHTML = `<div class="status fail">✗ Subscribe test failed (calls: ${callbackCount})</div>`;
+        }
+      } catch (error) {
+        output.innerHTML = `<div class="status fail">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    /**
+     * Test 4: Update Flags
+     */
+    async function runTest4() {
+      const output = document.getElementById('test4-output');
+      output.innerHTML = '<div class="status info">Running test...</div>';
+
+      try {
+        const context = document.createElement('feature-flag-context');
+        document.body.appendChild(context);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Update multiple flags
+        context.updateFlag('flag1', true);
+        context.updateFlag('flag2', false);
+        context.updateFlag('flag3', true);
+
+        const flags = context.getAllFlags();
+        const test1 = flags.flag1 === true;
+        const test2 = flags.flag2 === false;
+        const test3 = flags.flag3 === true;
+
+        document.body.removeChild(context);
+
+        if (test1 && test2 && test3) {
+          output.innerHTML = '<div class="status pass">✓ Flag updates work correctly</div>';
+        } else {
+          output.innerHTML = '<div class="status fail">✗ Flag update test failed</div>';
+        }
+      } catch (error) {
+        output.innerHTML = `<div class="status fail">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    /**
+     * Test 5: useFeatureFlags Utility
+     */
+    async function runTest5() {
+      const output = document.getElementById('test5-output');
+      output.innerHTML = '<div class="status info">Running test...</div>';
+
+      try {
+        const context = document.createElement('feature-flag-context');
+        const child = document.createElement('div');
+        context.appendChild(child);
+        document.body.appendChild(context);
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        context.updateFlag('utilityTest', true);
+
+        const featureFlags = useFeatureFlags(child);
+        const hasFlags = typeof featureFlags.flags === 'object';
+        const hasIsEnabled = typeof featureFlags.isEnabled === 'function';
+        const hasSubscribe = typeof featureFlags.subscribe === 'function';
+        const isEnabled = featureFlags.isEnabled('utilityTest');
+
+        document.body.removeChild(context);
+
+        if (hasFlags && hasIsEnabled && hasSubscribe && isEnabled) {
+          output.innerHTML = '<div class="status pass">✓ useFeatureFlags utility works correctly</div>';
+        } else {
+          output.innerHTML = '<div class="status fail">✗ useFeatureFlags test failed</div>';
+        }
+      } catch (error) {
+        output.innerHTML = `<div class="status fail">✗ Error: ${error.message}</div>`;
+      }
+    }
+
+    /**
+     * Toggle a demo flag
+     */
+    function toggleDemoFlag(flagName) {
+      const context = document.getElementById('demo-context');
+      const currentState = context.isEnabled(flagName);
+      context.updateFlag(flagName, !currentState);
+      updateDemoDisplay();
+    }
+
+    /**
+     * Add a new demo flag
+     */
+    function addDemoFlag() {
+      const context = document.getElementById('demo-context');
+      demoFlagCounter++;
+      const flagName = `dynamicFlag${demoFlagCounter}`;
+      context.updateFlag(flagName, true);
+      updateDemoDisplay();
+    }
+
+    /**
+     * Update demo display
+     */
+    function updateDemoDisplay() {
+      const context = document.getElementById('demo-context');
+      const output = document.getElementById('demo-output');
+      const flags = context.getAllFlags();
+
+      let html = '<h3>Current Feature Flags:</h3>';
+      const flagEntries = Object.entries(flags);
+
+      if (flagEntries.length === 0) {
+        html += '<div class="flag-item">No flags set</div>';
+      } else {
+        flagEntries.forEach(([name, enabled]) => {
+          const className = enabled ? 'enabled' : 'disabled';
+          const symbol = enabled ? '✓' : '✗';
+          html += `<div class="flag-item ${className}">${symbol} ${name}: ${enabled}</div>`;
+        });
+      }
+
+      output.innerHTML = html;
+    }
+
+    // Initialize demo display
+    window.addEventListener('DOMContentLoaded', () => {
+      const context = document.getElementById('demo-context');
+      context.updateFlag('testFlag1', true);
+      context.updateFlag('testFlag2', false);
+      updateDemoDisplay();
+
+      // Subscribe to changes
+      context.subscribe(() => {
+        updateDemoDisplay();
+      });
+    });
+
+    // Auto-run all tests on load
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log('Running automated tests...');
+      await runTest1();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await runTest2();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await runTest3();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await runTest4();
+      await new Promise(resolve => setTimeout(resolve, 200));
+      await runTest5();
+      console.log('All tests complete!');
+    });
+  </script>
+</body>
+</html>

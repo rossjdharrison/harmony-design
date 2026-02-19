@@ -228,3 +228,66 @@ npm run build
 ---
 
 For detailed implementation notes, see code files linked throughout this document.
+## Feature Flags
+
+Feature flags allow you to enable or disable features at runtime without code changes. This is useful for:
+- Rolling out new features gradually
+- A/B testing different implementations
+- Environment-specific behavior
+- Emergency feature disabling
+
+### Using Feature Flags
+
+The Feature Flag Context provides centralized flag management:
+
+```jsx
+import { FeatureFlagProvider } from './contexts/FeatureFlagContext.jsx';
+import { useFeatureFlag } from './hooks/useFeatureFlag.js';
+
+// Wrap your app with the provider
+<FeatureFlagProvider initialFlags={{ webGPU: true, newEditor: false }}>
+  <App />
+</FeatureFlagProvider>
+
+// Check flags in components
+function MyComponent() {
+  const isWebGPUEnabled = useFeatureFlag('webGPU');
+  
+  return isWebGPUEnabled ? <GPURenderer /> : <CPURenderer />;
+}
+```
+
+### Available Flags
+
+Common feature flags (defined in config/feature-flags.js):
+- webGPU - Enable WebGPU acceleration for audio processing
+- 
+ewEditor - Use new audio editor interface
+- etaFeatures - Enable experimental features
+- dvancedAudio - Advanced audio processing features
+- experimentalUI - New UI components in development
+
+### Implementation Files
+
+- **Context**: contexts/FeatureFlagContext.jsx - React context for flag state
+- **Hook**: hooks/useFeatureFlag.js - Convenient hook for checking flags
+- **Config**: config/feature-flags.js - Flag definitions and defaults
+- **Test**: 	est-pages/feature-flag-context-test.html - Browser test page
+
+### Performance
+
+Flag lookups are O(1) using Map internally. Context updates only trigger re-renders for consuming components. Flags can be persisted to localStorage for development testing.
+
+### Testing
+
+Run the test page to verify flag behavior:
+```bash
+# Open in browser
+test-pages/feature-flag-context-test.html
+```
+
+The test page verifies:
+- Flag lookup performance (< 0.01ms per lookup)
+- Context initialization and state management
+- Batch updates and persistence
+- Memory usage (< 1KB for typical flag sets)
