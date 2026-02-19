@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rollout Engine Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      margin: 1rem 0;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-left: 4px solid #ddd;
+    }
+    .test-case.pass {
+      border-left-color: #4caf50;
+    }
+    .test-case.fail {
+      border-left-color: #f44336;
+    }
+    .result {
+      font-family: monospace;
+      font-size: 0.9rem;
+      margin: 0.5rem 0;
+    }
+    h1 { color: #333; }
+    h2 { color: #666; margin-top: 0; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .stat-card {
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 4px;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1976d2;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎲 Rollout Engine Tests</h1>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import { 
+      getUserBucket, 
+      evaluateRollout, 
+      RolloutEngine,
+      getRolloutEngine 
+    } from './rollout-engine.js';
+
+    const resultsContainer = document.getElementById('test-results');
+
+    function addTestSection(title) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      section.innerHTML = `<h2>${title}</h2>`;
+      resultsContainer.appendChild(section);
+      return section;
+    }
+
+    function addTestCase(section, name, passed, details) {
+      const testCase = document.createElement('div');
+      testCase.className = `test-case ${passed ? 'pass' : 'fail'}`;
+      testCase.innerHTML = `
+        <strong>${passed ? '✓' : '✗'} ${name}</strong>
+        <div class="result">${details}</div>
+      `;
+      section.appendChild(testCase);
+      return passed;
+    }
+
+    // Test 1: User Bucketing Consistency
+    const bucketingSection = addTestSection('User Bucketing Consistency');
+    
+    const user1Bucket1 = getUserBucket('user1', 'feature1');
+    const user1Bucket2 = getUserBucket('user1', 'feature1');
+    addTestCase(
+      bucketingSection,
+      'Same user gets same bucket',
+      user1Bucket1 === user1Bucket2,
+      `Bucket: ${user1Bucket1} === ${user1Bucket2}`
+    );
+
+    const user2Bucket = getUserBucket('user2', 'feature1');
+    addTestCase(
+      bucketingSection,
+      'Different users get different buckets (likely)',
+      user1Bucket1 !== user2Bucket,
+      `User1: ${user1Bucket1}, User2: ${user2Bucket}`
+    );
+
+    const feature2Bucket = getUserBucket('user1', 'feature2');
+    addTestCase(
+      bucketingSection,
+      'Same user, different feature gets different bucket',
+      user1Bucket1 !== feature2Bucket,
+      `Feature1: ${user1Bucket1}, Feature2: ${feature2Bucket}`
+    );
+
+    const bucketWithSeed1 = getUserBucket('user1', 'feature1', 'seed1');
+    const bucketWithSeed2 = getUserBucket('user1', 'feature1', 'seed2');
+    addTestCase(
+      bucketingSection,
+      'Different seeds produce different buckets',
+      bucketWithSeed1 !== bucketWithSeed2,
+      `Seed1: ${bucketWithSeed1}, Seed2: ${bucketWithSeed2}`
+    );
+
+    // Test 2: Percentage-based Rollout
+    const percentageSection = addTestSection('Percentage-based Rollout');
+
+    const result0 = evaluateRollout('user1', 'feature1', { percentage: 0 });
+    addTestCase(
+      percentageSection,
+      '0% rollout disables for everyone',
+      !result0.enabled,
+      `Enabled: ${result0.enabled}, Reason: ${result0.reason}`
+    );
+
+    const result100 = evaluateRollout('user1', 'feature1', { percentage: 100 });
+    addTestCase(
+      percentageSection,
+      '100% rollout enables for everyone',
+      result100.enabled,
+      `Enabled: ${result100.enabled}, Reason: ${result100.reason}`
+    );
+
+    // Test distribution at 50%
+    let enabledCount = 0;
+    const testUsers = 100;
+    for (let i = 0; i < testUsers; i++) {
+      const result = evaluateRollout(`user${i}`, 'feature1', { percentage: 50 });
+      if (result.enabled) enabledCount++;
+    }
+    const actualPercentage = (enabledCount / testUsers) * 100;
+    addTestCase(
+      percentageSection,
+      '50% rollout enables ~50% of users',
+      Math.abs(actualPercentage - 50) < 10, // Within 10% tolerance
+      `Enabled: ${enabledCount}/${testUsers} (${actualPercentage.toFixed(1)}%)`
+    );
+
+    // Test 3: Explicit Inclusions/Exclusions
+    const inclusionSection = addTestSection('Explicit Inclusions/Exclusions');
+
+    const includedResult = evaluateRollout('admin', 'feature1', {
+      percentage: 0,
+      includedUsers: ['admin']
+    });
+    addTestCase(
+      inclusionSection,
+      'Included users enabled even at 0%',
+      includedResult.enabled,
+      `Enabled: ${includedResult.enabled}, Reason: ${includedResult.reason}`
+    );
+
+    const excludedResult = evaluateRollout('blocked', 'feature1', {
+      percentage: 100,
+      excludedUsers: ['blocked']
+    });
+    addTestCase(
+      inclusionSection,
+      'Excluded users disabled even at 100%',
+      !excludedResult.enabled,
+      `Enabled: ${excludedResult.enabled}, Reason: ${excludedResult.reason}`
+    );
+
+    // Test 4: Date Range
+    const dateSection = addTestSection('Date Range Rollout');
+
+    const futureResult = evaluateRollout('user1', 'feature1', {
+      percentage: 100,
+      startDate: new Date(Date.now() + 86400000) // Tomorrow
+    });
+    addTestCase(
+      dateSection,
+      'Future rollout not active yet',
+      !futureResult.enabled,
+      `Enabled: ${futureResult.enabled}, Reason: ${futureResult.reason}`
+    );
+
+    const pastResult = evaluateRollout('user1', 'feature1', {
+      percentage: 100,
+      endDate: new Date(Date.now() - 86400000) // Yesterday
+    });
+    addTestCase(
+      dateSection,
+      'Past rollout no longer active',
+      !pastResult.enabled,
+      `Enabled: ${pastResult.enabled}, Reason: ${pastResult.reason}`
+    );
+
+    const activeResult = evaluateRollout('user1', 'feature1', {
+      percentage: 100,
+      startDate: new Date(Date.now() - 86400000), // Yesterday
+      endDate: new Date(Date.now() + 86400000)    // Tomorrow
+    });
+    addTestCase(
+      dateSection,
+      'Current rollout is active',
+      activeResult.enabled,
+      `Enabled: ${activeResult.enabled}, Reason: ${activeResult.reason}`
+    );
+
+    // Test 5: RolloutEngine Class
+    const engineSection = addTestSection('RolloutEngine Class');
+
+    const engine = new RolloutEngine();
+    engine.registerRollout('new-editor', {
+      percentage: 25,
+      seed: 'v1'
+    });
+
+    const engineResult1 = engine.evaluate('user1', 'new-editor');
+    const engineResult2 = engine.evaluate('user1', 'new-editor');
+    addTestCase(
+      engineSection,
+      'Engine caches results',
+      engineResult1 === engineResult2,
+      `Same object reference: ${engineResult1 === engineResult2}`
+    );
+
+    const stats = engine.getStats('new-editor');
+    addTestCase(
+      engineSection,
+      'Engine provides statistics',
+      stats && stats.configuredPercentage === 25,
+      `Configured: ${stats.configuredPercentage}%, Total evals: ${stats.totalEvaluations}`
+    );
+
+    // Evaluate for multiple users to see distribution
+    for (let i = 0; i < 100; i++) {
+      engine.evaluate(`user${i}`, 'new-editor');
+    }
+    const statsAfter = engine.getStats('new-editor');
+    
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'stats';
+    statsDiv.innerHTML = `
+      <div class="stat-card">
+        <div>Configured %</div>
+        <div class="stat-value">${statsAfter.configuredPercentage}%</div>
+      </div>
+      <div class="stat-card">
+        <div>Actual %</div>
+        <div class="stat-value">${statsAfter.actualPercentage.toFixed(1)}%</div>
+      </div>
+      <div class="stat-card">
+        <div>Total Users</div>
+        <div class="stat-value">${statsAfter.totalEvaluations}</div>
+      </div>
+      <div class="stat-card">
+        <div>Enabled Users</div>
+        <div class="stat-value">${statsAfter.enabledCount}</div>
+      </div>
+    `;
+    engineSection.appendChild(statsDiv);
+
+    addTestCase(
+      engineSection,
+      'Distribution matches configured percentage',
+      Math.abs(statsAfter.actualPercentage - 25) < 10,
+      `Configured: 25%, Actual: ${statsAfter.actualPercentage.toFixed(1)}%`
+    );
+
+    // Test 6: Global Instance
+    const globalSection = addTestSection('Global Rollout Engine');
+
+    const global1 = getRolloutEngine();
+    const global2 = getRolloutEngine();
+    addTestCase(
+      globalSection,
+      'Global instance is singleton',
+      global1 === global2,
+      `Same instance: ${global1 === global2}`
+    );
+
+    // Test 7: Performance
+    const perfSection = addTestSection('Performance Tests');
+
+    const perfStart = performance.now();
+    for (let i = 0; i < 10000; i++) {
+      getUserBucket(`user${i}`, 'feature1');
+    }
+    const perfEnd = performance.now();
+    const avgTime = (perfEnd - perfStart) / 10000;
+    
+    addTestCase(
+      perfSection,
+      'Bucketing performance < 0.01ms per operation',
+      avgTime < 0.01,
+      `Average: ${avgTime.toFixed(4)}ms per bucket assignment`
+    );
+
+    const evalStart = performance.now();
+    for (let i = 0; i < 10000; i++) {
+      evaluateRollout(`user${i}`, 'feature1', { percentage: 50 });
+    }
+    const evalEnd = performance.now();
+    const avgEvalTime = (evalEnd - evalStart) / 10000;
+    
+    addTestCase(
+      perfSection,
+      'Evaluation performance < 0.1ms per operation',
+      avgEvalTime < 0.1,
+      `Average: ${avgEvalTime.toFixed(4)}ms per evaluation`
+    );
+
+    console.log('All rollout engine tests completed');
+  </script>
+</body>
+</html>
