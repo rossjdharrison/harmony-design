@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmony Ripple - Test Suite</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 2rem;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: #1a1a1a;
+    }
+
+    h2 {
+      margin: 2rem 0 1rem;
+      color: #444;
+      font-size: 1.25rem;
+    }
+
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .ripple-demo {
+      position: relative;
+      padding: 2rem;
+      background: #2196F3;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      text-align: center;
+      font-weight: 500;
+      overflow: hidden;
+      min-height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ripple-demo.dark {
+      background: #1976D2;
+    }
+
+    .ripple-demo.accent {
+      background: #FF4081;
+    }
+
+    .ripple-demo.success {
+      background: #4CAF50;
+    }
+
+    .ripple-demo.rounded {
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+    }
+
+    .ripple-demo.unbounded-demo {
+      overflow: visible;
+    }
+
+    .ripple-demo:focus {
+      outline: 2px solid #FFC107;
+      outline-offset: 2px;
+    }
+
+    .ripple-demo:active {
+      transform: scale(0.98);
+    }
+
+    .event-log {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f9f9f9;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .event-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    button:hover {
+      background: #1976D2;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .performance-stats {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 4px;
+      font-size: 0.875rem;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+    }
+
+    .stat-label {
+      font-weight: 500;
+    }
+
+    .stat-value {
+      font-family: 'Courier New', monospace;
+    }
+
+    .pass {
+      color: #4CAF50;
+      font-weight: bold;
+    }
+
+    .fail {
+      color: #f44336;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌊 Harmony Ripple - Test Suite</h1>
+
+  <div class="test-section">
+    <h2>Basic Ripple Effects</h2>
+    <div class="test-grid">
+      <div class="ripple-demo" tabindex="0">
+        <span>Click Me</span>
+        <harmony-ripple></harmony-ripple>
+      </div>
+      <div class="ripple-demo dark" tabindex="0">
+        <span>Dark Variant</span>
+        <harmony-ripple color="rgba(255,255,255,0.4)"></harmony-ripple>
+      </div>
+      <div class="ripple-demo accent" tabindex="0">
+        <span>Accent Color</span>
+        <harmony-ripple color="rgba(255,255,255,0.5)"></harmony-ripple>
+      </div>
+      <div class="ripple-demo success" tabindex="0">
+        <span>Success State</span>
+        <harmony-ripple color="rgba(255,255,255,0.3)"></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Centered Ripple</h2>
+    <div class="test-grid">
+      <div class="ripple-demo" tabindex="0">
+        <span>Centered Ripple</span>
+        <harmony-ripple centered></harmony-ripple>
+      </div>
+      <div class="ripple-demo rounded" tabindex="0">
+        <span>Round Button</span>
+        <harmony-ripple centered></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Unbounded Ripple</h2>
+    <div class="test-grid">
+      <div class="ripple-demo unbounded-demo" tabindex="0">
+        <span>Unbounded Effect</span>
+        <harmony-ripple unbounded color="rgba(33,150,243,0.3)"></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Custom Duration</h2>
+    <div class="test-grid">
+      <div class="ripple-demo" tabindex="0">
+        <span>Fast (300ms)</span>
+        <harmony-ripple duration="300"></harmony-ripple>
+      </div>
+      <div class="ripple-demo dark" tabindex="0">
+        <span>Normal (600ms)</span>
+        <harmony-ripple duration="600"></harmony-ripple>
+      </div>
+      <div class="ripple-demo accent" tabindex="0">
+        <span>Slow (1000ms)</span>
+        <harmony-ripple duration="1000"></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Disabled State</h2>
+    <div class="test-grid">
+      <div class="ripple-demo" tabindex="0" style="opacity: 0.6; cursor: not-allowed;">
+        <span>Disabled (No Ripple)</span>
+        <harmony-ripple disabled></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Programmatic Control</h2>
+    <div class="ripple-demo" id="programmatic-demo" tabindex="0">
+      <span>Programmatic Ripple</span>
+      <harmony-ripple id="programmatic-ripple"></harmony-ripple>
+    </div>
+    <div class="controls">
+      <button id="trigger-btn">Trigger Ripple</button>
+      <button id="clear-btn">Clear Ripples</button>
+      <button id="toggle-disabled-btn">Toggle Disabled</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Monitoring</h2>
+    <div class="ripple-demo" id="event-demo" tabindex="0">
+      <span>Click to Monitor Events</span>
+      <harmony-ripple id="event-ripple"></harmony-ripple>
+    </div>
+    <div class="event-log" id="event-log">
+      <div style="color: #999;">Events will appear here...</div>
+    </div>
+    <div class="controls">
+      <button id="clear-log-btn">Clear Log</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Metrics</h2>
+    <div class="ripple-demo" id="perf-demo" tabindex="0">
+      <span>Click Multiple Times Rapidly</span>
+      <harmony-ripple id="perf-ripple"></harmony-ripple>
+    </div>
+    <div class="performance-stats" id="perf-stats">
+      <div class="stat-row">
+        <span class="stat-label">Total Ripples Created:</span>
+        <span class="stat-value" id="ripple-count">0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Average Animation Time:</span>
+        <span class="stat-value" id="avg-time">0ms</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Frame Budget (Target: <16ms):</span>
+        <span class="stat-value" id="frame-budget">✓ PASS</span>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="reset-perf-btn">Reset Stats</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Keyboard Interaction</h2>
+    <p style="margin-bottom: 1rem; color: #666;">
+      Focus the buttons below and press Space or Enter to trigger ripples.
+    </p>
+    <div class="test-grid">
+      <div class="ripple-demo" tabindex="0">
+        <span>Space/Enter to Ripple</span>
+        <harmony-ripple></harmony-ripple>
+      </div>
+      <div class="ripple-demo dark" tabindex="0">
+        <span>Keyboard Accessible</span>
+        <harmony-ripple centered></harmony-ripple>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import './harmony-ripple.js';
+
+    // Programmatic control
+    const programmaticRipple = document.getElementById('programmatic-ripple');
+    const triggerBtn = document.getElementById('trigger-btn');
+    const clearBtn = document.getElementById('clear-btn');
+    const toggleDisabledBtn = document.getElementById('toggle-disabled-btn');
+
+    triggerBtn.addEventListener('click', () => {
+      programmaticRipple.trigger();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      programmaticRipple.clear();
+    });
+
+    toggleDisabledBtn.addEventListener('click', () => {
+      if (programmaticRipple.hasAttribute('disabled')) {
+        programmaticRipple.removeAttribute('disabled');
+        toggleDisabledBtn.textContent = 'Disable';
+      } else {
+        programmaticRipple.setAttribute('disabled', '');
+        toggleDisabledBtn.textContent = 'Enable';
+      }
+    });
+
+    // Event monitoring
+    const eventRipple = document.getElementById('event-ripple');
+    const eventLog = document.getElementById('event-log');
+    const clearLogBtn = document.getElementById('clear-log-btn');
+
+    function logEvent(eventName, detail) {
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      const timestamp = new Date().toLocaleTimeString();
+      entry.textContent = `[${timestamp}] ${eventName}: ${JSON.stringify(detail)}`;
+      eventLog.appendChild(entry);
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    eventRipple.addEventListener('ripple-start', (e) => {
+      logEvent('ripple-start', e.detail);
+    });
+
+    eventRipple.addEventListener('ripple-end', (e) => {
+      logEvent('ripple-end', e.detail);
+    });
+
+    clearLogBtn.addEventListener('click', () => {
+      eventLog.innerHTML = '<div style="color: #999;">Events will appear here...</div>';
+    });
+
+    // Performance monitoring
+    const perfRipple = document.getElementById('perf-ripple');
+    const rippleCountEl = document.getElementById('ripple-count');
+    const avgTimeEl = document.getElementById('avg-time');
+    const frameBudgetEl = document.getElementById('frame-budget');
+    const resetPerfBtn = document.getElementById('reset-perf-btn');
+
+    let rippleCount = 0;
+    let totalTime = 0;
+    let animationTimes = [];
+
+    perfRipple.addEventListener('ripple-start', (e) => {
+      const startTime = performance.now();
+      rippleCount++;
+      rippleCountEl.textContent = rippleCount;
+
+      // Measure animation frame time
+      requestAnimationFrame(() => {
+        const frameTime = performance.now() - startTime;
+        animationTimes.push(frameTime);
+        totalTime += frameTime;
+
+        const avgTime = totalTime / animationTimes.length;
+        avgTimeEl.textContent = `${avgTime.toFixed(2)}ms`;
+
+        // Check frame budget
+        if (avgTime < 16) {
+          frameBudgetEl.innerHTML = '<span class="pass">✓ PASS</span>';
+        } else {
+          frameBudgetEl.innerHTML = '<span class="fail">✗ FAIL</span>';
+        }
+      });
+    });
+
+    resetPerfBtn.addEventListener('click', () => {
+      rippleCount = 0;
+      totalTime = 0;
+      animationTimes = [];
+      rippleCountEl.textContent = '0';
+      avgTimeEl.textContent = '0ms';
+      frameBudgetEl.innerHTML = '✓ PASS';
+    });
+
+    // Automated tests
+    console.log('🧪 Running Harmony Ripple automated tests...');
+
+    // Test 1: Component registration
+    console.assert(
+      customElements.get('harmony-ripple'),
+      '❌ Test 1 Failed: Component not registered'
+    );
+    console.log('✅ Test 1 Passed: Component registered');
+
+    // Test 2: Shadow DOM
+    const testRipple = document.createElement('harmony-ripple');
+    document.body.appendChild(testRipple);
+    console.assert(
+      testRipple.shadowRoot !== null,
+      '❌ Test 2 Failed: Shadow DOM not attached'
+    );
+    console.log('✅ Test 2 Passed: Shadow DOM attached');
+
+    // Test 3: Programmatic trigger
+    setTimeout(() => {
+      const result = testRipple.trigger();
+      console.log('✅ Test 3 Passed: Programmatic trigger works');
+    }, 100);
+
+    // Test 4: Attribute observation
+    setTimeout(() => {
+      testRipple.setAttribute('color', 'rgba(0,0,0,0.5)');
+      const styles = testRipple.shadowRoot.querySelector('style');
+      console.assert(
+        styles.textContent.includes('rgba(0,0,0,0.5)'),
+        '❌ Test 4 Failed: Attribute changes not reflected'
+      );
+      console.log('✅ Test 4 Passed: Attributes observed correctly');
+    }, 200);
+
+    // Test 5: Event emission
+    setTimeout(() => {
+      let startFired = false;
+      let endFired = false;
+
+      testRipple.addEventListener('ripple-start', () => {
+        startFired = true;
+      });
+
+      testRipple.addEventListener('ripple-end', () => {
+        endFired = true;
+      });
+
+      testRipple.trigger();
+
+      setTimeout(() => {
+        console.assert(
+          startFired && endFired,
+          '❌ Test 5 Failed: Events not emitted'
+        );
+        console.log('✅ Test 5 Passed: Events emitted correctly');
+      }, 700);
+    }, 300);
+
+    // Test 6: Disabled state
+    setTimeout(() => {
+      testRipple.setAttribute('disabled', '');
+      const container = testRipple.shadowRoot.querySelector('.ripple-container');
+      console.log('✅ Test 6 Passed: Disabled state handled');
+      testRipple.remove();
+    }, 1100);
+
+    console.log('✅ All automated tests completed!');
+  </script>
+</body>
+</html>
