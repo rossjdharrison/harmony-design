@@ -318,3 +318,50 @@ Updating DESIGN_SYSTEM.md is **mandatory** for every task. Agent cannot declare 
 ---
 
 **Last Updated**: 2025-01-XX (update with each change)
+
+## Internationalization (i18n)
+
+### Language Detection
+
+The Language Detector automatically detects and manages the user's preferred language.
+
+**Location:** `core/i18n/language-detector.js`
+
+**Detection Priority:**
+1. localStorage (saved preference)
+2. Browser's navigator.language
+3. Default fallback (English)
+
+**Usage:**
+```javascript
+import { languageDetector } from './core/i18n/language-detector.js';
+
+// Get current language
+const lang = languageDetector.getCurrentLanguage(); // 'en'
+
+// Change language
+languageDetector.setLanguage('es');
+
+// Listen for changes
+EventBus.subscribe('LanguageChanged', (event) => {
+  console.log(event.detail.current); // New language
+});
+```
+
+**Supported Languages:**
+- English (en)
+- Spanish (es)
+- French (fr)
+- German (de)
+- Japanese (ja)
+- Chinese (zh)
+
+**Persistence:**
+Language preferences are saved to localStorage with key `harmony-language`. This ensures the user's choice persists across browser sessions.
+
+**Events:**
+- `LanguageChanged`: Published when language changes, includes previous and current language codes.
+
+**Testing:**
+Open `core/i18n/language-detector.test.html` in Chrome to test language detection, switching, and persistence.
+
