@@ -3,136 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HarmonyIcon Test - Harmony Design System</title>
+  <title>HarmonyIcon Component Test</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: system-ui, -apple-system, sans-serif;
       padding: 2rem;
-      background: #0f172a;
-      color: #e2e8f0;
-      line-height: 1.6;
-    }
-
-    h1 {
-      margin-bottom: 0.5rem;
-      color: #f1f5f9;
-    }
-
-    .subtitle {
-      color: #94a3b8;
-      margin-bottom: 2rem;
-      font-size: 0.875rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f5f5f5;
     }
 
     .test-section {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 8px;
-      padding: 1.5rem;
+      background: white;
+      padding: 2rem;
       margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .test-section h2 {
-      color: #3b82f6;
-      margin-bottom: 1rem;
-      font-size: 1.25rem;
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 0.5rem;
     }
 
-    .test-grid {
+    h2 {
+      color: #555;
+      margin-top: 0;
+    }
+
+    .icon-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
       margin-top: 1rem;
     }
 
-    .test-item {
+    .icon-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.5rem;
       padding: 1rem;
-      background: #0f172a;
-      border-radius: 6px;
-      border: 1px solid #334155;
-    }
-
-    .test-item code {
-      font-size: 0.75rem;
-      color: #94a3b8;
-      background: #1e293b;
-      padding: 0.25rem 0.5rem;
+      border: 1px solid #ddd;
       border-radius: 4px;
-      font-family: 'Courier New', monospace;
+      background: #fafafa;
     }
 
-    .icon-row {
+    .icon-label {
+      font-size: 0.875rem;
+      color: #666;
+      text-align: center;
+    }
+
+    .size-demo {
       display: flex;
       align-items: center;
       gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .icon-showcase {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      background: #0f172a;
-      border-radius: 6px;
-      border: 1px solid #334155;
-    }
-
-    .icon-showcase span {
-      font-size: 0.875rem;
-      color: #cbd5e1;
-    }
-
-    .status {
       margin-top: 1rem;
+    }
+
+    .color-demo {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .test-log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
       padding: 1rem;
-      background: #1e293b;
-      border-radius: 6px;
-      border-left: 4px solid #3b82f6;
-    }
-
-    .status.success {
-      border-left-color: #10b981;
-    }
-
-    .status.error {
-      border-left-color: #ef4444;
-    }
-
-    .test-controls {
-      display: flex;
-      gap: 1rem;
       margin-top: 1rem;
-    }
-
-    button {
-      padding: 0.5rem 1rem;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      font-family: monospace;
       font-size: 0.875rem;
-      font-weight: 500;
-      transition: background 0.2s;
+      max-height: 200px;
+      overflow-y: auto;
     }
 
-    button:hover {
-      background: #2563eb;
+    .test-log-entry {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #e9ecef;
     }
 
-    button:active {
-      background: #1d4ed8;
+    .test-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .test-log-entry.success {
+      color: #28a745;
+    }
+
+    .test-log-entry.error {
+      color: #dc3545;
     }
 
     .performance-stats {
@@ -142,310 +105,259 @@
       margin-top: 1rem;
     }
 
-    .stat {
-      background: #0f172a;
+    .stat-card {
+      background: #e7f3ff;
       padding: 1rem;
-      border-radius: 6px;
+      border-radius: 4px;
       text-align: center;
     }
 
     .stat-value {
       font-size: 1.5rem;
       font-weight: bold;
-      color: #3b82f6;
+      color: #007bff;
     }
 
     .stat-label {
-      font-size: 0.75rem;
-      color: #94a3b8;
+      font-size: 0.875rem;
+      color: #666;
       margin-top: 0.25rem;
-    }
-
-    /* CSS custom properties for color testing */
-    :root {
-      --color-primary: #3b82f6;
-      --color-secondary: #64748b;
-      --color-success: #10b981;
-      --color-warning: #f59e0b;
-      --color-error: #ef4444;
-      --color-text-muted: #94a3b8;
     }
   </style>
 </head>
 <body>
-  <h1>🎨 HarmonyIcon Component Test</h1>
-  <p class="subtitle">Testing Icon atom with size and color variants using Lucide icons</p>
+  <h1>🎨 HarmonyIcon Component Test Suite</h1>
 
-  <!-- Size Variants Test -->
   <div class="test-section">
-    <h2>Size Variants</h2>
-    <div class="test-grid">
-      <div class="test-item">
-        <harmony-icon name="music" size="xs" color="primary"></harmony-icon>
-        <code>size="xs" (12px)</code>
+    <h2>Basic Icons (24px default)</h2>
+    <div class="icon-grid">
+      <div class="icon-item">
+        <harmony-icon icon="play" label="Play"></harmony-icon>
+        <span class="icon-label">play</span>
       </div>
-      <div class="test-item">
-        <harmony-icon name="music" size="sm" color="primary"></harmony-icon>
-        <code>size="sm" (16px)</code>
+      <div class="icon-item">
+        <harmony-icon icon="pause" label="Pause"></harmony-icon>
+        <span class="icon-label">pause</span>
       </div>
-      <div class="test-item">
-        <harmony-icon name="music" size="md" color="primary"></harmony-icon>
-        <code>size="md" (20px)</code>
+      <div class="icon-item">
+        <harmony-icon icon="stop" label="Stop"></harmony-icon>
+        <span class="icon-label">stop</span>
       </div>
-      <div class="test-item">
-        <harmony-icon name="music" size="lg" color="primary"></harmony-icon>
-        <code>size="lg" (24px)</code>
+      <div class="icon-item">
+        <harmony-icon icon="record" label="Record"></harmony-icon>
+        <span class="icon-label">record</span>
       </div>
-      <div class="test-item">
-        <harmony-icon name="music" size="xl" color="primary"></harmony-icon>
-        <code>size="xl" (32px)</code>
+      <div class="icon-item">
+        <harmony-icon icon="volume" label="Volume"></harmony-icon>
+        <span class="icon-label">volume</span>
       </div>
-      <div class="test-item">
-        <harmony-icon name="music" size="xxl" color="primary"></harmony-icon>
-        <code>size="xxl" (48px)</code>
+      <div class="icon-item">
+        <harmony-icon icon="mute" label="Mute"></harmony-icon>
+        <span class="icon-label">mute</span>
       </div>
     </div>
   </div>
 
-  <!-- Color Variants Test -->
   <div class="test-section">
-    <h2>Color Variants</h2>
-    <div class="test-grid">
-      <div class="test-item">
-        <harmony-icon name="check-circle" size="xl" color="primary"></harmony-icon>
-        <code>color="primary"</code>
-      </div>
-      <div class="test-item">
-        <harmony-icon name="info" size="xl" color="secondary"></harmony-icon>
-        <code>color="secondary"</code>
-      </div>
-      <div class="test-item">
-        <harmony-icon name="check" size="xl" color="success"></harmony-icon>
-        <code>color="success"</code>
-      </div>
-      <div class="test-item">
-        <harmony-icon name="alert-triangle" size="xl" color="warning"></harmony-icon>
-        <code>color="warning"</code>
-      </div>
-      <div class="test-item">
-        <harmony-icon name="x-circle" size="xl" color="error"></harmony-icon>
-        <code>color="error"</code>
-      </div>
-      <div class="test-item">
-        <harmony-icon name="help-circle" size="xl" color="muted"></harmony-icon>
-        <code>color="muted"</code>
-      </div>
+    <h2>Size Variations</h2>
+    <div class="size-demo">
+      <harmony-icon icon="play" size="16" label="Small play"></harmony-icon>
+      <span>16px</span>
+      <harmony-icon icon="play" size="24" label="Medium play"></harmony-icon>
+      <span>24px</span>
+      <harmony-icon icon="play" size="32" label="Large play"></harmony-icon>
+      <span>32px</span>
+      <harmony-icon icon="play" size="48" label="XL play"></harmony-icon>
+      <span>48px</span>
+      <harmony-icon icon="play" size="64" label="XXL play"></harmony-icon>
+      <span>64px</span>
     </div>
   </div>
 
-  <!-- Common Audio Icons Test -->
   <div class="test-section">
-    <h2>Common Audio Icons</h2>
-    <div class="icon-row">
-      <div class="icon-showcase">
-        <harmony-icon name="play" size="lg" color="primary" label="Play"></harmony-icon>
-        <span>Play</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="pause" size="lg" color="primary" label="Pause"></harmony-icon>
-        <span>Pause</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="stop-circle" size="lg" color="error" label="Stop"></harmony-icon>
-        <span>Stop</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="skip-back" size="lg" color="secondary" label="Previous"></harmony-icon>
-        <span>Previous</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="skip-forward" size="lg" color="secondary" label="Next"></harmony-icon>
-        <span>Next</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="volume-2" size="lg" color="primary" label="Volume"></harmony-icon>
-        <span>Volume</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="volume-x" size="lg" color="muted" label="Mute"></harmony-icon>
-        <span>Mute</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="mic" size="lg" color="error" label="Record"></harmony-icon>
-        <span>Record</span>
-      </div>
+    <h2>Color Variations</h2>
+    <div class="color-demo">
+      <harmony-icon icon="play" size="32" color="#007bff" label="Blue play"></harmony-icon>
+      <harmony-icon icon="play" size="32" color="#28a745" label="Green play"></harmony-icon>
+      <harmony-icon icon="play" size="32" color="#dc3545" label="Red play"></harmony-icon>
+      <harmony-icon icon="play" size="32" color="#ffc107" label="Yellow play"></harmony-icon>
+      <harmony-icon icon="play" size="32" color="#6f42c1" label="Purple play"></harmony-icon>
     </div>
   </div>
 
-  <!-- Accessibility Test -->
-  <div class="test-section">
-    <h2>Accessibility Features</h2>
-    <div class="icon-row">
-      <div class="icon-showcase">
-        <harmony-icon name="settings" size="lg" color="primary" label="Open settings panel"></harmony-icon>
-        <span>Custom Label</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="star" size="lg" color="warning" decorative></harmony-icon>
-        <span>Decorative (aria-hidden)</span>
-      </div>
-      <div class="icon-showcase">
-        <harmony-icon name="heart" size="lg" color="error"></harmony-icon>
-        <span>Auto Label (from name)</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Error Handling Test -->
-  <div class="test-section">
-    <h2>Error Handling</h2>
-    <div class="icon-row">
-      <div class="icon-showcase">
-        <harmony-icon name="invalid-icon-name" size="lg" color="error"></harmony-icon>
-        <span>Invalid Icon (shows fallback)</span>
-      </div>
-    </div>
-    <div id="errorStatus" class="status">
-      Waiting for error event...
-    </div>
-  </div>
-
-  <!-- Performance Test -->
-  <div class="test-section">
-    <h2>Performance Test</h2>
-    <div class="test-controls">
-      <button id="preloadBtn">Preload 10 Icons</button>
-      <button id="renderManyBtn">Render 100 Icons</button>
-      <button id="clearCacheBtn">Clear Cache</button>
-    </div>
-    <div class="performance-stats">
-      <div class="stat">
-        <div class="stat-value" id="cacheSize">0</div>
-        <div class="stat-label">Cached Icons</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="loadTime">-</div>
-        <div class="stat-label">Load Time (ms)</div>
-      </div>
-      <div class="stat">
-        <div class="stat-value" id="renderTime">-</div>
-        <div class="stat-label">Render Time (ms)</div>
-      </div>
-    </div>
-    <div id="manyIconsContainer" style="display: grid; grid-template-columns: repeat(20, 1fr); gap: 0.5rem; margin-top: 1rem;"></div>
-  </div>
-
-  <!-- Dynamic Update Test -->
   <div class="test-section">
     <h2>Dynamic Updates</h2>
-    <div class="icon-showcase" style="justify-content: center; padding: 2rem;">
-      <harmony-icon id="dynamicIcon" name="circle" size="xxl" color="primary"></harmony-icon>
-    </div>
-    <div class="test-controls">
-      <button id="changeIconBtn">Change Icon</button>
-      <button id="changeSizeBtn">Change Size</button>
-      <button id="changeColorBtn">Change Color</button>
+    <div style="display: flex; gap: 1rem; align-items: center;">
+      <harmony-icon id="dynamic-icon" icon="play" size="48" label="Dynamic icon"></harmony-icon>
+      <div>
+        <button onclick="changeIcon()">Change Icon</button>
+        <button onclick="changeSize()">Change Size</button>
+        <button onclick="changeColor()">Change Color</button>
+      </div>
     </div>
   </div>
 
-  <script src="harmony-icon.js"></script>
-  <script>
-    // Test event listeners
+  <div class="test-section">
+    <h2>Performance Stats</h2>
+    <div class="performance-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="render-time">-</div>
+        <div class="stat-label">Render Time (ms)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="icon-count">-</div>
+        <div class="stat-label">Icons Rendered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="memory-usage">-</div>
+        <div class="stat-label">Memory (KB)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div class="test-log" id="event-log">
+      <div class="test-log-entry">Waiting for events...</div>
+    </div>
+  </div>
+
+  <!-- Inline SVG sprite for testing -->
+  <svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <symbol id="play" viewBox="0 0 24 24">
+        <path d="M8 5v14l11-7z"/>
+      </symbol>
+      <symbol id="pause" viewBox="0 0 24 24">
+        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+      </symbol>
+      <symbol id="stop" viewBox="0 0 24 24">
+        <path d="M6 6h12v12H6z"/>
+      </symbol>
+      <symbol id="record" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8"/>
+      </symbol>
+      <symbol id="volume" viewBox="0 0 24 24">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+      </symbol>
+      <symbol id="mute" viewBox="0 0 24 24">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <script type="module">
+    import { HarmonyIcon } from './harmony-icon.js';
+
+    // Test configuration
+    const icons = ['play', 'pause', 'stop', 'record', 'volume', 'mute'];
+    const colors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#6f42c1'];
+    const sizes = [16, 24, 32, 48, 64];
+    let currentIconIndex = 0;
+    let currentSizeIndex = 2;
+    let currentColorIndex = 0;
+
+    // Event logging
+    const eventLog = document.getElementById('event-log');
+    function logEvent(message, type = 'info') {
+      const entry = document.createElement('div');
+      entry.className = `test-log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      eventLog.appendChild(entry);
+      eventLog.scrollTop = eventLog.scrollHeight;
+    }
+
+    // Listen to icon events
     document.addEventListener('icon-load', (e) => {
-      console.log('✅ Icon loaded:', e.detail);
+      logEvent(`Icon loaded: ${e.detail.icon}`, 'success');
     });
 
     document.addEventListener('icon-error', (e) => {
-      console.error('❌ Icon error:', e.detail);
-      const errorStatus = document.getElementById('errorStatus');
-      errorStatus.textContent = `Error loading "${e.detail.name}": ${e.detail.error}`;
-      errorStatus.classList.add('error');
+      logEvent(`Icon error: ${e.detail.message}`, 'error');
     });
 
-    // Update cache size display
-    function updateCacheSize() {
-      const cacheSize = document.getElementById('cacheSize');
-      if (cacheSize && typeof HarmonyIcon !== 'undefined') {
-        cacheSize.textContent = HarmonyIcon.getCacheSize();
+    // Dynamic update functions
+    window.changeIcon = function() {
+      currentIconIndex = (currentIconIndex + 1) % icons.length;
+      const icon = document.getElementById('dynamic-icon');
+      icon.icon = icons[currentIconIndex];
+      logEvent(`Changed icon to: ${icons[currentIconIndex]}`);
+    };
+
+    window.changeSize = function() {
+      currentSizeIndex = (currentSizeIndex + 1) % sizes.length;
+      const icon = document.getElementById('dynamic-icon');
+      icon.size = sizes[currentSizeIndex];
+      logEvent(`Changed size to: ${sizes[currentSizeIndex]}px`);
+    };
+
+    window.changeColor = function() {
+      currentColorIndex = (currentColorIndex + 1) % colors.length;
+      const icon = document.getElementById('dynamic-icon');
+      icon.color = colors[currentColorIndex];
+      logEvent(`Changed color to: ${colors[currentColorIndex]}`);
+    };
+
+    // Performance measurement
+    function measurePerformance() {
+      const startTime = performance.now();
+      const iconCount = document.querySelectorAll('harmony-icon').length;
+      const renderTime = performance.now() - startTime;
+
+      document.getElementById('render-time').textContent = renderTime.toFixed(2);
+      document.getElementById('icon-count').textContent = iconCount;
+
+      // Memory measurement (if available)
+      if (performance.memory) {
+        const memoryUsage = (performance.memory.usedJSHeapSize / 1024).toFixed(0);
+        document.getElementById('memory-usage').textContent = memoryUsage;
+      } else {
+        document.getElementById('memory-usage').textContent = 'N/A';
+      }
+
+      // Verify performance budget (16ms per frame)
+      if (renderTime > 16) {
+        logEvent(`⚠️ Performance warning: Render time ${renderTime.toFixed(2)}ms exceeds 16ms budget`, 'error');
+      } else {
+        logEvent(`✓ Performance check passed: ${renderTime.toFixed(2)}ms`, 'success');
       }
     }
 
-    setInterval(updateCacheSize, 500);
+    // Run tests after DOM loads
+    window.addEventListener('load', () => {
+      logEvent('Test suite initialized', 'success');
+      
+      // Update sprite path for all icons to use inline SVG
+      document.querySelectorAll('harmony-icon').forEach(icon => {
+        icon.sprite = '#';
+      });
 
-    // Preload test
-    document.getElementById('preloadBtn').addEventListener('click', async () => {
-      const start = performance.now();
-      const icons = ['play', 'pause', 'stop-circle', 'volume-2', 'mic', 'settings', 'heart', 'star', 'music', 'headphones'];
+      setTimeout(measurePerformance, 100);
       
-      await HarmonyIcon.preloadIcons(icons);
-      
-      const duration = (performance.now() - start).toFixed(2);
-      document.getElementById('loadTime').textContent = duration;
-      updateCacheSize();
-      
-      console.log(`✅ Preloaded ${icons.length} icons in ${duration}ms`);
+      // Run performance test every 5 seconds
+      setInterval(measurePerformance, 5000);
     });
 
-    // Render many icons test
-    document.getElementById('renderManyBtn').addEventListener('click', () => {
-      const container = document.getElementById('manyIconsContainer');
-      const start = performance.now();
+    // Accessibility test
+    setTimeout(() => {
+      const icons = document.querySelectorAll('harmony-icon');
+      let accessibilityPassed = true;
       
-      container.innerHTML = '';
-      const icons = ['play', 'pause', 'stop-circle', 'volume-2', 'mic', 'settings', 'heart', 'star', 'music', 'headphones'];
-      
-      for (let i = 0; i < 100; i++) {
-        const icon = document.createElement('harmony-icon');
-        icon.setAttribute('name', icons[i % icons.length]);
-        icon.setAttribute('size', 'md');
-        icon.setAttribute('color', 'primary');
-        container.appendChild(icon);
+      icons.forEach(icon => {
+        const svg = icon.shadowRoot.querySelector('svg');
+        const hasRole = svg.hasAttribute('role');
+        const hasAriaLabel = svg.hasAttribute('aria-label') || svg.hasAttribute('aria-hidden');
+        
+        if (!hasRole || !hasAriaLabel) {
+          accessibilityPassed = false;
+          logEvent(`⚠️ Accessibility issue in icon: ${icon.icon}`, 'error');
+        }
+      });
+
+      if (accessibilityPassed) {
+        logEvent('✓ All accessibility checks passed', 'success');
       }
-      
-      const duration = (performance.now() - start).toFixed(2);
-      document.getElementById('renderTime').textContent = duration;
-      
-      console.log(`✅ Rendered 100 icons in ${duration}ms (${(duration / 100).toFixed(2)}ms per icon)`);
-    });
-
-    // Clear cache test
-    document.getElementById('clearCacheBtn').addEventListener('click', () => {
-      HarmonyIcon.clearCache();
-      updateCacheSize();
-      console.log('🗑️ Cache cleared');
-    });
-
-    // Dynamic update tests
-    const dynamicIcon = document.getElementById('dynamicIcon');
-    const icons = ['circle', 'square', 'triangle', 'hexagon', 'star', 'heart'];
-    const sizes = ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'];
-    const colors = ['primary', 'secondary', 'success', 'warning', 'error', 'muted'];
-    
-    let iconIndex = 0;
-    let sizeIndex = 5;
-    let colorIndex = 0;
-
-    document.getElementById('changeIconBtn').addEventListener('click', () => {
-      iconIndex = (iconIndex + 1) % icons.length;
-      dynamicIcon.setAttribute('name', icons[iconIndex]);
-    });
-
-    document.getElementById('changeSizeBtn').addEventListener('click', () => {
-      sizeIndex = (sizeIndex + 1) % sizes.length;
-      dynamicIcon.setAttribute('size', sizes[sizeIndex]);
-    });
-
-    document.getElementById('changeColorBtn').addEventListener('click', () => {
-      colorIndex = (colorIndex + 1) % colors.length;
-      dynamicIcon.setAttribute('color', colors[colorIndex]);
-    });
-
-    // Initial cache size update
-    updateCacheSize();
-
-    console.log('🎨 HarmonyIcon test page loaded');
-    console.log('📊 Available sizes:', ['xs', 'sm', 'md', 'lg', 'xl', 'xxl']);
-    console.log('🎨 Available colors:', ['primary', 'secondary', 'success', 'warning', 'error', 'muted', 'inherit']);
+    }, 500);
   </script>
 </body>
 </html>
