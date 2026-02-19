@@ -380,3 +380,60 @@ Environment files are loaded by config/environment-loader.js based on the NODE_E
 - config/environment-loader.js - Environment configuration loader
 - config/environment.d.ts - TypeScript types for environment variables
 
+
+
+## Environment Configuration
+
+Harmony uses environment-specific configuration files to manage settings across development, staging, and production environments.
+
+### Production Environment (.env.production)
+
+The production environment is optimized for performance, security, and reliability:
+
+**Key Production Settings:**
+- Debug tools are disabled for security and performance
+- Performance monitoring and error reporting are enabled
+- Logging is set to error-level only and sent to external services
+- Source maps are disabled to protect code
+- Code is minified and tree-shaken for optimal bundle size
+- CDN is enabled for static asset delivery
+- Analytics and experiments run at full capacity
+
+**Performance Budgets:**
+All production builds enforce strict performance budgets:
+- Render: 16ms per frame (60fps)
+- Memory: 50MB WASM heap maximum
+- Load: 200ms initial load time
+- Audio: 10ms end-to-end latency
+
+**Security Features:**
+- Content Security Policy (CSP) enabled
+- CORS configured with allowed origins only
+- Source maps disabled in production builds
+- Debug tools completely disabled
+
+**Monitoring:**
+Production uses external monitoring services:
+- Error tracking via Sentry (10% trace sampling)
+- Analytics tracking (100% event sampling)
+- Performance monitoring enabled
+- Event bus validation enabled (no debug logging)
+
+### Environment Files
+
+- .env.development - Development defaults (debug enabled, verbose logging)
+- .env.staging - Staging overrides (production-like with debug tools)
+- .env.production - Production overrides (optimized, secure, monitored)
+- .env.example - Template showing all available options
+
+**Usage:**
+Environment files are loaded automatically based on NODE_ENV. The environment loader ([config/environment-loader.js](config/environment-loader.js)) merges settings with the following precedence:
+
+1. System environment variables (highest priority)
+2. Environment-specific file (.env.production)
+3. Example file defaults (.env.example)
+
+**Never commit sensitive values** like API keys or tokens. Use environment variables or a secrets management service instead.
+
+See [config/environment-loader.js](config/environment-loader.js) for implementation details.
+
