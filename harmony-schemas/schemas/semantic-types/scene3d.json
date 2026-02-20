@@ -1,0 +1,134 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesignsystem.com/schemas/semantic-types/scene3d.json",
+  "title": "Scene3D Semantic Type",
+  "description": "Container for 3D objects with spatial positioning, extending Spatial3D pattern",
+  "type": "object",
+  "properties": {
+    "semantic_type": {
+      "type": "string",
+      "const": "Scene3D",
+      "description": "Identifies this node as a 3D scene container"
+    },
+    "spatial": {
+      "type": "object",
+      "description": "Spatial3D properties for scene positioning",
+      "properties": {
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number", "default": 0 },
+            "y": { "type": "number", "default": 0 },
+            "z": { "type": "number", "default": 0 }
+          },
+          "required": ["x", "y", "z"]
+        },
+        "rotation": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number", "default": 0 },
+            "y": { "type": "number", "default": 0 },
+            "z": { "type": "number", "default": 0 }
+          },
+          "required": ["x", "y", "z"]
+        },
+        "scale": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number", "default": 1 },
+            "y": { "type": "number", "default": 1 },
+            "z": { "type": "number", "default": 1 }
+          },
+          "required": ["x", "y", "z"]
+        }
+      },
+      "required": ["position", "rotation", "scale"]
+    },
+    "scene_properties": {
+      "type": "object",
+      "description": "Scene-specific configuration",
+      "properties": {
+        "background_color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "default": "#000000",
+          "description": "Scene background color in hex format"
+        },
+        "ambient_light": {
+          "type": "object",
+          "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "default": "#FFFFFF"
+            },
+            "intensity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "default": 0.5
+            }
+          }
+        },
+        "camera": {
+          "type": "object",
+          "properties": {
+            "fov": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 179,
+              "default": 75,
+              "description": "Field of view in degrees"
+            },
+            "near": {
+              "type": "number",
+              "minimum": 0.001,
+              "default": 0.1,
+              "description": "Near clipping plane"
+            },
+            "far": {
+              "type": "number",
+              "minimum": 0.1,
+              "default": 1000,
+              "description": "Far clipping plane"
+            }
+          }
+        },
+        "fog": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": false
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$",
+              "default": "#CCCCCC"
+            },
+            "near": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1
+            },
+            "far": {
+              "type": "number",
+              "minimum": 0,
+              "default": 100
+            }
+          }
+        }
+      }
+    },
+    "children": {
+      "type": "array",
+      "description": "Child 3D objects in the scene",
+      "items": {
+        "type": "string",
+        "description": "Node IDs of child objects"
+      }
+    }
+  },
+  "required": ["semantic_type", "spatial"],
+  "additionalProperties": true
+}
