@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Button Example - Component State Extraction</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    
+    .demo-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .state-display {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Component State Extraction Example</h1>
+  <p>This example demonstrates extracting button state into the graph structure.</p>
+  
+  <div class="demo-section">
+    <h2>Graph-Connected Button</h2>
+    <p>Button state is stored in the graph. Updates propagate reactively.</p>
+    
+    <graph-button id="demo-button"></graph-button>
+    
+    <div class="controls">
+      <button onclick="toggleEnabled()">Toggle Enabled</button>
+      <button onclick="toggleLoading()">Toggle Loading</button>
+      <button onclick="changeLabel()">Change Label</button>
+    </div>
+    
+    <div class="state-display">
+      <strong>Current Graph State:</strong>
+      <pre id="state-output"></pre>
+    </div>
+  </div>
+  
+  <div class="demo-section">
+    <h2>Implementation Notes</h2>
+    <ul>
+      <li>Button component subscribes to graph node</li>
+      <li>All state changes go through graph engine</li>
+      <li>Component re-renders automatically on state updates</li>
+      <li>State is serializable and persistable</li>
+    </ul>
+  </div>
+  
+  <script type="module">
+    import './graph-button.js';
+    import { graphEngine } from '../../harmony-graph/src/index.js';
+    import { eventBus } from '../../core/event-bus.js';
+    
+    let buttonNodeId;
+    
+    // Initialize graph node for button
+    async function init() {
+      buttonNodeId = await graphEngine.createNode({
+        type: 'button',
+        id: 'demo-button-node',
+        data: {
+          label: 'Click Me',
+          is_enabled: true,
+          is_loading: false,
+          variant: 'primary',
+        },
+      });
+      
+      // Connect component to graph node
+      const button = document.getElementById('demo-button');
+      button.setNode(buttonNodeId);
+      
+      // Subscribe to state changes for display
+      graphEngine.subscribe(buttonNodeId, (state) => {
+        document.getElementById('state-output').textContent = 
+          JSON.stringify(state, null, 2);
+      });
+      
+      // Initial state display
+      const state = graphEngine.getNode(buttonNodeId);
+      document.getElementById('state-output').textContent = 
+        JSON.stringify(state, null, 2);
+    }
+    
+    // Control functions
+    window.toggleEnabled = async () => {
+      const state = graphEngine.getNode(buttonNodeId);
+      await graphEngine.updateNode(buttonNodeId, {
+        is_enabled: !state.is_enabled,
+      });
+    };
+    
+    window.toggleLoading = async () => {
+      const state = graphEngine.getNode(buttonNodeId);
+      await graphEngine.updateNode(buttonNodeId, {
+        is_loading: !state.is_loading,
+      });
+    };
+    
+    window.changeLabel = async () => {
+      const labels = ['Click Me', 'Press Here', 'Submit', 'Confirm'];
+      const state = graphEngine.getNode(buttonNodeId);
+      const currentIndex = labels.indexOf(state.label);
+      const nextLabel = labels[(currentIndex + 1) % labels.length];
+      
+      await graphEngine.updateNode(buttonNodeId, {
+        label: nextLabel,
+      });
+    };
+    
+    init();
+  </script>
+</body>
+</html>
