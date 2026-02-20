@@ -537,3 +537,103 @@ Zone affinity is recognized by:
 
 See the full specification for error handling, testing requirements, and migration guides.
 
+
+## Spatial Input Abstraction
+
+**Location:** ``docs/specs/spatial-input-abstraction.md``  
+**Types:** ``types/spatial-input.d.ts``  
+**Status:** Specification (not yet implemented)
+
+### Overview
+
+The Spatial Input Abstraction defines unified input primitives for XR devices including gaze tracking, motion controllers, and hand tracking. This specification provides a device-agnostic interface while preserving device-specific capabilities.
+
+### Input Modalities
+
+**Gaze Input** tracks eye direction and focus point in 3D space:
+- Eye ray with origin and direction vectors
+- Focus point intersection detection
+- Dwell time measurement for gaze-based selection
+- Blink detection for accessibility features
+
+**Controller Input** provides 6DOF tracked controllers:
+- Position and orientation with velocity tracking
+- Button states (pressed, touched, analog values)
+- Thumbstick and trigger analog inputs
+- Haptic feedback output capability
+- Standard button mapping across vendors
+
+**Hand Tracking** offers skeletal tracking without physical controllers:
+- 25 joints per hand with position and orientation
+- Pinch gesture detection (thumb-finger contact)
+- Grip strength measurement
+- Gesture recognition (open palm, fist, pointing, etc.)
+
+### Unified Interface
+
+All input modalities implement the ``InputSource`` interface:
+```typescript
+interface InputSource {
+  id: string;
+  type: 'gaze' | 'controller' | 'hand';
+  getPose(): Pose | null;
+  getRay(): Ray | null;
+}
+```
+
+The ``InputManager`` provides central access to all input sources with capability queries and source filtering.
+
+### EventBus Integration
+
+Spatial input events follow the naming convention:
+```
+spatial:input:{modality}:{action}
+```
+
+Examples:
+- ``spatial:input:gaze:focus`` - Gaze enters target
+- ``spatial:input:controller:buttondown`` - Button pressed
+- ``spatial:input:hand:pinchstart`` - Pinch gesture begins
+
+All events include source metadata and timestamp for coordination across multiple input devices.
+
+### Performance Requirements
+
+- **Gaze latency:** < 5ms from eye movement to event
+- **Controller latency:** < 10ms from physical movement to event  
+- **Hand latency:** < 15ms from hand movement to event
+- **Memory per source:** < 1KB state storage
+- **Update frequency:** 30-120 Hz depending on device capability
+
+### Coordinate System
+
+**World Space:** Right-handed coordinate system with origin at XR session start point. Units in meters. X-axis right, Y-axis up, Z-axis backward (toward user).
+
+**Local Space:** Device-specific reference frames transformed to world space via pose matrices.
+
+### Accessibility
+
+The specification supports multiple interaction patterns:
+- Gaze + dwell (look and wait)
+- Gaze + voice (look and speak)
+- Controller only (full functionality)
+- Hand only (full functionality)
+
+Customizable thresholds for dwell duration, pinch sensitivity, and haptic intensity ensure accessibility for diverse user needs.
+
+### Implementation Status
+
+This is a **specification document only**. Implementation will occur in future tasks:
+- WebXR API integration layer
+- Rust/WASM input processing pipeline
+- EventBus event publishers
+- Input manager component
+
+See ``docs/specs/spatial-input-abstraction.md`` for complete technical specification including data structures, event payloads, error handling, and testing requirements.
+
+### Related Specifications
+
+- [XR Zone Affinity](./docs/specs/xr-zone-affinity.md) - Spatial layout zones
+- [Transform3D Semantic Type](./docs/specs/transform3d-semantic-type.md) - 3D transforms
+- [Scene3D Semantic Type](./docs/specs/scene3d-semantic-type.md) - 3D scene graphs
+
