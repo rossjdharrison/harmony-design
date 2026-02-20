@@ -1,4 +1,30 @@
-# Harmony Design System
+$before
+
+## Developer Guides
+
+### Component Development Guide
+
+**Location**: [`docs/component-development-guide.md`](./docs/component-development-guide.md)
+
+A complete guide for creating new components in the Harmony Design System. This guide covers:
+
+- Component architecture and Web Components patterns
+- File structure and Atomic Design organization
+- Step-by-step implementation instructions
+- Event-driven communication patterns
+- Performance requirements and testing
+- Common patterns and code examples
+
+**When to use this guide**:
+- Creating new UI components (primitives, molecules, organisms)
+- Learning the Harmony component patterns
+- Understanding event-driven architecture
+- Implementing reactive attributes
+- Testing components in Chrome
+
+All component implementations must follow the patterns in this guide to ensure consistency, performance, and maintainability.
+
+## em
 
 **Version**: 1.0.0  
 **Last Updated**: 2025-01-09
