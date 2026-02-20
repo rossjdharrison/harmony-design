@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aggregator Tests - Harmony Design System</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      margin: 15px 0;
+      padding: 10px;
+      border-left: 3px solid #ccc;
+    }
+    .test-case.pass {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    .test-case.fail {
+      border-left-color: #f44336;
+      background: #fef1f0;
+    }
+    .test-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .test-result {
+      font-family: monospace;
+      font-size: 0.9em;
+      color: #666;
+    }
+    .summary {
+      background: #2196f3;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔢 Aggregator Tests</h1>
+  <div id="summary" class="summary">
+    Running tests...
+  </div>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import { Aggregator, createAggregator } from './aggregator.js';
+
+    const results = [];
+    const resultsContainer = document.getElementById('test-results');
+
+    function addTest(name, fn) {
+      const section = document.createElement('div');
+      section.className = 'test-case';
+      
+      const nameEl = document.createElement('div');
+      nameEl.className = 'test-name';
+      nameEl.textContent = name;
+      section.appendChild(nameEl);
+
+      const resultEl = document.createElement('div');
+      resultEl.className = 'test-result';
+      section.appendChild(resultEl);
+
+      try {
+        const result = fn();
+        section.classList.add('pass');
+        resultEl.textContent = '✓ PASS';
+        if (result) {
+          const pre = document.createElement('pre');
+          pre.textContent = JSON.stringify(result, null, 2);
+          section.appendChild(pre);
+        }
+        results.push({ name, pass: true });
+      } catch (error) {
+        section.classList.add('fail');
+        resultEl.textContent = `✗ FAIL: ${error.message}`;
+        console.error(error);
+        results.push({ name, pass: false, error: error.message });
+      }
+
+      resultsContainer.appendChild(section);
+    }
+
+    function createTestSection(title) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      const heading = document.createElement('h2');
+      heading.textContent = title;
+      section.appendChild(heading);
+      resultsContainer.appendChild(section);
+      return section;
+    }
+
+    // Sample data for tests
+    const sampleNodes = [
+      { id: 'n1', type: 'Person', properties: { name: 'Alice', age: 30, score: 85 } },
+      { id: 'n2', type: 'Person', properties: { name: 'Bob', age: 25, score: 92 } },
+      { id: 'n3', type: 'Person', properties: { name: 'Charlie', age: 35, score: 78 } },
+      { id: 'n4', type: 'Person', properties: { name: 'Diana', age: 30, score: 88 } },
+      { id: 'n5', type: 'Product', properties: { name: 'Widget', price: 19.99 } },
+      { id: 'n6', type: 'Product', properties: { name: 'Gadget', price: 29.99 } }
+    ];
+
+    // Test: Basic Aggregator Creation
+    createTestSection('Basic Aggregator Creation');
+    addTest('Create aggregator instance', () => {
+      const aggregator = createAggregator();
+      if (!(aggregator instanceof Aggregator)) {
+        throw new Error('Failed to create Aggregator instance');
+      }
+      return { created: true };
+    });
+
+    // Test: Count Aggregation
+    createTestSection('Count Aggregation');
+    addTest('Count all items', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, { operation: 'count' });
+      if (result.value !== 6) {
+        throw new Error(`Expected 6, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Count with property filter', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'count',
+        property: 'properties.age'
+      });
+      if (result.value !== 4) {
+        throw new Error(`Expected 4, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Count empty results', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate([], { operation: 'count' });
+      if (result.value !== 0) {
+        throw new Error(`Expected 0, got ${result.value}`);
+      }
+      return result;
+    });
+
+    // Test: Sum Aggregation
+    createTestSection('Sum Aggregation');
+    addTest('Sum numeric property', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'sum',
+        property: 'properties.age'
+      });
+      if (result.value !== 120) {
+        throw new Error(`Expected 120, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Sum with missing values', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'sum',
+        property: 'properties.score'
+      });
+      if (result.value !== 343) {
+        throw new Error(`Expected 343, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Sum requires property', () => {
+      const aggregator = new Aggregator();
+      try {
+        aggregator.aggregate(sampleNodes, { operation: 'sum' });
+        throw new Error('Should have thrown error');
+      } catch (error) {
+        if (!error.message.includes('requires a property')) {
+          throw error;
+        }
+      }
+      return { error: 'Correctly rejected sum without property' };
+    });
+
+    // Test: Average Aggregation
+    createTestSection('Average Aggregation');
+    addTest('Average numeric property', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'avg',
+        property: 'properties.age'
+      });
+      if (result.value !== 30) {
+        throw new Error(`Expected 30, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Average with decimal result', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'avg',
+        property: 'properties.score'
+      });
+      const expected = 343 / 4;
+      if (Math.abs(result.value - expected) > 0.001) {
+        throw new Error(`Expected ${expected}, got ${result.value}`);
+      }
+      return result;
+    });
+
+    // Test: Min/Max Aggregation
+    createTestSection('Min/Max Aggregation');
+    addTest('Find minimum value', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'min',
+        property: 'properties.age'
+      });
+      if (result.value !== 25) {
+        throw new Error(`Expected 25, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Find maximum value', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'max',
+        property: 'properties.score'
+      });
+      if (result.value !== 92) {
+        throw new Error(`Expected 92, got ${result.value}`);
+      }
+      return result;
+    });
+
+    // Test: Collect Aggregation
+    createTestSection('Collect Aggregation');
+    addTest('Collect property values', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'collect',
+        property: 'properties.name'
+      });
+      if (!Array.isArray(result.value) || result.value.length !== 6) {
+        throw new Error(`Expected array of 6, got ${result.value}`);
+      }
+      return result;
+    });
+
+    addTest('Collect all items', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'collect'
+      });
+      if (!Array.isArray(result.value) || result.value.length !== 6) {
+        throw new Error(`Expected array of 6, got ${result.value}`);
+      }
+      return { count: result.value.length };
+    });
+
+    // Test: Group By
+    createTestSection('Group By Aggregation');
+    addTest('Group by single property', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.groupBy(sampleNodes, {
+        keys: ['type'],
+        aggregations: [
+          { operation: 'count', alias: 'total' }
+        ]
+      });
+      
+      if (result.size !== 2) {
+        throw new Error(`Expected 2 groups, got ${result.size}`);
+      }
+
+      const groups = Array.from(result.values());
+      const personGroup = groups.find(g => g.key.type === 'Person');
+      const productGroup = groups.find(g => g.key.type === 'Product');
+
+      if (personGroup.count !== 4 || productGroup.count !== 2) {
+        throw new Error('Incorrect group counts');
+      }
+
+      return {
+        groups: groups.map(g => ({ key: g.key, count: g.count, agg: g.aggregations }))
+      };
+    });
+
+    addTest('Group by with multiple aggregations', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.groupBy(sampleNodes, {
+        keys: ['type'],
+        aggregations: [
+          { operation: 'count', alias: 'total' },
+          { operation: 'avg', property: 'properties.age', alias: 'avg_age' }
+        ]
+      });
+
+      const groups = Array.from(result.values());
+      const personGroup = groups.find(g => g.key.type === 'Person');
+
+      if (!personGroup.aggregations.avg_age) {
+        throw new Error('Missing avg_age aggregation');
+      }
+
+      if (personGroup.aggregations.avg_age !== 30) {
+        throw new Error(`Expected avg age 30, got ${personGroup.aggregations.avg_age}`);
+      }
+
+      return {
+        groups: groups.map(g => ({ key: g.key, agg: g.aggregations }))
+      };
+    });
+
+    addTest('Group by multiple keys', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.groupBy(sampleNodes, {
+        keys: ['type', 'properties.age'],
+        aggregations: [
+          { operation: 'count', alias: 'total' }
+        ]
+      });
+
+      if (result.size < 2) {
+        throw new Error('Expected multiple groups');
+      }
+
+      return {
+        groupCount: result.size,
+        groups: Array.from(result.values()).map(g => ({ key: g.key, count: g.count }))
+      };
+    });
+
+    // Test: Multi-Aggregate
+    createTestSection('Multi-Aggregate');
+    addTest('Multiple aggregations at once', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.multiAggregate(sampleNodes, [
+        { operation: 'count', alias: 'total_count' },
+        { operation: 'avg', property: 'properties.age', alias: 'avg_age' },
+        { operation: 'min', property: 'properties.age', alias: 'min_age' },
+        { operation: 'max', property: 'properties.age', alias: 'max_age' }
+      ]);
+
+      if (!result.aggregations.total_count || result.aggregations.total_count !== 6) {
+        throw new Error('Missing or incorrect total_count');
+      }
+
+      if (!result.aggregations.avg_age || result.aggregations.avg_age !== 30) {
+        throw new Error('Missing or incorrect avg_age');
+      }
+
+      return result;
+    });
+
+    // Test: Nested Property Access
+    createTestSection('Nested Property Access');
+    addTest('Access nested properties', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.aggregate(sampleNodes, {
+        operation: 'avg',
+        property: 'properties.age'
+      });
+
+      if (result.value !== 30) {
+        throw new Error(`Expected 30, got ${result.value}`);
+      }
+
+      return result;
+    });
+
+    // Test: Validation
+    createTestSection('Validation');
+    addTest('Validate aggregation spec', () => {
+      const aggregator = new Aggregator();
+      const valid = aggregator.validateSpec({
+        operation: 'sum',
+        property: 'value'
+      });
+
+      if (!valid) {
+        throw new Error('Valid spec marked as invalid');
+      }
+
+      return { valid: true };
+    });
+
+    addTest('Reject invalid operation', () => {
+      const aggregator = new Aggregator();
+      try {
+        aggregator.validateSpec({ operation: 'invalid' });
+        throw new Error('Should have thrown error');
+      } catch (error) {
+        if (!error.message.includes('Unknown operation')) {
+          throw error;
+        }
+      }
+      return { error: 'Correctly rejected invalid operation' };
+    });
+
+    addTest('Validate group by spec', () => {
+      const aggregator = new Aggregator();
+      const valid = aggregator.validateGroupBySpec({
+        keys: ['type'],
+        aggregations: [
+          { operation: 'count' }
+        ]
+      });
+
+      if (!valid) {
+        throw new Error('Valid spec marked as invalid');
+      }
+
+      return { valid: true };
+    });
+
+    // Test: Edge Cases
+    createTestSection('Edge Cases');
+    addTest('Handle null values', () => {
+      const aggregator = new Aggregator();
+      const data = [
+        { value: 10 },
+        { value: null },
+        { value: 20 },
+        { value: undefined }
+      ];
+
+      const result = aggregator.aggregate(data, {
+        operation: 'avg',
+        property: 'value'
+      });
+
+      if (result.value !== 15) {
+        throw new Error(`Expected 15, got ${result.value}`);
+      }
+
+      return result;
+    });
+
+    addTest('Handle empty groups', () => {
+      const aggregator = new Aggregator();
+      const result = aggregator.groupBy([], {
+        keys: ['type'],
+        aggregations: [{ operation: 'count' }]
+      });
+
+      if (result.size !== 0) {
+        throw new Error('Expected empty result');
+      }
+
+      return { size: result.size };
+    });
+
+    // Update summary
+    const passed = results.filter(r => r.pass).length;
+    const failed = results.filter(r => !r.pass).length;
+    const total = results.length;
+
+    document.getElementById('summary').innerHTML = `
+      <strong>Test Results:</strong> ${passed}/${total} passed, ${failed} failed
+      ${failed === 0 ? '✓ All tests passed!' : '✗ Some tests failed'}
+    `;
+
+    console.log('Test Summary:', { passed, failed, total, results });
+  </script>
+</body>
+</html>
