@@ -1,0 +1,119 @@
+/**
+ * CSS Custom Properties for Runtime Brand Switching
+ * 
+ * These variables are dynamically updated when switching brands.
+ * All components should reference these variables for theming.
+ * 
+ * @see harmony-design/DESIGN_SYSTEM.md#brand-switching
+ */
+
+:root {
+  /* Primary Colors */
+  --harmony-color-primary-50: #f0f9ff;
+  --harmony-color-primary-100: #e0f2fe;
+  --harmony-color-primary-200: #bae6fd;
+  --harmony-color-primary-300: #7dd3fc;
+  --harmony-color-primary-400: #38bdf8;
+  --harmony-color-primary-500: #0ea5e9;
+  --harmony-color-primary-600: #0284c7;
+  --harmony-color-primary-700: #0369a1;
+  --harmony-color-primary-800: #075985;
+  --harmony-color-primary-900: #0c4a6e;
+
+  /* Secondary Colors */
+  --harmony-color-secondary-50: #faf5ff;
+  --harmony-color-secondary-100: #f3e8ff;
+  --harmony-color-secondary-200: #e9d5ff;
+  --harmony-color-secondary-300: #d8b4fe;
+  --harmony-color-secondary-400: #c084fc;
+  --harmony-color-secondary-500: #a855f7;
+  --harmony-color-secondary-600: #9333ea;
+  --harmony-color-secondary-700: #7e22ce;
+  --harmony-color-secondary-800: #6b21a8;
+  --harmony-color-secondary-900: #581c87;
+
+  /* Neutral Colors */
+  --harmony-color-neutral-50: #fafafa;
+  --harmony-color-neutral-100: #f4f4f5;
+  --harmony-color-neutral-200: #e4e4e7;
+  --harmony-color-neutral-300: #d4d4d8;
+  --harmony-color-neutral-400: #a1a1aa;
+  --harmony-color-neutral-500: #71717a;
+  --harmony-color-neutral-600: #52525b;
+  --harmony-color-neutral-700: #3f3f46;
+  --harmony-color-neutral-800: #27272a;
+  --harmony-color-neutral-900: #18181b;
+
+  /* Semantic Colors */
+  --harmony-color-success: #10b981;
+  --harmony-color-warning: #f59e0b;
+  --harmony-color-error: #ef4444;
+  --harmony-color-info: #3b82f6;
+
+  /* Typography */
+  --harmony-font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --harmony-font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+
+  --harmony-font-size-xs: 0.75rem;
+  --harmony-font-size-sm: 0.875rem;
+  --harmony-font-size-base: 1rem;
+  --harmony-font-size-lg: 1.125rem;
+  --harmony-font-size-xl: 1.25rem;
+  --harmony-font-size-2xl: 1.5rem;
+  --harmony-font-size-3xl: 1.875rem;
+  --harmony-font-size-4xl: 2.25rem;
+
+  --harmony-font-weight-normal: 400;
+  --harmony-font-weight-medium: 500;
+  --harmony-font-weight-semibold: 600;
+  --harmony-font-weight-bold: 700;
+
+  --harmony-line-height-tight: 1.25;
+  --harmony-line-height-normal: 1.5;
+  --harmony-line-height-relaxed: 1.75;
+
+  /* Spacing */
+  --harmony-spacing-xs: 0.25rem;
+  --harmony-spacing-sm: 0.5rem;
+  --harmony-spacing-md: 1rem;
+  --harmony-spacing-lg: 1.5rem;
+  --harmony-spacing-xl: 2rem;
+  --harmony-spacing-2xl: 3rem;
+  --harmony-spacing-3xl: 4rem;
+
+  /* Border Radius */
+  --harmony-radius-none: 0;
+  --harmony-radius-sm: 0.125rem;
+  --harmony-radius-md: 0.375rem;
+  --harmony-radius-lg: 0.5rem;
+  --harmony-radius-xl: 0.75rem;
+  --harmony-radius-full: 9999px;
+
+  /* Shadows */
+  --harmony-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --harmony-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --harmony-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --harmony-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --harmony-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --harmony-transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --harmony-transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/**
+ * Dark mode overrides
+ * Applied when [data-theme="dark"] is present on root element
+ */
+[data-theme="dark"] {
+  --harmony-color-neutral-50: #18181b;
+  --harmony-color-neutral-100: #27272a;
+  --harmony-color-neutral-200: #3f3f46;
+  --harmony-color-neutral-300: #52525b;
+  --harmony-color-neutral-400: #71717a;
+  --harmony-color-neutral-500: #a1a1aa;
+  --harmony-color-neutral-600: #d4d4d8;
+  --harmony-color-neutral-700: #e4e4e7;
+  --harmony-color-neutral-800: #f4f4f5;
+  --harmony-color-neutral-900: #fafafa;
+}
