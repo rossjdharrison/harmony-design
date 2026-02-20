@@ -1,631 +1,671 @@
 # Harmony Design System
 
-A Web Audio DAW design system built with Web Components, Rust/WASM bounded contexts, and GPU-accelerated audio processing.
+A high-performance, GPU-accelerated design system for audio applications.
 
-## Overview
+## Table of Contents
 
-Harmony is a modular design system for building professional audio production interfaces. It combines vanilla Web Components for UI with Rust/WASM for audio processing, ensuring high performance and type safety.
+1. [Architecture Overview](#architecture-overview)
+2. [Installation Guide](#installation-guide)
+3. [Quick Start](#quick-start)
+4. [Core Concepts](#core-concepts)
+5. [Component Library](#component-library)
+6. [Performance Guidelines](#performance-guidelines)
+7. [Contributing](#contributing)
 
-## Core Principles
+---
 
-1. **Performance First**: 16ms render budget, 10ms audio latency, GPU acceleration
-2. **Type Safety**: TypeScript types + Rust schemas with codegen
-3. **Zero Runtime Dependencies**: Vanilla JS/HTML/CSS for UI
-4. **Event-Driven Architecture**: Components publish events, bounded contexts handle logic
-5. **Progressive Enhancement**: Works without JavaScript, enhanced with it
+## Architecture Overview
 
-## Architecture
+Harmony Design System is built on four core pillars: **Reactive Component System**, **Atomic Design**, **WASM Performance**, and **GPU-First Audio**. This architecture enables professional-grade audio applications with real-time performance.
+
+### System Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Browser Runtime                          │
+├─────────────────────────────────────────────────────────────┤
+│  UI Layer (Vanilla JS + Web Components)                     │
+│  ├─ Templates (Page-level compositions)                     │
+│  ├─ Organisms (Complex UI sections)                         │
+│  ├─ Molecules (Composite components)                        │
+│  └─ Primitives (Atomic elements)                            │
+├─────────────────────────────────────────────────────────────┤
+│  Event Bus (Command/Query Pattern)                          │
+│  ├─ Event routing and validation                            │
+│  ├─ Type-safe messaging                                     │
+│  └─ Debugging interface                                     │
+├─────────────────────────────────────────────────────────────┤
+│  Bounded Contexts (Rust → WASM)                             │
+│  ├─ Component Lifecycle                                     │
+│  ├─ Full-Text Index                                         │
+│  ├─ Spatial Index                                           │
+│  ├─ WASM Bridge                                             │
+│  ├─ WASM Edge Executor                                      │
+│  └─ WASM Node Registry                                      │
+├─────────────────────────────────────────────────────────────┤
+│  Audio Processing (WebGPU + AudioWorklet)                   │
+│  ├─ GPU compute shaders                                     │
+│  ├─ SharedArrayBuffer transfer                              │
+│  └─ Real-time audio thread                                  │
+├─────────────────────────────────────────────────────────────┤
+│  State Management (Harmony Graph)                           │
+│  ├─ Reactive graph engine                                   │
+│  ├─ Cross-graph edge indexing                               │
+│  └─ Serializable project state                              │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ### Technology Stack
 
-- **UI Layer**: Vanilla Web Components with Shadow DOM
-- **Audio Processing**: Rust → WASM + WebGPU
-- **State Management**: EventBus + Bounded Contexts
-- **Type System**: TypeScript definitions + Rust schemas
-- **Build Tools**: npm for dev tools only (not runtime)
+**Frontend (UI Layer)**
+- **Vanilla JavaScript**: No framework dependencies for minimal bundle size
+- **Web Components**: Shadow DOM for encapsulation and reusability
+- **CSS Custom Properties**: Theme tokens for consistent styling
+- **HTML Templates**: Declarative component markup
 
-### Bounded Contexts
+**Core Logic (Bounded Contexts)**
+- **Rust**: Memory-safe, high-performance business logic
+- **WebAssembly**: Near-native execution speed in browser
+- **Component-Based Architecture**: Isolated, testable modules
 
-Rust-based isolated domains compiled to WASM:
+**Audio Processing**
+- **WebGPU**: GPU-accelerated audio effects and synthesis
+- **AudioWorklet**: Real-time audio thread processing
+- **SharedArrayBuffer**: Zero-copy data transfer between threads
 
-- `component-lifecycle`: Component state management
-- Audio processing contexts (see `bounded-contexts/`)
+**State Management**
+- **Harmony Graph**: Custom reactive graph engine in Rust
+- **IndexedDB**: Persistent project storage
+- **JSON Serialization**: Portable project format
 
-### Event-Driven Communication
+### Design Principles
 
-Components never call bounded contexts directly. Pattern:
+#### 1. Reactive Component System
 
-1. User interacts with component
-2. Component publishes event to EventBus
-3. EventBus routes to appropriate bounded context
-4. Bounded context processes and publishes result event
-5. Components subscribe to result events and update UI
+Components react to state changes through the Event Bus. No direct coupling between UI and business logic.
 
-See `core/event-bus.js` for implementation.
+**Pattern:**
+```
+User Action → UI Event → EventBus → Bounded Context → Result Event → UI Update
+```
 
-## Environment Configuration
+**Example Flow:**
+1. User clicks "Play" button
+2. Button component publishes `PlayCommand` event
+3. EventBus validates and routes to Audio BC
+4. Audio BC processes and publishes `PlaybackStarted` event
+5. UI components subscribed to playback state update
 
-### Overview
+**Key Files:**
+- [`core/event-bus.js`](core/event-bus.js) - Event routing and validation
+- [`bounded-contexts/`](bounded-contexts/) - Business logic modules
+- [`components/`](components/) - UI component library
 
-The environment system provides typed configuration management across development, staging, and production environments. Configuration is loaded from `.env` files and made available through a React-style hook API.
+#### 2. Atomic Design
 
-### Files
+Components follow atomic design methodology for consistency and reusability.
 
-- **Types**: `config/environment-types.js` - TypeScript-style JSDoc types
-- **Loader**: `config/environment-loader.js` - Loads and validates environment config
-- **Context**: `contexts/ConfigContext.js` - Global configuration singleton
-- **Hook**: `hooks/useEnvironment.js` - Component access to environment config
-- **Environment Files**:
-  - `.env.development` - Development defaults
-  - `.env.staging` - Staging overrides
-  - `.env.production` - Production overrides
+**Hierarchy:**
+- **Primitives**: Basic elements (buttons, inputs, labels)
+- **Molecules**: Simple combinations (labeled input, icon button)
+- **Organisms**: Complex sections (toolbar, mixer channel)
+- **Templates**: Page layouts (project view, settings panel)
 
-### Using the Environment Hook
+**Benefits:**
+- Consistent visual language
+- Easy to test in isolation
+- Clear composition patterns
+- Scalable component library
 
-The `useEnvironment` hook provides convenient access to environment configuration in Web Components:
+**Key Files:**
+- [`primitives/`](primitives/) - Atomic UI elements
+- [`components/`](components/) - Molecule-level components
+- [`organisms/`](organisms/) - Complex UI sections
+- [`templates/`](templates/) - Page-level layouts
+
+#### 3. WASM Performance
+
+All performance-critical code runs in WebAssembly for near-native speed.
+
+**Performance Budgets:**
+- **Render Budget**: 16ms per frame (60fps)
+- **Memory Budget**: 50MB WASM heap maximum
+- **Load Budget**: 200ms initial load time
+- **Audio Latency**: 10ms end-to-end maximum
+
+**Optimization Strategies:**
+- Compile Rust to WASM with size optimizations
+- Use `wasm-opt` for binary size reduction
+- Lazy-load non-critical WASM modules
+- Pool allocations to reduce GC pressure
+
+**Key Files:**
+- [`bounded-contexts/*/Cargo.toml`](bounded-contexts/) - Rust module configs
+- [`bounded-contexts/*/src/`](bounded-contexts/) - Rust source code
+- [`harmony-schemas/`](harmony-schemas/) - Type definitions
+
+#### 4. GPU-First Audio
+
+Audio processing leverages WebGPU for parallel computation.
+
+**Architecture:**
+```
+Audio Input → AudioWorklet → SharedArrayBuffer → WebGPU Compute → Output
+```
+
+**Dual Implementation:**
+- **WebGPU**: Primary path for GPU-accelerated processing
+- **WASM**: Fallback for systems without GPU support
+
+**Latency Targets:**
+- Buffer size: 128 samples (2.9ms at 44.1kHz)
+- Processing overhead: <5ms
+- Total latency: <10ms end-to-end
+
+**Key Files:**
+- [`harmony-core/`](harmony-core/) - Core audio engine
+- [`harmony-graph/`](harmony-graph/) - Audio graph processing
+
+### Data Flow
+
+#### Command Flow (User Actions)
+
+```
+UI Component
+    ↓ (publishes command event)
+EventBus
+    ↓ (validates and routes)
+Bounded Context (WASM)
+    ↓ (processes logic)
+EventBus
+    ↓ (publishes result event)
+UI Components (subscribers)
+```
+
+#### Query Flow (Data Reads)
+
+```
+UI Component
+    ↓ (calls TypeNavigator)
+TypeNavigator
+    ↓ (queries indexed data)
+Spatial/Full-Text Index (WASM)
+    ↓ (returns results)
+UI Component (renders)
+```
+
+#### Audio Flow (Real-Time Processing)
+
+```
+Audio Input
+    ↓
+AudioWorklet Thread
+    ↓ (writes to SharedArrayBuffer)
+WebGPU Compute Shader
+    ↓ (processes in parallel)
+SharedArrayBuffer
+    ↓ (reads processed data)
+AudioWorklet Thread
+    ↓
+Audio Output
+```
+
+### Schema-Driven Development
+
+All data structures are defined in JSON Schema and code-generated.
+
+**Workflow:**
+1. Define or modify schema in `harmony-schemas/`
+2. Run codegen: `npm run codegen`
+3. Generated code appears in `harmony-dev/crates/` and `harmony-dev/workers/`
+4. Commit schema and generated code together
+
+**Benefits:**
+- Type safety across Rust/JS boundary
+- Single source of truth for data structures
+- Automatic validation logic
+- Consistent serialization
+
+**Key Files:**
+- [`harmony-schemas/`](harmony-schemas/) - JSON Schema definitions
+- [`scripts/codegen.js`](scripts/codegen.js) - Code generation script
+
+### Performance Monitoring
+
+Built-in performance tracking ensures system meets budgets.
+
+**Metrics Collected:**
+- **Web Vitals**: LCP, FID, CLS, TTFB
+- **Custom Metrics**: WASM init time, audio latency, render time
+- **Performance Observer**: Frame timing, long tasks
+
+**Key Files:**
+- [`performance/web-vitals-collector.js`](performance/web-vitals-collector.js)
+- [`performance/custom-metrics-registry.js`](performance/custom-metrics-registry.js)
+- [`performance/performance-observer.js`](performance/performance-observer.js)
+
+### Error Handling
+
+Structured error tracking with fingerprinting for deduplication.
+
+**Features:**
+- Unhandled promise rejection tracking
+- Error fingerprinting for grouping
+- Structured JSON logging
+- Context preservation
+
+**Key Files:**
+- [`health/unhandled-rejection-tracker.js`](health/unhandled-rejection-tracker.js)
+- [`health/error-fingerprinting.js`](health/error-fingerprinting.js)
+- [`health/structured-logger.js`](health/structured-logger.js)
+
+### Security Model
+
+Security boundaries prevent unauthorized access and data leaks.
+
+**Principles:**
+- No `eval()` or `Function()` constructors
+- Content Security Policy enforcement
+- WASM sandbox isolation
+- Event validation and sanitization
+
+**Key Files:**
+- [`security/`](security/) - Security utilities and policies
+
+### Testing Strategy
+
+Multi-layer testing ensures quality at every level.
+
+**Test Types:**
+- **Unit Tests**: Individual functions and components
+- **Integration Tests**: Component interactions via EventBus
+- **Performance Tests**: Budget validation
+- **Visual Tests**: Component rendering in Chrome
+
+**Chrome Testing Requirements:**
+All UI components must be tested in Chrome before task completion:
+- Default, hover, focus, active, disabled states
+- Error, loading, empty states (for complex components)
+- 60fps animation performance validation
+
+**Key Files:**
+- [`tests/`](tests/) - Test suites
+- [`test-pages/`](test-pages/) - Manual testing pages
+
+### Deployment Architecture
+
+**Development:**
+- Local dev server with hot reload
+- In-browser testing and debugging
+- EventBus debug panel (Ctrl+Shift+E)
+
+**Production:**
+- Static file hosting (Vercel, Netlify, etc.)
+- CDN distribution for assets
+- Optional Tauri desktop wrapper
+
+**Desktop (Optional):**
+- Tauri for native desktop application
+- Shared codebase with web version
+- Native file system access
+
+**Key Files:**
+- [`vercel.json`](vercel.json) - Vercel deployment config
+- [`Dockerfile`](Dockerfile) - Container deployment
+
+### Extension Points
+
+The architecture supports extension without modification.
+
+**Custom Bounded Contexts:**
+1. Create new directory in `bounded-contexts/`
+2. Define Rust module with `manifest.json`
+3. Register with EventBus
+4. Publish/subscribe to events
+
+**Custom Components:**
+1. Create Web Component in appropriate layer
+2. Use shadow DOM for encapsulation
+3. Publish events for actions
+4. Subscribe to state events
+
+**Custom Audio Processors:**
+1. Implement WebGPU compute shader
+2. Implement WASM fallback
+3. Register with audio graph
+4. Connect via graph edges
+
+### Migration Path
+
+For existing projects integrating Harmony:
+
+**Phase 1: Foundation**
+- Install design tokens and primitives
+- Set up EventBus infrastructure
+- Initialize WASM modules
+
+**Phase 2: Component Migration**
+- Replace existing components incrementally
+- Maintain existing state management temporarily
+- Test each component in isolation
+
+**Phase 3: State Migration**
+- Migrate to Harmony Graph
+- Connect bounded contexts
+- Enable GPU audio processing
+
+**Phase 4: Optimization**
+- Profile and optimize hot paths
+- Enable advanced GPU features
+- Fine-tune performance budgets
+
+### Further Reading
+
+- [Installation Guide](#installation-guide) - Setup instructions
+- [Component Library](#component-library) - Available components
+- [Performance Guidelines](#performance-guidelines) - Optimization tips
+- [Contributing](#contributing) - Development workflow
+
+---
+
+## Installation Guide
+
+### Prerequisites
+
+- Node.js 18+ (for build tools only)
+- Rust 1.70+ (for WASM compilation)
+- Modern browser with WebGPU support (Chrome 113+, Edge 113+)
+
+### Step-by-Step Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-org/harmony-design.git
+   cd harmony-design
+   ```
+
+2. **Install development dependencies**
+   ```bash
+   npm install
+   ```
+   Note: These are build tools only, not runtime dependencies.
+
+3. **Build WASM modules**
+   ```bash
+   npm run build:wasm
+   ```
+
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open in browser**
+   Navigate to `http://localhost:3000`
+
+### Verification
+
+Check that the system is working:
+- EventBus debug panel opens with Ctrl+Shift+E
+- No console errors on page load
+- Health check endpoint returns 200: `/health`
+
+---
+
+## Quick Start
+
+### Using Components
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/styles/tokens.css">
+</head>
+<body>
+  <!-- Include EventBus -->
+  <script type="module" src="/core/event-bus.js"></script>
+  
+  <!-- Use components -->
+  <harmony-button variant="primary">Click Me</harmony-button>
+  
+  <script type="module">
+    import '/primitives/harmony-button.js';
+    
+    const button = document.querySelector('harmony-button');
+    button.addEventListener('harmony-click', (e) => {
+      console.log('Button clicked!', e.detail);
+    });
+  </script>
+</body>
+</html>
+```
+
+### Publishing Events
 
 ```javascript
-import { useEnvironment } from './hooks/useEnvironment.js';
+import { EventBus } from '/core/event-bus.js';
 
-class MyComponent extends HTMLElement {
-  connectedCallback() {
-    const env = useEnvironment();
-    console.log('API URL:', env.apiUrl);
-    console.log('Debug mode:', env.enableDebug);
-  }
-}
+// Publish a command
+EventBus.publish('PlayCommand', {
+  trackId: 'track-123',
+  position: 0
+});
+
+// Subscribe to results
+EventBus.subscribe('PlaybackStarted', (event) => {
+  console.log('Playback started:', event.payload);
+});
 ```
 
-### Hook Variants
-
-**Basic Access**:
-```javascript
-const env = useEnvironment(); // Get full config object
-```
-
-**Specific Values**:
-```javascript
-const apiUrl = useEnvironmentValue('apiUrl', 'http://default');
-```
-
-**Environment Detection**:
-```javascript
-if (useIsEnvironment('development')) {
-  // Development-only code
-}
-```
-
-**Debug Mode**:
-```javascript
-if (useDebugMode()) {
-  console.log('Debug info...');
-}
-```
-
-**Audio Config**:
-```javascript
-const { bufferSize, maxPolyphony } = useAudioConfig();
-```
-
-**API Config**:
-```javascript
-const { apiUrl, wsUrl } = useApiConfig();
-```
-
-### Configuration Values
-
-Available configuration keys:
-
-- `apiUrl`: REST API base URL
-- `wsUrl`: WebSocket URL
-- `environment`: Current environment name
-- `enableDebug`: Debug mode flag
-- `enableAnalytics`: Analytics flag
-- `audioBufferSize`: Audio buffer size in samples
-- `maxPolyphony`: Maximum simultaneous voices
-- `logLevel`: Logging level (debug/info/warn/error)
-
-### Initialization
-
-Environment is initialized automatically by `environment-loader.js` which:
-
-1. Detects current environment from `NODE_ENV`
-2. Loads appropriate `.env` file
-3. Validates configuration against schema
-4. Stores in `ConfigContext` for hook access
-
-### Testing
-
-Test the hook in Chrome:
-```bash
-# Serve the test file
-python -m http.server 8000
-
-# Open in browser
-http://localhost:8000/hooks/useEnvironment.test.html
-```
-
-## Component Development
-
-### Web Component Template
+### Creating Components
 
 ```javascript
 /**
- * @fileoverview MyComponent - Brief description
- * @see {@link ../DESIGN_SYSTEM.md#relevant-section}
+ * Custom button component
+ * @extends HTMLElement
  */
-
-class MyComponent extends HTMLElement {
-  connectedCallback() {
+class HarmonyButton extends HTMLElement {
+  constructor() {
+    super();
     this.attachShadow({ mode: 'open' });
+  }
+  
+  connectedCallback() {
     this.render();
+    this.shadowRoot.querySelector('button')
+      .addEventListener('click', () => this.handleClick());
   }
   
   render() {
     this.shadowRoot.innerHTML = `
       <style>
-        :host {
-          display: block;
+        button {
+          background: var(--color-primary);
+          color: var(--color-on-primary);
+          padding: var(--spacing-md);
+          border: none;
+          border-radius: var(--radius-md);
         }
       </style>
-      <div>Content</div>
+      <button><slot></slot></button>
     `;
+  }
+  
+  handleClick() {
+    this.dispatchEvent(new CustomEvent('harmony-click', {
+      bubbles: true,
+      composed: true,
+      detail: { timestamp: Date.now() }
+    }));
   }
 }
 
-customElements.define('my-component', MyComponent);
+customElements.define('harmony-button', HarmonyButton);
 ```
-
-### Testing Components
-
-All UI components must be tested in Chrome before task completion:
-
-1. Create `.test.html` file alongside component
-2. Test all states: default, hover, focus, active, disabled
-3. Verify performance with DevTools (60fps target)
-4. Check accessibility with screen reader
-
-## Performance Budgets
-
-- **Render**: 16ms per frame (60fps)
-- **Memory**: 50MB WASM heap max
-- **Load**: 200ms initial load
-- **Audio**: 10ms end-to-end latency
-
-## Quality Gates
-
-Run before committing:
-
-```bash
-npm run lint
-npm run test
-npm run build
-```
-
-## Documentation Standards
-
-- Write in B1-level English (clear, simple)
-- Link to code files relatively
-- Keep code in files, not in docs
-- Two-way references between docs and code
-
-## Contributing
-
-1. Check existing structure before creating files
-2. Follow event-driven patterns
-3. No npm runtime dependencies
-4. Test in Chrome before completing
-5. Update this documentation file
-
-## Resources
-
-- EventBus: `core/event-bus.js`
-- Type Navigator: `core/type-navigator.js`
-- Environment Config: `hooks/useEnvironment.js`
-- Bounded Contexts: `bounded-contexts/`
-- Components: `components/`
 
 ---
 
-For detailed implementation notes, see code files linked throughout this document.
-## Feature Flags
+## Core Concepts
 
-Feature flags allow you to enable or disable features at runtime without code changes. This is useful for:
-- Rolling out new features gradually
-- A/B testing different implementations
-- Environment-specific behavior
-- Emergency feature disabling
+### Event Bus
 
-### Using Feature Flags
+Central message router for all component communication.
 
-The Feature Flag Context provides centralized flag management:
+**Key Methods:**
+- `publish(type, payload)` - Send event
+- `subscribe(type, handler)` - Listen for events
+- `unsubscribe(type, handler)` - Stop listening
 
-```jsx
-import { FeatureFlagProvider } from './contexts/FeatureFlagContext.jsx';
-import { useFeatureFlag } from './hooks/useFeatureFlag.js';
-
-// Wrap your app with the provider
-<FeatureFlagProvider initialFlags={{ webGPU: true, newEditor: false }}>
-  <App />
-</FeatureFlagProvider>
-
-// Check flags in components
-function MyComponent() {
-  const isWebGPUEnabled = useFeatureFlag('webGPU');
-  
-  return isWebGPUEnabled ? <GPURenderer /> : <CPURenderer />;
-}
-```
-
-### Available Flags
+See: [`core/event-bus.js`](core/event-bus.js)
 
-Common feature flags (defined in config/feature-flags.js):
-- webGPU - Enable WebGPU acceleration for audio processing
-- 
-ewEditor - Use new audio editor interface
-- etaFeatures - Enable experimental features
-- dvancedAudio - Advanced audio processing features
-- experimentalUI - New UI components in development
+### Bounded Contexts
 
-### Implementation Files
+Isolated business logic modules compiled to WASM.
 
-- **Context**: contexts/FeatureFlagContext.jsx - React context for flag state
-- **Hook**: hooks/useFeatureFlag.js - Convenient hook for checking flags
-- **Config**: config/feature-flags.js - Flag definitions and defaults
-- **Test**: 	est-pages/feature-flag-context-test.html - Browser test page
+**Available Contexts:**
+- Component Lifecycle - Component state management
+- Full-Text Index - Text search capabilities
+- Spatial Index - Geometric queries
+- WASM Bridge - JS/WASM communication
+- WASM Edge Executor - Edge computation
+- WASM Node Registry - Node management
 
-### Performance
+See: [`bounded-contexts/`](bounded-contexts/)
 
-Flag lookups are O(1) using Map internally. Context updates only trigger re-renders for consuming components. Flags can be persisted to localStorage for development testing.
+### Design Tokens
 
-### Testing
+CSS custom properties for consistent theming.
 
-Run the test page to verify flag behavior:
-```bash
-# Open in browser
-test-pages/feature-flag-context-test.html
-```
+**Token Categories:**
+- Colors - Semantic color palette
+- Spacing - Layout measurements
+- Typography - Font styles and sizes
+- Shadows - Elevation system
+- Radius - Border radius values
 
-The test page verifies:
-- Flag lookup performance (< 0.01ms per lookup)
-- Context initialization and state management
-- Batch updates and persistence
-- Memory usage (< 1KB for typical flag sets)
-## Feature Flag Context
+See: [`tokens/`](tokens/)
 
-The Feature Flag Context provides a vanilla JavaScript context system for managing feature flags across the application. It follows Web Component patterns and integrates with the EventBus for state propagation.
+---
 
-### Overview
+## Component Library
 
-Feature flags allow you to enable or disable features dynamically without deploying new code. The context system provides:
+### Primitives
 
-- **Web Component-based context provider** - <feature-flag-context> wraps components that need feature flags
-- **Reactive state management** - Subscribers are notified when flags change
-- **EventBus integration** - Publishes and listens to feature flag events
-- **Utility functions** - Helper functions for easy access to feature flags
+Basic building blocks:
+- `harmony-button` - Interactive buttons
+- `harmony-input` - Text input fields
+- `harmony-label` - Text labels
+- `harmony-icon` - Icon display
 
-### Implementation
+See: [`primitives/`](primitives/)
 
-**Location**: `contexts/feature-flag-context.js`
+### Molecules
 
-The context is implemented as a custom element that manages feature flag state:
+Composite components:
+- `harmony-labeled-input` - Input with label
+- `harmony-icon-button` - Button with icon
+- `harmony-search-box` - Search input with icon
 
-```javascript
-<feature-flag-context>
-  <my-component></my-component>
-</feature-flag-context>
-```
+See: [`components/`](components/)
 
-### Usage Patterns
+### Organisms
 
-#### In Web Components
+Complex UI sections:
+- `harmony-toolbar` - Application toolbar
+- `harmony-mixer-channel` - Audio mixer strip
+- `harmony-transport-controls` - Playback controls
 
-Components can access the context using the `useFeatureFlags` utility:
+See: [`organisms/`](organisms/)
 
-```javascript
-import { useFeatureFlags } from './contexts/feature-flag-context.js';
+### Templates
 
-class MyComponent extends HTMLElement {
-  connectedCallback() {
-    const { isEnabled, subscribe } = useFeatureFlags(this);
-    
-    if (isEnabled('newFeature')) {
-      this.renderNewFeature();
-    }
-    
-    // Subscribe to changes
-    this.unsubscribe = subscribe((flags) => {
-      this.render();
-    });
-  }
-  
-  disconnectedCallback() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-    }
-  }
-}
-```
+Page-level layouts:
+- `harmony-app-shell` - Main application layout
+- `harmony-project-view` - Project workspace
+- `harmony-settings-panel` - Settings interface
 
-#### Direct Context Access
+See: [`templates/`](templates/)
 
-Components can also access the context directly:
+---
 
-```javascript
-import { getFeatureFlagContext } from './contexts/feature-flag-context.js';
+## Performance Guidelines
 
-const context = getFeatureFlagContext(this);
-const isEnabled = context.isEnabled('featureName');
-```
+### Render Performance
 
-#### Updating Flags
+- Keep JavaScript execution under 16ms per frame
+- Use `requestAnimationFrame` for animations
+- Batch DOM updates
+- Leverage CSS transforms for smooth animations
 
-Flags can be updated programmatically:
+### Memory Management
 
-```javascript
-const context = document.querySelector('feature-flag-context');
-context.updateFlag('newFeature', true);
-```
+- Limit WASM heap to 50MB
+- Pool frequently allocated objects
+- Clean up event listeners on disconnect
+- Use WeakMap for component references
 
-### EventBus Integration
+### Load Performance
 
-The context publishes and subscribes to feature flag events:
+- Lazy-load non-critical WASM modules
+- Code-split large components
+- Optimize WASM binary size with `wasm-opt`
+- Use HTTP/2 for parallel asset loading
 
-**Published Events**:
-- `feature-flag:updated` - When a flag is updated via `updateFlag()`
+### Audio Performance
 
-**Subscribed Events**:
-- `feature-flag:updated` - Updates from external sources
-- `environment:changed` - Reloads flags when environment changes
+- Target 128-sample buffer size
+- Keep AudioWorklet processing under 5ms
+- Use SharedArrayBuffer for zero-copy transfer
+- Implement GPU fallback for WASM processing
 
-### API Reference
+See: [`performance/`](performance/)
 
-#### FeatureFlagContext Methods
+---
 
-- `isEnabled(flagName: string): boolean` - Check if a flag is enabled
-- `getAllFlags(): Object` - Get all feature flags as an object
-- `subscribe(callback: Function): Function` - Subscribe to changes, returns unsubscribe function
-- `unsubscribe(callback: Function): void` - Unsubscribe from changes
-- `updateFlag(flagName: string, enabled: boolean): void` - Update a flag
+## Contributing
 
-#### Utility Functions
+### Development Workflow
 
-- `getFeatureFlagContext(element: HTMLElement): FeatureFlagContext|null` - Find nearest context
-- `useFeatureFlags(element: HTMLElement): FeatureFlagState` - Get feature flag utilities
+1. Create feature branch
+2. Implement changes
+3. Run quality gates: `npm run quality-gates`
+4. Test in Chrome browser
+5. Update DESIGN_SYSTEM.md
+6. Commit and push
+7. Create pull request
 
-### Configuration Integration
+### Code Standards
 
-Feature flags are loaded from `config/feature-flags.js` using the `getFeatureFlags()` function. This allows flags to be defined based on environment variables and configuration.
+- Use JSDoc comments for all functions
+- Follow existing naming conventions
+- No runtime npm dependencies
+- All components use shadow DOM
+- Publish events, don't call BCs directly
 
-### Testing
+### Testing Requirements
 
-**Test File**: `contexts/feature-flag-context.test.html`
+- Unit tests for all functions
+- Integration tests for component interactions
+- Performance tests for budget validation
+- Manual Chrome testing for UI components
 
-Open the test file in Chrome to verify:
-- Context initialization
-- Feature flag checking
-- Subscribe/unsubscribe functionality
-- Flag updates
-- Utility functions
-- Interactive demo
+### Documentation
 
-### Performance Considerations
+All changes must update DESIGN_SYSTEM.md with:
+- Concept explanation in B1-level English
+- Links to relevant code files
+- Usage examples (minimal code in docs)
+- Cross-references between docs and code
 
-- Context uses `display: contents` to avoid affecting layout
-- Subscribers are stored in a Set for efficient add/remove
-- AbortController is used for automatic event cleanup
-- State changes are batched to minimize re-renders
+---
 
-### Related Files
+## License
 
-- `config/feature-flags.js` - Feature flag configuration
-- `config/environment-loader.js` - Environment configuration
-- `core/event-bus.js` - EventBus implementation
+See LICENSE file for details.
 
+## Support
 
-
-## Feature Flag Hook
-
-The `useFeatureFlag` hook checks if a feature is enabled in your app.
-
-**Location:** `hooks/useFeatureFlag.js`
-
-### Basic Usage
-
-Check a single feature flag:
-
-```javascript
-import { useFeatureFlag } from './hooks/useFeatureFlag.js';
-
-const isNewUIEnabled = useFeatureFlag('new-mixer-ui');
-if (isNewUIEnabled) {
-  // Show new UI
-}
-```
-
-### With Default Value
-
-Provide a fallback if the flag doesn't exist:
-
-```javascript
-const isEnabled = useFeatureFlag('experimental-feature', false);
-```
-
-### Check Multiple Flags
-
-Check if ALL flags are enabled:
-
-```javascript
-import { useFeatureFlags } from './hooks/useFeatureFlag.js';
-
-const allEnabled = useFeatureFlags('feature-a', 'feature-b', 'feature-c');
-```
-
-Check if ANY flag is enabled:
-
-```javascript
-import { useAnyFeatureFlag } from './hooks/useFeatureFlag.js';
-
-const anyEnabled = useAnyFeatureFlag('feature-a', 'feature-b');
-```
-
-### Runtime Toggle
-
-Toggle flags during development:
-
-```javascript
-import { useFeatureFlagToggle } from './hooks/useFeatureFlag.js';
-
-const toggleFlag = useFeatureFlagToggle();
-toggleFlag('new-feature', true);  // Enable
-toggleFlag('old-feature', false); // Disable
-```
-
-### Get All Flags
-
-Useful for debug panels:
-
-```javascript
-import { useAllFeatureFlags } from './hooks/useFeatureFlag.js';
-
-const allFlags = useAllFeatureFlags();
-// Returns Map<string, boolean>
-```
-
-### Requirements
-
-- Must be used inside a `<feature-flag-provider>` component
-- Flag keys must be non-empty strings
-- Returns boolean values
-- Logs warnings for missing flags
-
-### Performance
-
-- O(1) lookup via Map
-- No memory allocation (returns primitive boolean)
-- Suitable for frequent checks in render loops
-
-### Related
-
-- [Feature Flag Context](file://./contexts/FeatureFlagContext.js) - Provider component
-- [Environment Hook](file://./hooks/useEnvironment.js) - Environment configuration
-- [Config Context](file://./contexts/ConfigContext.js) - Typed config access
-
-
-## Feature Flag Types
-
-TypeScript type definitions provide autocomplete and type safety for feature flags.
-
-### Type Definitions
-
-All feature flag types are defined in `types/feature-flags.d.ts`:
-
-- **FeatureFlagKey**: Union type of all valid flag keys
-- **FeatureFlag**: Configuration object for a single flag
-- **FeatureFlagConfig**: Map of all flags
-- **FeatureFlagContextValue**: Context API interface
-
-### Using Types in JavaScript
-
-Use JSDoc comments to import types:
-
-```javascript
-/**
- * @typedef {import('./types/feature-flags').FeatureFlagKey} FeatureFlagKey
- */
-
-/**
- * @param {FeatureFlagKey} key
- */
-function checkFeature(key) {
-  // VS Code provides autocomplete for 'key'
-}
-```
-
-### Adding New Flags
-
-1. Add the flag key to `FeatureFlagKey` union in `types/feature-flags.d.ts`
-2. Add to `VALID_FLAG_KEYS` array in `types/feature-flags.js`
-3. Add default configuration in `contexts/feature-flag-context.js`
-
-### Type Guards
-
-Runtime validation functions in `types/feature-flags.js`:
-
-- `isFeatureFlagKey(key)`: Validates flag key
-- `isFeatureFlag(obj)`: Validates flag object
-- `validateDependencies()`: Checks flag dependencies
-
-### Autocomplete Support
-
-TypeScript provides autocomplete in:
-- VS Code with JSDoc comments
-- Function parameters
-- Object properties
-- Event payloads
-
-See `types/README.md` for detailed usage examples.
-
-
-## Code Quality and Linting
-
-### ESLint Configuration
-
-The project uses strict ESLint rules to ensure code quality, consistency, and accessibility compliance.
-
-**Configuration Files:**
-- .eslintrc.json - Main configuration entry point
-- config/eslint.config.js - Detailed rule definitions
-- config/eslint-a11y-rules.js - Custom accessibility rules for Web Components
-
-**Key Features:**
-
-1. **Policy Enforcement**: Automatically catches violations like npm imports in runtime code
-2. **TypeScript Support**: Strict type checking and validation
-3. **Accessibility**: Custom rules for WCAG 2.1 Level AA compliance
-4. **Performance**: Rules enforce performance budgets (16ms render, 50MB memory)
-5. **Web Components**: Specialized rules for custom element development
-
-**Running Linting:**
-
-```bash
-# Validate configuration and run linting
-node scripts/validate-eslint.js
-
-# Auto-fix issues where possible
-node scripts/validate-eslint.js --fix
-
-# Lint specific files
-npx eslint components/my-component.js
-```
-
-**Critical Rules:**
-
-- **No npm imports**: Runtime code must use relative paths only (./file.js)
-- **JSDoc required**: All functions, methods, and classes must have documentation
-- **No console.log**: Use console.warn/error/info instead
-- **Strict equality**: Always use === instead of ==
-- **Async safety**: No async operations in loops, proper promise handling
-
-**Accessibility Rules:**
-
-The configuration includes custom rules for Web Components:
-- Interactive elements must have keyboard handlers
-- ARIA attributes must be valid and properly used
-- Focus management must be explicit
-- Color contrast requirements (enforced in tests)
-
-**Integration:**
-
-ESLint runs automatically in:
-- Pre-commit hooks (via Husky)
-- CI/CD pipeline (on every PR)
-- IDE integration (VS Code, WebStorm)
-
-For full accessibility validation, use axe-core integration tests in 	ests/a11y/.
-
-**Related Files:**
-- Validation script: scripts/validate-eslint.js
-- Pre-commit hook: .husky/pre-commit
-- CI workflow: .github/workflows/ci-build.yml
-
+- GitHub Issues: Report bugs and request features
+- Discussions: Ask questions and share ideas
+- Wiki: Additional documentation and guides
