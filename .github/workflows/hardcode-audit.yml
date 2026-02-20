@@ -1,0 +1,76 @@
+name: Hardcode Audit
+
+on:
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly on Monday at 9am UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Run hardcode audit
+        run: node scripts/run-hardcode-audit.mjs
+        
+      - name: Upload audit reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: hardcode-audit-reports
+          path: reports/audits/hardcode-audit-*.md
+          retention-days: 30
+          
+      - name: Check thresholds
+        run: |
+          # Parse JSON report and check against thresholds
+          HIGH=$(node -p "require('./reports/audits/hardcode-audit-latest.json').summary.bySeverity.high")
+          MEDIUM=$(node -p "require('./reports/audits/hardcode-audit-latest.json').summary.bySeverity.medium")
+          
+          echo "High severity findings: $HIGH"
+          echo "Medium severity findings: $MEDIUM"
+          
+          if [ "$HIGH" -gt 100 ]; then
+            echo "❌ Too many high-severity findings ($HIGH > 100)"
+            exit 1
+          fi
+          
+          if [ "$MEDIUM" -gt 500 ]; then
+            echo "⚠️  Warning: Many medium-severity findings ($MEDIUM > 500)"
+          fi
+          
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('reports/audits/hardcode-audit-latest.json', 'utf-8'));
+            
+            const body = `## 🔍 Hardcode Audit Results
+            
+            **Total Findings:** ${report.summary.totalFindings}
+            
+            - 🔴 High: ${report.summary.bySeverity.high}
+            - 🟡 Medium: ${report.summary.bySeverity.medium}
+            - 🟢 Low: ${report.summary.bySeverity.low}
+            
+            [View full report](../actions/runs/${context.runId})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
