@@ -582,3 +582,80 @@ node scripts/validate-code-doc-links.js
 **Full specification**: [`docs/code-to-doc-reference-pattern.md`](./docs/code-to-doc-reference-pattern.md)
 **Templates**: [`templates/code-headers/`](./templates/code-headers/)
 **Validation**: [`scripts/validate-code-doc-links.js`](./scripts/validate-code-doc-links.js)
+
+
+### Domain Node Schema
+
+**Location:** ``harmony-schemas/schemas/domain-node.schema.json``  
+**Purpose:** Validates Domain graph nodes representing bounded contexts and architectural domains.
+
+Domain nodes represent logical groupings of functionality within the system. Each domain encapsulates a set of related responsibilities, exposes well-defined interfaces, and may map to a bounded context implementation in Rust/WASM.
+
+**Key Properties:**
+
+- **id** - Pattern: ``domain:{name}`` (e.g., ``domain:audio``, ``domain:graph``)
+- **type** - Always ``'domain'``
+- **namespace** - Domain namespace identifier (e.g., ``audio``, ``graph``, ``ui``)
+- **boundedContext** - Reference to BC implementation (e.g., ``audio-bc``)
+- **responsibilities** - Array of domain responsibilities
+- **interfaces** - Commands subscribed, events published, queries exposed
+- **dependencies** - Other domains this domain depends on
+- **implementation** - Language (rust/javascript), target (wasm/web), path
+- **performance** - Memory budget, latency budget, critical path flag
+
+**Example Domain Node:**
+
+````json
+{
+  'id': 'domain:audio',
+  'type': 'domain',
+  'name': 'Audio Processing Domain',
+  'namespace': 'audio',
+  'description': 'Handles all audio processing, playback, and routing',
+  'boundedContext': 'audio-bc',
+  'responsibilities': [
+    'Audio graph management',
+    'Real-time audio processing',
+    'Audio routing and mixing',
+    'Effect processing'
+  ],
+  'interfaces': {
+    'commands': ['Play', 'Pause', 'Stop', 'SetVolume'],
+    'events': ['PlaybackStarted', 'PlaybackPaused', 'VolumeChanged'],
+    'queries': ['getPlaybackState', 'getAudioGraph']
+  },
+  'dependencies': ['domain:graph'],
+  'implementation': {
+    'language': 'rust',
+    'target': 'wasm',
+    'path': 'bounded-contexts/audio-bc'
+  },
+  'performance': {
+    'budget': {
+      'memory': '20MB',
+      'latency': '10ms'
+    },
+    'critical': true
+  }
+}
+````
+
+**Usage Pattern:**
+
+1. **Define Domain** - Create domain node in graph with namespace and responsibilities
+2. **Implement BC** - Build bounded context in Rust following domain specification
+3. **Register Interfaces** - Subscribe to commands, publish events via EventBus
+4. **Document Dependencies** - Declare cross-domain dependencies for validation
+5. **Monitor Performance** - Track against declared budgets
+
+**Cross-References:**
+
+- Domain nodes connect to Intent nodes (intents route to domain commands)
+- Domain nodes connect to Component nodes (components trigger domain operations)
+- Domain nodes connect to other Domain nodes (domain dependencies)
+
+**Related Files:**
+
+- Schema: [harmony-schemas/schemas/domain-node.schema.json](harmony-schemas/schemas/domain-node.schema.json)
+- Graph Engine: [harmony-graph/](harmony-graph/)
+- Bounded Contexts: [bounded-contexts/](bounded-contexts/)
