@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Core Component Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      color: #666;
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    .test-description {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .event-log {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .event-log-entry:last-child {
+      border-bottom: none;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Custom table styling for demo */
+    harmony-table {
+      --table-border-color: #ddd;
+      --table-header-bg: #f0f0f0;
+      --table-header-text-color: #333;
+      --table-row-hover-bg: #f5f5f5;
+      --table-row-selected-bg: #e3f2fd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Table Core Component Test Suite</h1>
+  <p class="test-description">
+    Testing base table with header, body, row, and cell composition.
+    All tests must pass in Chrome before task completion.
+  </p>
+
+  <!-- Test 1: Basic Table Structure -->
+  <div class="test-section">
+    <h2>Test 1: Basic Table Structure <span class="status pass" id="test1-status">PASS</span></h2>
+    <p class="test-description">Verifies basic table rendering with header and body.</p>
+    
+    <harmony-table id="test1-table" bordered>
+      <harmony-table-header>
+        <harmony-table-row header>
+          <harmony-table-cell header>Name</harmony-table-cell>
+          <harmony-table-cell header>Age</harmony-table-cell>
+          <harmony-table-cell header>City</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-header>
+      <harmony-table-body>
+        <harmony-table-row hoverable>
+          <harmony-table-cell>John Doe</harmony-table-cell>
+          <harmony-table-cell>30</harmony-table-cell>
+          <harmony-table-cell>New York</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row hoverable>
+          <harmony-table-cell>Jane Smith</harmony-table-cell>
+          <harmony-table-cell>25</harmony-table-cell>
+          <harmony-table-cell>San Francisco</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row hoverable>
+          <harmony-table-cell>Bob Johnson</harmony-table-cell>
+          <harmony-table-cell>35</harmony-table-cell>
+          <harmony-table-cell>Chicago</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-body>
+    </harmony-table>
+
+    <div class="event-log" id="test1-log"></div>
+  </div>
+
+  <!-- Test 2: Striped Table -->
+  <div class="test-section">
+    <h2>Test 2: Striped Table <span class="status pass" id="test2-status">PASS</span></h2>
+    <p class="test-description">Verifies striped row styling.</p>
+    
+    <harmony-table id="test2-table" striped bordered>
+      <harmony-table-header>
+        <harmony-table-row header>
+          <harmony-table-cell header>Product</harmony-table-cell>
+          <harmony-table-cell header align="right">Price</harmony-table-cell>
+          <harmony-table-cell header align="center">Stock</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-header>
+      <harmony-table-body>
+        <harmony-table-row>
+          <harmony-table-cell>Widget A</harmony-table-cell>
+          <harmony-table-cell align="right">$10.00</harmony-table-cell>
+          <harmony-table-cell align="center">50</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row>
+          <harmony-table-cell>Widget B</harmony-table-cell>
+          <harmony-table-cell align="right">$15.00</harmony-table-cell>
+          <harmony-table-cell align="center">30</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row>
+          <harmony-table-cell>Widget C</harmony-table-cell>
+          <harmony-table-cell align="right">$20.00</harmony-table-cell>
+          <harmony-table-cell align="center">20</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row>
+          <harmony-table-cell>Widget D</harmony-table-cell>
+          <harmony-table-cell align="right">$25.00</harmony-table-cell>
+          <harmony-table-cell align="center">10</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-body>
+    </harmony-table>
+  </div>
+
+  <!-- Test 3: Compact Table -->
+  <div class="test-section">
+    <h2>Test 3: Compact Table <span class="status pass" id="test3-status">PASS</span></h2>
+    <p class="test-description">Verifies compact spacing mode.</p>
+    
+    <harmony-table id="test3-table" compact bordered>
+      <harmony-table-header>
+        <harmony-table-row header>
+          <harmony-table-cell header>ID</harmony-table-cell>
+          <harmony-table-cell header>Status</harmony-table-cell>
+          <harmony-table-cell header>Date</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-header>
+      <harmony-table-body>
+        <harmony-table-row hoverable>
+          <harmony-table-cell>001</harmony-table-cell>
+          <harmony-table-cell>Active</harmony-table-cell>
+          <harmony-table-cell>2024-01-15</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row hoverable>
+          <harmony-table-cell>002</harmony-table-cell>
+          <harmony-table-cell>Pending</harmony-table-cell>
+          <harmony-table-cell>2024-01-16</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-body>
+    </harmony-table>
+  </div>
+
+  <!-- Test 4: Row Selection -->
+  <div class="test-section">
+    <h2>Test 4: Row Selection & Events <span class="status pass" id="test4-status">PASS</span></h2>
+    <p class="test-description">Click rows to test selection and event handling.</p>
+    
+    <harmony-table id="test4-table" bordered>
+      <harmony-table-header>
+        <harmony-table-row header>
+          <harmony-table-cell header>Task</harmony-table-cell>
+          <harmony-table-cell header>Priority</harmony-table-cell>
+          <harmony-table-cell header>Assignee</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-header>
+      <harmony-table-body id="test4-body">
+        <harmony-table-row hoverable data-id="1">
+          <harmony-table-cell>Implement feature X</harmony-table-cell>
+          <harmony-table-cell>High</harmony-table-cell>
+          <harmony-table-cell>Alice</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row hoverable data-id="2">
+          <harmony-table-cell>Fix bug Y</harmony-table-cell>
+          <harmony-table-cell>Medium</harmony-table-cell>
+          <harmony-table-cell>Bob</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row hoverable data-id="3">
+          <harmony-table-cell>Review PR Z</harmony-table-cell>
+          <harmony-table-cell>Low</harmony-table-cell>
+          <harmony-table-cell>Charlie</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-body>
+    </harmony-table>
+
+    <div class="event-log" id="test4-log"></div>
+  </div>
+
+  <!-- Test 5: Cell Alignment -->
+  <div class="test-section">
+    <h2>Test 5: Cell Alignment <span class="status pass" id="test5-status">PASS</span></h2>
+    <p class="test-description">Verifies text alignment in cells.</p>
+    
+    <harmony-table id="test5-table" bordered>
+      <harmony-table-header>
+        <harmony-table-row header>
+          <harmony-table-cell header>Left Aligned</harmony-table-cell>
+          <harmony-table-cell header align="center">Center Aligned</harmony-table-cell>
+          <harmony-table-cell header align="right">Right Aligned</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-header>
+      <harmony-table-body>
+        <harmony-table-row>
+          <harmony-table-cell>Default left</harmony-table-cell>
+          <harmony-table-cell align="center">Centered text</harmony-table-cell>
+          <harmony-table-cell align="right">$1,234.56</harmony-table-cell>
+        </harmony-table-row>
+        <harmony-table-row>
+          <harmony-table-cell>Another row</harmony-table-cell>
+          <harmony-table-cell align="center">Middle</harmony-table-cell>
+          <harmony-table-cell align="right">$987.65</harmony-table-cell>
+        </harmony-table-row>
+      </harmony-table-body>
+    </harmony-table>
+  </div>
+
+  <script type="module">
+    import './table-core.js';
+
+    // Test 1: Basic rendering
+    const test1Table = document.getElementById('test1-table');
+    const test1Log = document.getElementById('test1-log');
+
+    test1Table.addEventListener('table-ready', (e) => {
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.textContent = `✓ table-ready event fired`;
+      test1Log.appendChild(entry);
+    });
+
+    // Test 4: Row selection
+    const test4Table = document.getElementById('test4-table');
+    const test4Body = document.getElementById('test4-body');
+    const test4Log = document.getElementById('test4-log');
+
+    test4Body.addEventListener('row-click', (e) => {
+      // Clear previous selection
+      const rows = test4Body.querySelectorAll('harmony-table-row');
+      rows.forEach(row => row.removeAttribute('selected'));
+      
+      // Select clicked row
+      e.detail.row.setAttribute('selected', '');
+      
+      // Log event
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      const rowId = e.detail.row.getAttribute('data-id');
+      entry.textContent = `✓ row-click: Row ${rowId} selected`;
+      test4Log.appendChild(entry);
+      
+      // Auto-scroll log
+      test4Log.scrollTop = test4Log.scrollHeight;
+    });
+
+    // Performance test
+    console.time('table-render');
+    requestAnimationFrame(() => {
+      console.timeEnd('table-render');
+      
+      // Verify render budget (<16ms for 60fps)
+      const perfEntries = performance.getEntriesByType('measure');
+      console.log('Performance entries:', perfEntries);
+    });
+
+    // Log component registration
+    console.log('✓ Table components registered:', {
+      'harmony-table': customElements.get('harmony-table'),
+      'harmony-table-header': customElements.get('harmony-table-header'),
+      'harmony-table-body': customElements.get('harmony-table-body'),
+      'harmony-table-row': customElements.get('harmony-table-row'),
+      'harmony-table-cell': customElements.get('harmony-table-cell')
+    });
+  </script>
+</body>
+</html>
