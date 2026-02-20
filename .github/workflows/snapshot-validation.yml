@@ -1,0 +1,117 @@
+name: Snapshot Validation
+
+on:
+  pull_request:
+    paths:
+      - 'tests/__snapshots__/**'
+      - 'tests/__visual_snapshots__/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-snapshots:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Generate snapshot diff report
+        run: node scripts/snapshot-diff.js --json
+      
+      - name: Upload diff report
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-validation-report
+          path: reports/snapshot-diff.json
+          retention-days: 30
+      
+      - name: Analyze snapshot changes
+        id: analyze
+        run: |
+          if [ -f reports/snapshot-diff.json ]; then
+            TOTAL=$(jq '.totalChanges' reports/snapshot-diff.json)
+            ADDED=$(jq '.added' reports/snapshot-diff.json)
+            MODIFIED=$(jq '.modified' reports/snapshot-diff.json)
+            DELETED=$(jq '.deleted' reports/snapshot-diff.json)
+            
+            echo "total=$TOTAL" >> $GITHUB_OUTPUT
+            echo "added=$ADDED" >> $GITHUB_OUTPUT
+            echo "modified=$MODIFIED" >> $GITHUB_OUTPUT
+            echo "deleted=$DELETED" >> $GITHUB_OUTPUT
+          else
+            echo "total=0" >> $GITHUB_OUTPUT
+            echo "added=0" >> $GITHUB_OUTPUT
+            echo "modified=0" >> $GITHUB_OUTPUT
+            echo "deleted=0" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const total = ${{ steps.analyze.outputs.total }};
+            const added = ${{ steps.analyze.outputs.added }};
+            const modified = ${{ steps.analyze.outputs.modified }};
+            const deleted = ${{ steps.analyze.outputs.deleted }};
+            
+            const body = `## 📸 Snapshot Validation Report
+            
+            This PR modifies test snapshots. Please review carefully.
+            
+            ### Summary
+            - **Total changes:** ${total}
+            - **Added:** ${added}
+            - **Modified:** ${modified}
+            - **Deleted:** ${deleted}
+            
+            ### Review Guidelines
+            1. ✅ Verify visual changes are intentional
+            2. ✅ Check that snapshots represent correct component states
+            3. ✅ Ensure no unexpected regressions
+            4. ✅ Confirm deleted snapshots are no longer needed
+            
+            ${modified > 0 ? '⚠️ **Modified snapshots require extra attention** - verify the changes match expected behavior.' : ''}
+            ${deleted > 0 ? '⚠️ **Deleted snapshots detected** - ensure these tests are no longer needed or have been replaced.' : ''}
+            
+            <details>
+            <summary>How to review snapshot changes</summary>
+            
+            \`\`\`bash
+            # View snapshot diff
+            git diff tests/__snapshots__
+            
+            # Generate visual diff report
+            node scripts/snapshot-diff.js
+            
+            # Restore snapshots if needed
+            node scripts/restore-snapshots.js
+            \`\`\`
+            </details>
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+      
+      - name: Check for large changes
+        if: steps.analyze.outputs.total > 50
+        run: |
+          echo "::warning::Large number of snapshot changes detected (${{ steps.analyze.outputs.total }})"
+          echo "Please verify this is intentional and all changes are correct."

@@ -1,0 +1,99 @@
+name: Snapshot Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      component:
+        description: 'Component name (optional - updates all if empty)'
+        required: false
+        type: string
+      create_pr:
+        description: 'Create PR with updated snapshots'
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-snapshots:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Update snapshots
+        run: |
+          if [ -n "${{ inputs.component }}" ]; then
+            node scripts/update-snapshots.js --component "${{ inputs.component }}"
+          else
+            node scripts/update-snapshots.js
+          fi
+      
+      - name: Generate diff report
+        if: always()
+        run: node scripts/snapshot-diff.js --json
+      
+      - name: Upload diff report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-diff-report
+          path: reports/snapshot-diff.json
+          retention-days: 30
+      
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain tests/__snapshots__ tests/__visual_snapshots__)" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Pull Request
+        if: steps.changes.outputs.has_changes == 'true' && inputs.create_pr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'test: update snapshots${{ inputs.component && format('' for {0}'', inputs.component) || '''' }}'
+          branch: snapshot-update-${{ github.run_number }}
+          title: 'test: Update snapshots${{ inputs.component && format('' for {0}'', inputs.component) || '''' }}'
+          body: |
+            ## Snapshot Update
+            
+            This PR contains updated test snapshots.
+            
+            ${{ inputs.component && format('**Component:** {0}', inputs.component) || '**Scope:** All components' }}
+            
+            ### Review Checklist
+            - [ ] Visual changes are intentional
+            - [ ] All snapshots represent correct component states
+            - [ ] No unexpected regressions
+            
+            **Triggered by:** @${{ github.actor }}
+            **Workflow run:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          labels: |
+            testing
+            snapshots
+            automated
+      
+      - name: Comment on no changes
+        if: steps.changes.outputs.has_changes == 'false'
+        run: |
+          echo "No snapshot changes detected."
+          echo "All snapshots are up to date."
