@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PriorityQueue Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    .test-suite {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-left: 4px solid #ccc;
+      background: #f9f9f9;
+    }
+    .test-case.pass {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    .test-case.fail {
+      border-left-color: #f44336;
+      background: #fef1f0;
+    }
+    .test-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    .test-error {
+      color: #d32f2f;
+      font-family: monospace;
+      font-size: 0.875rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #ffebee;
+      border-radius: 4px;
+    }
+    .summary {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .summary-item {
+      font-size: 1.125rem;
+    }
+    .summary-item strong {
+      font-size: 1.5rem;
+    }
+    h1 {
+      color: #1976d2;
+    }
+    h2 {
+      color: #424242;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+    .performance-metrics {
+      background: #fff3e0;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+    }
+    .metric-value {
+      font-weight: 600;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 PriorityQueue Test Suite</h1>
+  <div id="summary" class="summary"></div>
+  <div id="results"></div>
+
+  <script type="module">
+    import { PriorityQueue, createMaxPriorityQueue } from '../core/priority-queue.js';
+
+    const results = [];
+    let passed = 0;
+    let failed = 0;
+
+    function test(name, fn) {
+      try {
+        fn();
+        results.push({ name, pass: true });
+        passed++;
+      } catch (error) {
+        results.push({ name, pass: false, error: error.message });
+        failed++;
+        console.error(`Test failed: ${name}`, error);
+      }
+    }
+
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`);
+      }
+    }
+
+    function assertArrayEquals(actual, expected, message) {
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        throw new Error(message || `Expected ${JSON.stringify(expected)}, got ${JSON.stringify(actual)}`);
+      }
+    }
+
+    // Basic Operations Tests
+    test('Creates empty queue', () => {
+      const queue = new PriorityQueue();
+      assert(queue.isEmpty(), 'Queue should be empty');
+      assertEquals(queue.size, 0, 'Size should be 0');
+    });
+
+    test('Enqueues and dequeues single item', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 5);
+      assertEquals(queue.size, 1, 'Size should be 1');
+      assertEquals(queue.dequeue(), 'task1', 'Should dequeue task1');
+      assert(queue.isEmpty(), 'Queue should be empty after dequeue');
+    });
+
+    test('Dequeues items in priority order', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('low', 10);
+      queue.enqueue('high', 1);
+      queue.enqueue('medium', 5);
+      
+      assertEquals(queue.dequeue(), 'high', 'Should dequeue high priority first');
+      assertEquals(queue.dequeue(), 'medium', 'Should dequeue medium priority second');
+      assertEquals(queue.dequeue(), 'low', 'Should dequeue low priority last');
+    });
+
+    test('Peek returns highest priority without removing', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 5);
+      queue.enqueue('task2', 1);
+      
+      assertEquals(queue.peek(), 'task2', 'Should peek task2');
+      assertEquals(queue.size, 2, 'Size should remain 2');
+      assertEquals(queue.peekPriority(), 1, 'Should peek priority 1');
+    });
+
+    test('Handles equal priorities with stable ordering', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('first', 5);
+      queue.enqueue('second', 5);
+      queue.enqueue('third', 5);
+      
+      assertEquals(queue.dequeue(), 'first', 'Should maintain insertion order');
+      assertEquals(queue.dequeue(), 'second', 'Should maintain insertion order');
+      assertEquals(queue.dequeue(), 'third', 'Should maintain insertion order');
+    });
+
+    test('Clear removes all items', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 1);
+      queue.enqueue('task2', 2);
+      queue.clear();
+      
+      assert(queue.isEmpty(), 'Queue should be empty');
+      assertEquals(queue.size, 0, 'Size should be 0');
+    });
+
+    test('Returns undefined when dequeuing empty queue', () => {
+      const queue = new PriorityQueue();
+      assertEquals(queue.dequeue(), undefined, 'Should return undefined');
+      assertEquals(queue.peek(), undefined, 'Should return undefined');
+    });
+
+    // Complex Data Tests
+    test('Handles complex objects', () => {
+      const queue = new PriorityQueue();
+      const obj1 = { id: 1, name: 'Task A' };
+      const obj2 = { id: 2, name: 'Task B' };
+      
+      queue.enqueue(obj1, 10);
+      queue.enqueue(obj2, 5);
+      
+      assertEquals(queue.dequeue(), obj2, 'Should dequeue obj2');
+      assertEquals(queue.dequeue(), obj1, 'Should dequeue obj1');
+    });
+
+    test('Handles negative priorities', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 0);
+      queue.enqueue('task2', -5);
+      queue.enqueue('task3', 5);
+      
+      assertEquals(queue.dequeue(), 'task2', 'Negative priority should be highest');
+      assertEquals(queue.dequeue(), 'task1', 'Zero priority should be next');
+      assertEquals(queue.dequeue(), 'task3', 'Positive priority should be last');
+    });
+
+    // Array Conversion Tests
+    test('toArray returns all items', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('a', 3);
+      queue.enqueue('b', 1);
+      queue.enqueue('c', 2);
+      
+      const arr = queue.toArray();
+      assertEquals(arr.length, 3, 'Should return all items');
+      assert(arr.some(item => item.data === 'a'), 'Should contain a');
+      assert(arr.some(item => item.data === 'b'), 'Should contain b');
+      assert(arr.some(item => item.data === 'c'), 'Should contain c');
+    });
+
+    test('toSortedArray returns items in priority order', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('c', 3);
+      queue.enqueue('a', 1);
+      queue.enqueue('b', 2);
+      
+      const sorted = queue.toSortedArray();
+      assertEquals(sorted[0].data, 'a', 'First should be a');
+      assertEquals(sorted[1].data, 'b', 'Second should be b');
+      assertEquals(sorted[2].data, 'c', 'Third should be c');
+    });
+
+    // Static Methods Tests
+    test('from creates queue from array', () => {
+      const items = [
+        { data: 'low', priority: 10 },
+        { data: 'high', priority: 1 },
+        { data: 'medium', priority: 5 }
+      ];
+      
+      const queue = PriorityQueue.from(items);
+      assertEquals(queue.size, 3, 'Should have 3 items');
+      assertEquals(queue.dequeue(), 'high', 'Should dequeue in priority order');
+    });
+
+    test('drain processes all items in order', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('c', 3);
+      queue.enqueue('a', 1);
+      queue.enqueue('b', 2);
+      
+      const results = [];
+      queue.drain(item => results.push(item));
+      
+      assertArrayEquals(results, ['a', 'b', 'c'], 'Should process in priority order');
+      assert(queue.isEmpty(), 'Queue should be empty after drain');
+    });
+
+    // Update and Remove Tests
+    test('updatePriority changes item priority', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 10);
+      queue.enqueue('task2', 5);
+      
+      const updated = queue.updatePriority('task1', 1);
+      assert(updated, 'Should return true on successful update');
+      assertEquals(queue.dequeue(), 'task1', 'task1 should now be highest priority');
+    });
+
+    test('updatePriority returns false for non-existent item', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 5);
+      
+      const updated = queue.updatePriority('task2', 1);
+      assert(!updated, 'Should return false');
+    });
+
+    test('remove removes specific item', () => {
+      const queue = new PriorityQueue();
+      queue.enqueue('task1', 1);
+      queue.enqueue('task2', 2);
+      queue.enqueue('task3', 3);
+      
+      const removed = queue.remove('task2');
+      assert(removed, 'Should return true on successful removal');
+      assertEquals(queue.size, 2, 'Size should be 2');
+      assertEquals(queue.dequeue(), 'task1', 'Should skip removed item');
+      assertEquals(queue.dequeue(), 'task3', 'Should skip removed item');
+    });
+
+    // Max Priority Queue Tests
+    test('createMaxPriorityQueue dequeues highest values first', () => {
+      const queue = createMaxPriorityQueue();
+      queue.enqueue('low', 1);
+      queue.enqueue('high', 10);
+      queue.enqueue('medium', 5);
+      
+      assertEquals(queue.dequeue(), 'high', 'Should dequeue highest value first');
+      assertEquals(queue.dequeue(), 'medium', 'Should dequeue medium value second');
+      assertEquals(queue.dequeue(), 'low', 'Should dequeue lowest value last');
+    });
+
+    // Error Handling Tests
+    test('throws error for invalid priority', () => {
+      const queue = new PriorityQueue();
+      let threw = false;
+      
+      try {
+        queue.enqueue('task', 'invalid');
+      } catch (e) {
+        threw = true;
+      }
+      
+      assert(threw, 'Should throw error for invalid priority');
+    });
+
+    test('throws error for NaN priority', () => {
+      const queue = new PriorityQueue();
+      let threw = false;
+      
+      try {
+        queue.enqueue('task', NaN);
+      } catch (e) {
+        threw = true;
+      }
+      
+      assert(threw, 'Should throw error for NaN priority');
+    });
+
+    // Large Dataset Tests
+    test('handles large number of items', () => {
+      const queue = new PriorityQueue();
+      const count = 1000;
+      
+      for (let i = 0; i < count; i++) {
+        queue.enqueue(`task${i}`, Math.random() * 100);
+      }
+      
+      assertEquals(queue.size, count, `Should have ${count} items`);
+      
+      let lastPriority = -Infinity;
+      while (!queue.isEmpty()) {
+        const priority = queue.peekPriority();
+        assert(priority >= lastPriority, 'Should maintain priority order');
+        lastPriority = priority;
+        queue.dequeue();
+      }
+    });
+
+    // Performance Tests
+    test('Performance: 10000 enqueue operations', () => {
+      const queue = new PriorityQueue();
+      const start = performance.now();
+      
+      for (let i = 0; i < 10000; i++) {
+        queue.enqueue(`task${i}`, Math.random() * 1000);
+      }
+      
+      const duration = performance.now() - start;
+      console.log(`10000 enqueues: ${duration.toFixed(2)}ms`);
+      assert(duration < 100, 'Should complete in under 100ms');
+    });
+
+    test('Performance: 10000 dequeue operations', () => {
+      const queue = new PriorityQueue();
+      
+      for (let i = 0; i < 10000; i++) {
+        queue.enqueue(`task${i}`, Math.random() * 1000);
+      }
+      
+      const start = performance.now();
+      while (!queue.isEmpty()) {
+        queue.dequeue();
+      }
+      const duration = performance.now() - start;
+      
+      console.log(`10000 dequeues: ${duration.toFixed(2)}ms`);
+      assert(duration < 100, 'Should complete in under 100ms');
+    });
+
+    // Render results
+    function render() {
+      const summaryEl = document.getElementById('summary');
+      summaryEl.innerHTML = `
+        <div class="summary-item">
+          <strong style="color: #4caf50">${passed}</strong> passed
+        </div>
+        <div class="summary-item">
+          <strong style="color: #f44336">${failed}</strong> failed
+        </div>
+        <div class="summary-item">
+          <strong>${passed + failed}</strong> total
+        </div>
+      `;
+
+      const resultsEl = document.getElementById('results');
+      resultsEl.innerHTML = `
+        <div class="test-suite">
+          <h2>Test Results</h2>
+          ${results.map(result => `
+            <div class="test-case ${result.pass ? 'pass' : 'fail'}">
+              <div class="test-name">
+                ${result.pass ? '✓' : '✗'} ${result.name}
+              </div>
+              ${result.error ? `<div class="test-error">${result.error}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    render();
+  </script>
+</body>
+</html>
