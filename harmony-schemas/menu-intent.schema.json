@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/menu-intent.schema.json",
+  "title": "Menu Intent Schema",
+  "description": "Schema for defining menu items and their relationships in the Intent Graph",
+  "type": "object",
+  "properties": {
+    "menuItems": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/MenuItem"
+      }
+    }
+  },
+  "definitions": {
+    "MenuItem": {
+      "type": "object",
+      "required": ["id", "label", "intent"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the menu item"
+        },
+        "label": {
+          "type": "string",
+          "description": "Display label for the menu item"
+        },
+        "intent": {
+          "type": "string",
+          "description": "Intent type this menu item triggers"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Optional icon identifier"
+        },
+        "parentId": {
+          "type": "string",
+          "description": "Parent menu item ID for hierarchical menus"
+        },
+        "order": {
+          "type": "number",
+          "description": "Display order within parent or root level"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether the menu item is currently enabled",
+          "default": true
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "Whether the menu item is currently visible",
+          "default": true
+        },
+        "shortcut": {
+          "type": "string",
+          "description": "Keyboard shortcut (e.g., 'Ctrl+S')"
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Contexts where this menu item should appear"
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Additional metadata for the menu item"
+        }
+      }
+    }
+  }
+}
