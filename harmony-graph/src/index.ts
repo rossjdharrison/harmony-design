@@ -1,23 +1,28 @@
 /**
- * @fileoverview Harmony Graph Package Entry Point
+ * @fileoverview Public API barrel export for harmony-graph
  * @module harmony-graph
- * 
- * Composition root for the graph query and navigation system.
- * Exports all public APIs and wires together the graph infrastructure.
- * 
- * @see {@link file://./DESIGN_SYSTEM.md#Graph-System Graph System Documentation}
+ *
+ * Re-exports the graph engine's public interface using relative paths only.
+ * No npm package imports — all specifiers are relative (./...).
+ *
+ * @see {@link file://./DESIGN_SYSTEM.md#graph-engine Graph Engine Architecture}
  */
 
-export { QueryEngine } from './query-engine.js';
-export { 
+// Availability query engine
+export {
+  AvailabilityStatus,
   AvailabilityQueryEngine,
-  type AvailabilityStatus,
-  type AvailabilityQueryResult,
-  type AvailabilityQueryOptions
 } from './availability-query-engine.js';
-export type { 
-  GraphNode, 
-  GraphEdge, 
-  QueryResult,
-  QueryOptions 
-} from './types.js';
+
+export type {
+  AvailabilityResult,
+  AvailabilityQueryOptions,
+} from './availability-query-engine.js';
+
+// Core utilities
+export { EventBus } from './core/event_bus.js';
+export { TypeNavigator, isTypeNavigator } from './core/type_navigator.js';
+
+// Processors
+export { CompositionExtractor } from './processors/composition_extractor.js';
+export { CompositionValidator } from './processors/composition_validator.js';
