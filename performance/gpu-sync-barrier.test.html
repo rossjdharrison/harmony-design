@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPUSyncBarrier Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    h1 {
+      color: #00ff88;
+      border-bottom: 2px solid #00ff88;
+      padding-bottom: 0.5rem;
+    }
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    .test-section h2 {
+      color: #00ccff;
+      margin-top: 0;
+    }
+    button {
+      background: #00ff88;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: #00cc6a;
+      transform: translateY(-1px);
+    }
+    button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .output {
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 1rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success { color: #00ff88; }
+    .error { color: #ff4444; }
+    .warning { color: #ffaa00; }
+    .info { color: #00ccff; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .stat-card {
+      background: #0f0f0f;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+    }
+    .stat-label {
+      color: #888;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .stat-value {
+      color: #00ff88;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔄 GPUSyncBarrier Test Suite</h1>
+
+  <div class="test-section">
+    <h2>Device Initialization</h2>
+    <button id="initBtn">Initialize WebGPU</button>
+    <div id="initOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Basic Barrier Tests</h2>
+    <button id="computeBarrierBtn" disabled>Test Compute Barrier</button>
+    <button id="transferBarrierBtn" disabled>Test Transfer Barrier</button>
+    <button id="renderBarrierBtn" disabled>Test Render Barrier</button>
+    <div id="basicOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Timing Tests</h2>
+    <button id="timingBtn" disabled>Test GPU Timing</button>
+    <button id="multipleBarriersBtn" disabled>Test Multiple Barriers</button>
+    <div id="timingOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Stress Tests</h2>
+    <button id="concurrentBtn" disabled>Test Concurrent Barriers</button>
+    <button id="timeoutBtn" disabled>Test Timeout Handling</button>
+    <div id="stressOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Statistics</h2>
+    <button id="statsBtn" disabled>Refresh Stats</button>
+    <button id="resetStatsBtn" disabled>Reset Stats</button>
+    <div class="stats-grid" id="statsGrid"></div>
+  </div>
+
+  <script src="gpu-sync-barrier.js"></script>
+  <script>
+    let device = null;
+    let syncBarrier = null;
+
+    const log = (elementId, message, type = 'info') => {
+      const output = document.getElementById(elementId);
+      const timestamp = new Date().toLocaleTimeString();
+      const span = document.createElement('div');
+      span.className = type;
+      span.textContent = `[${timestamp}] ${message}`;
+      output.appendChild(span);
+      output.scrollTop = output.scrollHeight;
+    };
+
+    const enableButtons = (...ids) => {
+      ids.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = false;
+      });
+    };
+
+    // Initialize WebGPU
+    document.getElementById('initBtn').addEventListener('click', async () => {
+      try {
+        log('initOutput', 'Requesting WebGPU adapter...', 'info');
+        
+        if (!navigator.gpu) {
+          throw new Error('WebGPU not supported in this browser');
+        }
+
+        const adapter = await navigator.gpu.requestAdapter();
+        if (!adapter) {
+          throw new Error('No WebGPU adapter found');
+        }
+
+        log('initOutput', `Adapter: ${adapter.name || 'Unknown'}`, 'success');
+
+        device = await adapter.requestDevice();
+        log('initOutput', 'Device acquired successfully', 'success');
+
+        syncBarrier = new GPUSyncBarrier(device);
+        log('initOutput', 'GPUSyncBarrier initialized', 'success');
+
+        enableButtons(
+          'computeBarrierBtn', 'transferBarrierBtn', 'renderBarrierBtn',
+          'timingBtn', 'multipleBarriersBtn', 'concurrentBtn', 
+          'timeoutBtn', 'statsBtn', 'resetStatsBtn'
+        );
+
+      } catch (error) {
+        log('initOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test compute barrier
+    document.getElementById('computeBarrierBtn').addEventListener('click', async () => {
+      try {
+        log('basicOutput', 'Creating compute barrier...', 'info');
+        
+        const result = await syncBarrier.syncCompute('test-compute');
+        
+        if (result.completed) {
+          log('basicOutput', `✓ Compute barrier completed in ${result.duration.toFixed(2)}ms`, 'success');
+        } else {
+          log('basicOutput', `✗ Compute barrier failed`, 'error');
+        }
+      } catch (error) {
+        log('basicOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test transfer barrier
+    document.getElementById('transferBarrierBtn').addEventListener('click', async () => {
+      try {
+        log('basicOutput', 'Creating transfer barrier...', 'info');
+        
+        const result = await syncBarrier.syncTransfer('test-transfer');
+        
+        if (result.completed) {
+          log('basicOutput', `✓ Transfer barrier completed in ${result.duration.toFixed(2)}ms`, 'success');
+        } else {
+          log('basicOutput', `✗ Transfer barrier failed`, 'error');
+        }
+      } catch (error) {
+        log('basicOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test render barrier
+    document.getElementById('renderBarrierBtn').addEventListener('click', async () => {
+      try {
+        log('basicOutput', 'Creating render barrier...', 'info');
+        
+        const result = await syncBarrier.syncRender('test-render');
+        
+        if (result.completed) {
+          log('basicOutput', `✓ Render barrier completed in ${result.duration.toFixed(2)}ms`, 'success');
+        } else {
+          log('basicOutput', `✗ Render barrier failed`, 'error');
+        }
+      } catch (error) {
+        log('basicOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test GPU timing
+    document.getElementById('timingBtn').addEventListener('click', async () => {
+      try {
+        log('timingOutput', 'Testing GPU timing measurement...', 'info');
+        
+        const result = await syncBarrier.createBarrier({
+          id: 'timing-test',
+          type: 'compute',
+          measureTiming: true
+        });
+        
+        if (result.completed) {
+          log('timingOutput', `✓ GPU timing: ${result.duration.toFixed(3)}ms`, 'success');
+        } else {
+          log('timingOutput', `✗ Timing test failed`, 'error');
+        }
+      } catch (error) {
+        log('timingOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test multiple barriers
+    document.getElementById('multipleBarriersBtn').addEventListener('click', async () => {
+      try {
+        log('timingOutput', 'Creating multiple barriers...', 'info');
+        
+        const barriers = await Promise.all([
+          syncBarrier.syncCompute('multi-1'),
+          syncBarrier.syncTransfer('multi-2'),
+          syncBarrier.syncRender('multi-3')
+        ]);
+        
+        const allCompleted = barriers.every(b => b.completed);
+        const totalDuration = barriers.reduce((sum, b) => sum + b.duration, 0);
+        
+        if (allCompleted) {
+          log('timingOutput', `✓ All barriers completed. Total: ${totalDuration.toFixed(2)}ms`, 'success');
+        } else {
+          log('timingOutput', `✗ Some barriers failed`, 'error');
+        }
+      } catch (error) {
+        log('timingOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test concurrent barriers
+    document.getElementById('concurrentBtn').addEventListener('click', async () => {
+      try {
+        log('stressOutput', 'Creating 16 concurrent barriers...', 'info');
+        const startTime = performance.now();
+        
+        const promises = [];
+        for (let i = 0; i < 16; i++) {
+          promises.push(syncBarrier.createBarrier({
+            id: `concurrent-${i}`,
+            type: 'compute',
+            measureTiming: true
+          }));
+        }
+        
+        const results = await Promise.all(promises);
+        const duration = performance.now() - startTime;
+        const completed = results.filter(r => r.completed).length;
+        
+        log('stressOutput', `✓ ${completed}/16 barriers completed in ${duration.toFixed(2)}ms`, 'success');
+        
+        const avgDuration = results.reduce((sum, r) => sum + r.duration, 0) / results.length;
+        log('stressOutput', `Average barrier duration: ${avgDuration.toFixed(3)}ms`, 'info');
+        
+      } catch (error) {
+        log('stressOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Test timeout handling
+    document.getElementById('timeoutBtn').addEventListener('click', async () => {
+      try {
+        log('stressOutput', 'Testing timeout (100ms limit)...', 'info');
+        
+        const result = await syncBarrier.createBarrier({
+          id: 'timeout-test',
+          type: 'compute',
+          timeout: 100
+        });
+        
+        if (result.timedOut) {
+          log('stressOutput', `✓ Timeout handled correctly`, 'success');
+        } else {
+          log('stressOutput', `Barrier completed before timeout`, 'info');
+        }
+      } catch (error) {
+        log('stressOutput', `Error: ${error.message}`, 'error');
+      }
+    });
+
+    // Display statistics
+    document.getElementById('statsBtn').addEventListener('click', () => {
+      const stats = syncBarrier.getStats();
+      const grid = document.getElementById('statsGrid');
+      
+      grid.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Barriers</div>
+          <div class="stat-value">${stats.totalBarriers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value">${stats.completedBarriers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Timed Out</div>
+          <div class="stat-value">${stats.timedOutBarriers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active</div>
+          <div class="stat-value">${stats.activeBarriers}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Duration</div>
+          <div class="stat-value">${stats.averageDuration.toFixed(2)}ms</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Max Duration</div>
+          <div class="stat-value">${stats.maxDuration.toFixed(2)}ms</div>
+        </div>
+      `;
+    });
+
+    // Reset statistics
+    document.getElementById('resetStatsBtn').addEventListener('click', () => {
+      syncBarrier.resetStats();
+      document.getElementById('statsGrid').innerHTML = '<div class="info">Statistics reset</div>';
+    });
+  </script>
+</body>
+</html>
