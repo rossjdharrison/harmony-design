@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CodeHasher Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    
+    .test-suite {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .test-case {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-left: 4px solid #ccc;
+      background: #fafafa;
+    }
+    
+    .test-case.pass {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    
+    .test-case.fail {
+      border-left-color: #f44336;
+      background: #fef1f0;
+    }
+    
+    .test-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .test-result {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .summary {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem;
+      background: #e3f2fd;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+    
+    .summary-item {
+      font-weight: 600;
+    }
+    
+    .error-details {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      background: #fff;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #d32f2f;
+    }
+
+    h1 {
+      color: #1976d2;
+    }
+
+    h2 {
+      color: #424242;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>CodeHasher Test Suite</h1>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import { CodeHasher, ContentAddressableStorage } from './code-hasher.js';
+
+    const results = [];
+    let passCount = 0;
+    let failCount = 0;
+
+    /**
+     * Test runner utility
+     */
+    async function runTest(name, testFn) {
+      try {
+        await testFn();
+        results.push({ name, pass: true });
+        passCount++;
+      } catch (error) {
+        results.push({ name, pass: false, error: error.message });
+        failCount++;
+        console.error(`Test failed: ${name}`, error);
+      }
+    }
+
+    /**
+     * Assertion utilities
+     */
+    function assert(condition, message) {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+
+    function assertEquals(actual, expected, message) {
+      if (actual !== expected) {
+        throw new Error(message || `Expected ${expected}, got ${actual}`);
+      }
+    }
+
+    function assertNotEquals(actual, notExpected, message) {
+      if (actual === notExpected) {
+        throw new Error(message || `Expected value to not equal ${notExpected}`);
+      }
+    }
+
+    /**
+     * Test Suite: Basic Hashing
+     */
+    await runTest('Hash simple code string', async () => {
+      const code = 'function hello() { return "world"; }';
+      const hash = await CodeHasher.hashCode(code);
+      
+      assert(hash, 'Hash should be generated');
+      assert(hash.length === 64, 'SHA-256 hash should be 64 hex characters');
+    });
+
+    await runTest('Same code produces same hash', async () => {
+      const code = 'const x = 42;';
+      const hash1 = await CodeHasher.hashCode(code);
+      const hash2 = await CodeHasher.hashCode(code);
+      
+      assertEquals(hash1, hash2, 'Hashes should be identical');
+    });
+
+    await runTest('Different code produces different hash', async () => {
+      const code1 = 'const x = 42;';
+      const code2 = 'const y = 43;';
+      const hash1 = await CodeHasher.hashCode(code1);
+      const hash2 = await CodeHasher.hashCode(code2);
+      
+      assertNotEquals(hash1, hash2, 'Hashes should be different');
+    });
+
+    /**
+     * Test Suite: Code Normalization
+     */
+    await runTest('Normalize whitespace differences', async () => {
+      const code1 = 'function test() {\n  return 42;\n}';
+      const code2 = 'function test() {\r\n  return 42;\r\n}';
+      const hash1 = await CodeHasher.hashCode(code1);
+      const hash2 = await CodeHasher.hashCode(code2);
+      
+      assertEquals(hash1, hash2, 'Line ending differences should be normalized');
+    });
+
+    await runTest('Normalize trailing whitespace', async () => {
+      const code1 = 'const x = 42;';
+      const code2 = 'const x = 42;   ';
+      const hash1 = await CodeHasher.hashCode(code1);
+      const hash2 = await CodeHasher.hashCode(code2);
+      
+      assertEquals(hash1, hash2, 'Trailing whitespace should be normalized');
+    });
+
+    await runTest('Skip normalization when disabled', async () => {
+      const code1 = 'const x = 42;';
+      const code2 = 'const x = 42;   ';
+      const hash1 = await CodeHasher.hashCode(code1, { normalize: false });
+      const hash2 = await CodeHasher.hashCode(code2, { normalize: false });
+      
+      assertNotEquals(hash1, hash2, 'Hashes should differ without normalization');
+    });
+
+    /**
+     * Test Suite: Bundle Hashing
+     */
+    await runTest('Hash bundle with metadata', async () => {
+      const bundle = {
+        code: 'export function test() { return 42; }',
+        metadata: {
+          entryPoint: 'test.js',
+          dependencies: ['dep1', 'dep2']
+        }
+      };
+      
+      const hash = await CodeHasher.hashBundle(bundle);
+      assert(hash, 'Bundle hash should be generated');
+      assert(hash.length === 64, 'Hash should be 64 characters');
+    });
+
+    await runTest('Bundle with same content produces same hash', async () => {
+      const bundle1 = {
+        code: 'const x = 1;',
+        metadata: { version: '1.0' }
+      };
+      const bundle2 = {
+        code: 'const x = 1;',
+        metadata: { version: '1.0' }
+      };
+      
+      const hash1 = await CodeHasher.hashBundle(bundle1);
+      const hash2 = await CodeHasher.hashBundle(bundle2);
+      
+      assertEquals(hash1, hash2, 'Identical bundles should have same hash');
+    });
+
+    await runTest('Bundle with different metadata produces different hash', async () => {
+      const bundle1 = {
+        code: 'const x = 1;',
+        metadata: { version: '1.0' }
+      };
+      const bundle2 = {
+        code: 'const x = 1;',
+        metadata: { version: '2.0' }
+      };
+      
+      const hash1 = await CodeHasher.hashBundle(bundle1);
+      const hash2 = await CodeHasher.hashBundle(bundle2);
+      
+      assertNotEquals(hash1, hash2, 'Different metadata should produce different hash');
+    });
+
+    /**
+     * Test Suite: Duplicate Detection
+     */
+    await runTest('Find duplicate artifacts', async () => {
+      const artifacts = [
+        { id: 'a1', code: 'const x = 1;' },
+        { id: 'a2', code: 'const y = 2;' },
+        { id: 'a3', code: 'const x = 1;' }, // Duplicate of a1
+        { id: 'a4', code: 'const z = 3;' }
+      ];
+      
+      const duplicates = await CodeHasher.findDuplicates(artifacts);
+      
+      assert(duplicates.size === 1, 'Should find one set of duplicates');
+      const duplicateIds = Array.from(duplicates.values())[0];
+      assert(duplicateIds.length === 2, 'Should have 2 duplicate IDs');
+      assert(duplicateIds.includes('a1') && duplicateIds.includes('a3'), 
+        'Should identify correct duplicates');
+    });
+
+    await runTest('No duplicates returns empty map', async () => {
+      const artifacts = [
+        { id: 'a1', code: 'const x = 1;' },
+        { id: 'a2', code: 'const y = 2;' },
+        { id: 'a3', code: 'const z = 3;' }
+      ];
+      
+      const duplicates = await CodeHasher.findDuplicates(artifacts);
+      
+      assert(duplicates.size === 0, 'Should find no duplicates');
+    });
+
+    /**
+     * Test Suite: Cache Management
+     */
+    await runTest('Cache improves performance', async () => {
+      CodeHasher.clearCache();
+      const code = 'const x = 42;';
+      
+      const start1 = performance.now();
+      await CodeHasher.hashCode(code);
+      const time1 = performance.now() - start1;
+      
+      const start2 = performance.now();
+      await CodeHasher.hashCode(code);
+      const time2 = performance.now() - start2;
+      
+      assert(time2 < time1, 'Cached hash should be faster');
+    });
+
+    await runTest('Cache can be cleared', async () => {
+      await CodeHasher.hashCode('test');
+      const statsBefore = CodeHasher.getCacheStats();
+      
+      CodeHasher.clearCache();
+      const statsAfter = CodeHasher.getCacheStats();
+      
+      assert(statsBefore.size > 0, 'Cache should have entries before clear');
+      assert(statsAfter.size === 0, 'Cache should be empty after clear');
+    });
+
+    /**
+     * Test Suite: Content Addressable Storage
+     */
+    await runTest('Store and retrieve code', async () => {
+      const storage = new ContentAddressableStorage();
+      const code = 'const x = 42;';
+      
+      const hash = await storage.store(code);
+      const retrieved = storage.retrieve(hash);
+      
+      assertEquals(retrieved, code, 'Retrieved code should match stored code');
+    });
+
+    await runTest('Duplicate storage increases ref count', async () => {
+      const storage = new ContentAddressableStorage();
+      const code = 'const x = 42;';
+      
+      await storage.store(code);
+      await storage.store(code);
+      
+      const stats = storage.getStats();
+      assert(stats.entries === 1, 'Should only store one copy');
+      assert(stats.totalReferences === 2, 'Should have 2 references');
+    });
+
+    await runTest('Release decreases ref count', async () => {
+      const storage = new ContentAddressableStorage();
+      const code = 'const x = 42;';
+      
+      const hash = await storage.store(code);
+      await storage.store(code);
+      
+      storage.release(hash);
+      const stats = storage.getStats();
+      
+      assert(stats.totalReferences === 1, 'Should have 1 reference after release');
+      assert(storage.has(hash), 'Code should still exist');
+    });
+
+    await runTest('Release to zero removes code', async () => {
+      const storage = new ContentAddressableStorage();
+      const code = 'const x = 42;';
+      
+      const hash = await storage.store(code);
+      const removed = storage.release(hash);
+      
+      assert(removed, 'Release should return true when removing');
+      assert(!storage.has(hash), 'Code should be removed');
+    });
+
+    await runTest('Storage tracks metadata', async () => {
+      const storage = new ContentAddressableStorage();
+      const code = 'const x = 42;';
+      const meta = { source: 'test.js', line: 10 };
+      
+      const hash = await storage.store(code, meta);
+      const retrievedMeta = storage.getMetadata(hash);
+      
+      assert(retrievedMeta, 'Metadata should exist');
+      assertEquals(retrievedMeta.source, meta.source, 'Should preserve source');
+      assertEquals(retrievedMeta.line, meta.line, 'Should preserve line');
+      assert(retrievedMeta.storedAt, 'Should add storedAt timestamp');
+      assert(retrievedMeta.size, 'Should add size');
+    });
+
+    await runTest('Storage stats are accurate', async () => {
+      const storage = new ContentAddressableStorage();
+      
+      await storage.store('const x = 1;');
+      await storage.store('const y = 2;');
+      await storage.store('const x = 1;'); // Duplicate
+      
+      const stats = storage.getStats();
+      
+      assert(stats.entries === 2, 'Should have 2 unique entries');
+      assert(stats.totalReferences === 3, 'Should have 3 total references');
+      assert(stats.totalSize > 0, 'Should track total size');
+    });
+
+    /**
+     * Test Suite: Error Handling
+     */
+    await runTest('Reject non-string code', async () => {
+      try {
+        await CodeHasher.hashCode(123);
+        throw new Error('Should have thrown TypeError');
+      } catch (error) {
+        assert(error instanceof TypeError, 'Should throw TypeError');
+      }
+    });
+
+    await runTest('Reject invalid bundle', async () => {
+      try {
+        await CodeHasher.hashBundle({ metadata: {} }); // Missing code
+        throw new Error('Should have thrown Error');
+      } catch (error) {
+        assert(error.message.includes('code'), 'Should mention missing code');
+      }
+    });
+
+    await runTest('Reject invalid artifacts array', async () => {
+      try {
+        await CodeHasher.hashArtifacts('not-an-array');
+        throw new Error('Should have thrown TypeError');
+      } catch (error) {
+        assert(error instanceof TypeError, 'Should throw TypeError');
+      }
+    });
+
+    /**
+     * Render results
+     */
+    function renderResults() {
+      const container = document.getElementById('test-results');
+      
+      const summary = `
+        <div class="summary">
+          <div class="summary-item">Total: ${results.length}</div>
+          <div class="summary-item" style="color: #4caf50;">Passed: ${passCount}</div>
+          <div class="summary-item" style="color: #f44336;">Failed: ${failCount}</div>
+        </div>
+      `;
+
+      const testCases = results.map(result => {
+        const errorDetails = result.error 
+          ? `<div class="error-details">${result.error}</div>`
+          : '';
+        
+        return `
+          <div class="test-case ${result.pass ? 'pass' : 'fail'}">
+            <div class="test-name">${result.name}</div>
+            <div class="test-result">${result.pass ? '✓ Pass' : '✗ Fail'}</div>
+            ${errorDetails}
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="test-suite">
+          <h2>Test Results</h2>
+          ${summary}
+          ${testCases}
+        </div>
+      `;
+    }
+
+    renderResults();
+    console.log(`Tests complete: ${passCount} passed, ${failCount} failed`);
+  </script>
+</body>
+</html>
