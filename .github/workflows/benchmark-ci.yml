@@ -1,21 +1,8 @@
-name: Benchmark CI
+name: Benchmark CI (Extended)
 
+# Manual-only until all benchmark scripts are implemented.
+# TODO: restore push/pull_request triggers after adding the runner scripts.
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'performance/**'
-      - 'harmony-graph/**'
-      - 'harmony-core/**'
-      - 'workers/**'
-      - '.github/workflows/benchmark-ci.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'performance/**'
-      - 'harmony-graph/**'
-      - 'harmony-core/**'
-      - 'workers/**'
   workflow_dispatch:
     inputs:
       benchmark_suite:
@@ -62,11 +49,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          target: wasm32-unknown-unknown
-          override: true
+          targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
