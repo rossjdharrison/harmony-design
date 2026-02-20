@@ -1,0 +1,143 @@
+/**
+ * Composite Tokens - Tokens that reference other tokens for complex compositions
+ * 
+ * These tokens build semantic meaning by composing primitive tokens.
+ * They enable theme switching and maintain design consistency.
+ * 
+ * @see {@link file://./DESIGN_SYSTEM.md#composite-tokens}
+ */
+
+:root {
+  /* Composite Tokens - Reference other tokens for complex compositions */
+
+  /* Colors */
+  --surface-primary: var(--color-neutral-50);
+  --surface-secondary: var(--color-neutral-100);
+  --surface-tertiary: var(--color-neutral-200);
+  --surface-inverse: var(--color-neutral-900);
+  
+  --interactive-primary: var(--color-primary-600);
+  --interactive-primary-hover: var(--color-primary-700);
+  --interactive-primary-active: var(--color-primary-800);
+  --interactive-secondary: var(--color-neutral-600);
+  
+  --text-primary: var(--color-neutral-900);
+  --text-secondary: var(--color-neutral-700);
+  --text-tertiary: var(--color-neutral-500);
+  --text-inverse: var(--color-neutral-50);
+  --text-link: var(--color-primary-600);
+  
+  --border-default: var(--color-neutral-300);
+  --border-strong: var(--color-neutral-500);
+  --border-subtle: var(--color-neutral-200);
+  
+  --status-success: var(--color-success-600);
+  --status-warning: var(--color-warning-600);
+  --status-error: var(--color-error-600);
+  --status-info: var(--color-info-600);
+
+  /* Spacing */
+  --component-padding-sm: var(--spacing-2) var(--spacing-3);
+  --component-padding-md: var(--spacing-3) var(--spacing-4);
+  --component-padding-lg: var(--spacing-4) var(--spacing-6);
+  
+  --layout-gap-sm: var(--spacing-2);
+  --layout-gap-md: var(--spacing-4);
+  --layout-gap-lg: var(--spacing-6);
+  --layout-gap-xl: var(--spacing-8);
+  
+  --stack-gap-xs: var(--spacing-1);
+  --stack-gap-sm: var(--spacing-2);
+  --stack-gap-md: var(--spacing-4);
+  --stack-gap-lg: var(--spacing-6);
+
+  /* Shadows */
+  --elevation-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --elevation-2: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --elevation-3: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --elevation-4: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --elevation-5: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Borders */
+  --border-default-style: var(--border-width-1) solid var(--border-default);
+  --border-strong-style: var(--border-width-2) solid var(--border-strong);
+  --border-subtle-style: var(--border-width-1) solid var(--border-subtle);
+  --border-focus-style: var(--border-width-2) solid var(--interactive-primary);
+  --border-error-style: var(--border-width-1) solid var(--status-error);
+
+  /* Transitions */
+  --transition-fast: all var(--duration-fast, 150ms) var(--easing-standard, ease);
+  --transition-normal: all var(--duration-normal, 250ms) var(--easing-standard, ease);
+  --transition-slow: all var(--duration-slow, 400ms) var(--easing-standard, ease);
+  --transition-color: color var(--duration-fast, 150ms) var(--easing-standard, ease), 
+                      background-color var(--duration-fast, 150ms) var(--easing-standard, ease);
+  --transition-transform: transform var(--duration-normal, 250ms) var(--easing-emphasized, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+/* Dark theme overrides for composite tokens */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-primary: var(--color-neutral-900);
+    --surface-secondary: var(--color-neutral-800);
+    --surface-tertiary: var(--color-neutral-700);
+    --surface-inverse: var(--color-neutral-50);
+    
+    --text-primary: var(--color-neutral-50);
+    --text-secondary: var(--color-neutral-300);
+    --text-tertiary: var(--color-neutral-500);
+    --text-inverse: var(--color-neutral-900);
+    
+    --border-default: var(--color-neutral-700);
+    --border-strong: var(--color-neutral-500);
+    --border-subtle: var(--color-neutral-800);
+  }
+}
+
+/* Utility classes for applying composite tokens */
+.surface-primary {
+  background-color: var(--surface-primary);
+}
+
+.surface-secondary {
+  background-color: var(--surface-secondary);
+}
+
+.surface-tertiary {
+  background-color: var(--surface-tertiary);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-tertiary {
+  color: var(--text-tertiary);
+}
+
+.border-default {
+  border: var(--border-default-style);
+}
+
+.elevation-1 {
+  box-shadow: var(--elevation-1);
+}
+
+.elevation-2 {
+  box-shadow: var(--elevation-2);
+}
+
+.elevation-3 {
+  box-shadow: var(--elevation-3);
+}
+
+.elevation-4 {
+  box-shadow: var(--elevation-4);
+}
+
+.elevation-5 {
+  box-shadow: var(--elevation-5);
+}
