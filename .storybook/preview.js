@@ -1,96 +1,50 @@
 /**
- * Storybook 8 Preview Configuration
+ * @fileoverview Storybook Preview Configuration
+ * @module .storybook/preview
  * 
- * Configures global decorators, parameters, and theme support.
- * Implements dark mode toggle and performance monitoring.
+ * Configures the preview iframe where stories are rendered.
+ * Sets up global decorators, parameters, and theme integration.
  * 
- * @see DESIGN_SYSTEM.md#storybook-configuration
+ * @see {@link https://storybook.js.org/docs/react/configure/overview#configure-story-rendering|Preview Configuration}
  */
 
-import { withThemeByClassName } from '@storybook/addon-themes';
+import './theme-variables.css';
 
 /**
- * Performance monitoring decorator
- * Ensures components meet 16ms render budget
+ * Global parameters for all stories
+ * Controls the behavior and appearance of the preview
  */
-const withPerformanceMonitoring = (Story, context) => {
-  const startTime = performance.now();
-  
-  const result = Story();
-  
-  // Schedule performance check after render
-  requestAnimationFrame(() => {
-    const renderTime = performance.now() - startTime;
-    if (renderTime > 16) {
-      console.warn(
-        `⚠️ Performance Budget Exceeded: ${context.name} rendered in ${renderTime.toFixed(2)}ms (budget: 16ms)`
-      );
-    }
-  });
-  
-  return result;
-};
-
-/**
- * EventBus decorator
- * Makes EventBus available for component testing
- */
-const withEventBus = (Story) => {
-  // EventBus should be available globally via app-shell
-  // This decorator ensures it's initialized for isolated component testing
-  if (!window.eventBus) {
-    console.warn('EventBus not available. Components that publish events may not work correctly.');
-  }
-  
-  return Story();
-};
-
-/**
- * Shadow DOM inspector decorator
- * Helps debug shadow DOM components in Storybook
- */
-const withShadowDOMInspector = (Story, context) => {
-  const wrapper = document.createElement('div');
-  wrapper.style.position = 'relative';
-  
-  const story = Story();
-  wrapper.appendChild(story);
-  
-  // Add shadow DOM inspection hint
-  if (context.parameters.shadowDOM !== false) {
-    const hint = document.createElement('div');
-    hint.style.cssText = 'position: absolute; top: -20px; right: 0; font-size: 10px; color: #666;';
-    hint.textContent = '💡 This component uses Shadow DOM';
-    wrapper.appendChild(hint);
-  }
-  
-  return wrapper;
-};
-
-export const decorators = [
-  withPerformanceMonitoring,
-  withEventBus,
-  withShadowDOMInspector,
-  withThemeByClassName({
-    themes: {
-      light: 'light-theme',
-      dark: 'dark-theme',
-    },
-    defaultTheme: 'light',
-  }),
-];
-
 export const parameters = {
-  actions: { argTypesRegex: '^on[A-Z].*' },
+  // Actions configuration
+  actions: { 
+    argTypesRegex: '^on[A-Z].*' 
+  },
   
+  // Controls configuration
   controls: {
     matchers: {
       color: /(background|color)$/i,
       date: /Date$/,
     },
     expanded: true,
+    sort: 'requiredFirst',
   },
   
+  // Docs configuration
+  docs: {
+    theme: undefined, // Will be set based on user preference
+    toc: {
+      contentsSelector: '.sbdocs-content',
+      headingSelector: 'h1, h2, h3',
+      title: 'Table of Contents',
+      disable: false,
+    },
+  },
+  
+  // Layout configuration
+  layout: 'centered',
+  
+  // Backgrounds configuration - matches Harmony Design System
   backgrounds: {
     default: 'light',
     values: [
@@ -99,16 +53,21 @@ export const parameters = {
         value: '#ffffff',
       },
       {
-        name: 'dark',
-        value: '#1a1a1a',
+        name: 'surface',
+        value: '#f8fafc',
       },
       {
-        name: 'gray',
-        value: '#f5f5f5',
+        name: 'dark',
+        value: '#0f172a',
+      },
+      {
+        name: 'surface-dark',
+        value: '#1e293b',
       },
     ],
   },
   
+  // Viewport configuration
   viewport: {
     viewports: {
       mobile: {
@@ -128,43 +87,95 @@ export const parameters = {
       desktop: {
         name: 'Desktop',
         styles: {
-          width: '1440px',
-          height: '900px',
+          width: '1280px',
+          height: '800px',
+        },
+      },
+      wide: {
+        name: 'Wide',
+        styles: {
+          width: '1920px',
+          height: '1080px',
         },
       },
     },
   },
   
-  a11y: {
-    config: {
-      rules: [
-        {
-          id: 'color-contrast',
-          enabled: true,
-        },
-        {
-          id: 'label',
-          enabled: true,
-        },
+  // Options configuration
+  options: {
+    storySort: {
+      order: [
+        'Introduction',
+        'Design Tokens',
+        ['Colors', 'Typography', 'Spacing', 'Shadows'],
+        'Primitives',
+        'Components',
+        'Organisms',
+        'Templates',
+        'Examples',
       ],
     },
   },
-  
-  docs: {
-    toc: true,
-  },
 };
 
-// Global types for toolbar controls
+/**
+ * Global decorators for all stories
+ * Wraps each story with common functionality
+ */
+export const decorators = [
+  /**
+   * Theme decorator - applies theme class to story wrapper
+   */
+  (Story, context) => {
+    const theme = context.globals.theme || 'light';
+    
+    return `
+      <div class="harmony-theme-wrapper" data-theme="${theme}">
+        ${Story()}
+      </div>
+    `;
+  },
+  
+  /**
+   * Performance monitoring decorator
+   * Logs render time to console in development
+   */
+  (Story, context) => {
+    if (process.env.NODE_ENV === 'development') {
+      const startTime = performance.now();
+      const result = Story();
+      const endTime = performance.now();
+      const renderTime = endTime - startTime;
+      
+      // Warn if render exceeds 16ms budget
+      if (renderTime > 16) {
+        console.warn(
+          `Story "${context.name}" exceeded render budget: ${renderTime.toFixed(2)}ms`
+        );
+      }
+    }
+    
+    return Story();
+  },
+];
+
+/**
+ * Global types for toolbar controls
+ * Adds theme switcher to toolbar
+ */
 export const globalTypes = {
-  performance: {
-    name: 'Performance Monitor',
-    description: 'Show performance metrics',
-    defaultValue: 'off',
+  theme: {
+    name: 'Theme',
+    description: 'Global theme for components',
+    defaultValue: 'light',
     toolbar: {
-      icon: 'timer',
-      items: ['on', 'off'],
+      icon: 'circlehollow',
+      items: [
+        { value: 'light', icon: 'circlehollow', title: 'Light' },
+        { value: 'dark', icon: 'circle', title: 'Dark' },
+      ],
       showName: true,
+      dynamicTitle: true,
     },
   },
 };

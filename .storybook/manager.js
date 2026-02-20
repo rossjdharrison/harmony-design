@@ -1,66 +1,82 @@
 /**
- * Storybook 8 Manager Configuration
+ * @fileoverview Storybook Manager Configuration
+ * @module .storybook/manager
  * 
- * Customizes the Storybook UI manager interface.
- * Configures branding and theme for the Storybook chrome.
+ * Configures the Storybook manager UI with custom theme and addons.
+ * The manager is the outer UI that wraps the preview iframe.
  * 
- * @see DESIGN_SYSTEM.md#storybook-configuration
+ * @see {@link https://storybook.js.org/docs/react/configure/features-and-behavior|Storybook Configuration}
+ * @see .storybook/harmony-theme.js for theme definitions
  */
 
 import { addons } from '@storybook/manager-api';
-import { themes } from '@storybook/theming';
+import { lightTheme, darkTheme } from './harmony-theme';
+
+/**
+ * Detect user's preferred color scheme
+ * @returns {'light' | 'dark'} The preferred theme
+ */
+function getPreferredTheme() {
+  if (typeof window === 'undefined') return 'light';
+  
+  // Check localStorage for saved preference
+  const saved = localStorage.getItem('harmony-storybook-theme');
+  if (saved === 'light' || saved === 'dark') return saved;
+  
+  // Check system preference
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  
+  return 'light';
+}
+
+/**
+ * Apply the selected theme to Storybook
+ */
+const preferredTheme = getPreferredTheme();
+const theme = preferredTheme === 'dark' ? darkTheme : lightTheme;
 
 addons.setConfig({
-  theme: {
-    ...themes.normal,
-    brandTitle: 'Harmony Design System',
-    brandUrl: 'https://github.com/yourusername/harmony-design',
-    brandImage: undefined,
-    brandTarget: '_self',
-    
-    // Color palette aligned with design system
-    colorPrimary: '#6366f1',
-    colorSecondary: '#8b5cf6',
-    
-    // UI
-    appBg: '#ffffff',
-    appContentBg: '#ffffff',
-    appBorderColor: '#e5e7eb',
-    appBorderRadius: 8,
-    
-    // Typography
-    fontBase: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    fontCode: '"Fira Code", "Courier New", monospace',
-    
-    // Text colors
-    textColor: '#1f2937',
-    textInverseColor: '#ffffff',
-    
-    // Toolbar default and active colors
-    barTextColor: '#6b7280',
-    barSelectedColor: '#6366f1',
-    barBg: '#f9fafb',
-    
-    // Form colors
-    inputBg: '#ffffff',
-    inputBorder: '#d1d5db',
-    inputTextColor: '#1f2937',
-    inputBorderRadius: 6,
-  },
+  theme,
   
-  // Panel position
+  /**
+   * Show/hide various UI elements
+   */
+  showNav: true,
+  showPanel: true,
   panelPosition: 'bottom',
   
-  // Show addon panel by default
-  showPanel: true,
+  /**
+   * Enable keyboard shortcuts
+   */
+  enableShortcuts: true,
   
-  // Sidebar configuration
+  /**
+   * Show toolbar by default
+   */
+  isToolshown: true,
+  
+  /**
+   * Initial active sidebar item
+   */
+  initialActive: 'sidebar',
+  
+  /**
+   * Sidebar configuration
+   */
   sidebar: {
     showRoots: true,
     collapsedRoots: ['other'],
+    renderLabel: (item) => {
+      // Custom label rendering for sidebar items
+      return item.name;
+    },
   },
   
-  // Toolbar configuration
+  /**
+   * Toolbar configuration
+   */
   toolbar: {
     title: { hidden: false },
     zoom: { hidden: false },
@@ -69,3 +85,25 @@ addons.setConfig({
     fullscreen: { hidden: false },
   },
 });
+
+/**
+ * Listen for theme changes and persist preference
+ */
+if (typeof window !== 'undefined') {
+  // Save theme preference when changed
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'harmony-storybook-theme') {
+      // Theme changed in another tab, reload to apply
+      window.location.reload();
+    }
+  });
+  
+  // Listen for system theme changes
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      const newTheme = e.matches ? 'dark' : 'light';
+      localStorage.setItem('harmony-storybook-theme', newTheme);
+      window.location.reload();
+    });
+  }
+}

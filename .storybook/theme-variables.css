@@ -1,0 +1,111 @@
+/**
+ * CSS Custom Properties for Harmony Design System Theme
+ * These variables are used throughout Storybook to maintain consistency
+ * with the design system.
+ * 
+ * @see DESIGN_SYSTEM.md#design-tokens
+ */
+
+:root {
+  /* Primary Colors */
+  --harmony-primary: #6366f1;
+  --harmony-primary-dark: #4f46e5;
+  --harmony-primary-light: #818cf8;
+  
+  /* Neutral Colors - Light Mode */
+  --harmony-background: #ffffff;
+  --harmony-surface: #f8fafc;
+  --harmony-border: #e2e8f0;
+  
+  /* Text Colors - Light Mode */
+  --harmony-text-primary: #0f172a;
+  --harmony-text-secondary: #475569;
+  --harmony-text-tertiary: #94a3b8;
+  
+  /* Semantic Colors */
+  --harmony-success: #10b981;
+  --harmony-warning: #f59e0b;
+  --harmony-error: #ef4444;
+  --harmony-info: #3b82f6;
+  
+  /* Spacing Scale */
+  --harmony-space-xs: 4px;
+  --harmony-space-sm: 8px;
+  --harmony-space-md: 16px;
+  --harmony-space-lg: 24px;
+  --harmony-space-xl: 32px;
+  --harmony-space-2xl: 48px;
+  
+  /* Border Radius */
+  --harmony-radius-sm: 4px;
+  --harmony-radius-md: 6px;
+  --harmony-radius-lg: 8px;
+  --harmony-radius-xl: 12px;
+  
+  /* Shadows */
+  --harmony-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --harmony-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --harmony-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  
+  /* Typography */
+  --harmony-font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --harmony-font-family-mono: "Fira Code", "Monaco", "Consolas", monospace;
+  
+  --harmony-font-size-xs: 12px;
+  --harmony-font-size-sm: 14px;
+  --harmony-font-size-md: 16px;
+  --harmony-font-size-lg: 18px;
+  --harmony-font-size-xl: 20px;
+  --harmony-font-size-2xl: 24px;
+  
+  --harmony-font-weight-normal: 400;
+  --harmony-font-weight-medium: 500;
+  --harmony-font-weight-semibold: 600;
+  --harmony-font-weight-bold: 700;
+  
+  --harmony-line-height-tight: 1.25;
+  --harmony-line-height-normal: 1.5;
+  --harmony-line-height-relaxed: 1.75;
+  
+  /* Transitions */
+  --harmony-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --harmony-transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --harmony-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Z-Index Scale */
+  --harmony-z-dropdown: 1000;
+  --harmony-z-sticky: 1020;
+  --harmony-z-fixed: 1030;
+  --harmony-z-modal-backdrop: 1040;
+  --harmony-z-modal: 1050;
+  --harmony-z-popover: 1060;
+  --harmony-z-tooltip: 1070;
+}
+
+/* Dark Mode Variables */
+[data-theme="dark"],
+.dark {
+  --harmony-background: #0f172a;
+  --harmony-surface: #1e293b;
+  --harmony-border: #334155;
+  
+  --harmony-text-primary: #f8fafc;
+  --harmony-text-secondary: #cbd5e1;
+  --harmony-text-tertiary: #64748b;
+  
+  --harmony-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --harmony-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --harmony-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+}
+
+/* Apply smooth transitions to theme changes */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: var(--harmony-transition-base);
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent transition on page load */
+.preload * {
+  transition: none !important;
+}
