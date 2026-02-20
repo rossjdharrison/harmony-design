@@ -1,0 +1,63 @@
+# Harmony Card Component
+# Demonstrates a card with hover animation
+
+@component
+name: Harmony Card
+tag: harmony-card
+description: A card component with elevation and hover effects
+
+@properties
+elevation: number = 1 // Card elevation level (0-5)
+interactive: boolean = false // Whether card responds to hover
+padding: string = "1.5rem" // Card padding
+
+@slots
+header // Card header content
+default // Card body content
+footer // Card footer content
+
+@styles
+display: flex
+flex-direction: column
+background: white
+border-radius: 0.5rem
+overflow: hidden
+transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24)
+
+@state
+state: hover
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23)
+transform: translateY(-4px)
+
+@animation
+name: slideUp
+property: transform
+from: translateY(20px)
+to: translateY(0)
+duration: 400
+easing: cubic-bezier(0.4, 0, 0.2, 1)
+trigger: load
+
+@animation
+name: fadeIn
+property: opacity
+from: 0
+to: 1
+duration: 400
+easing: ease-in
+trigger: load
+
+@template
+<div class="card">
+  <div class="card-header" part="header">
+    <slot name="header"></slot>
+  </div>
+  <div class="card-body" part="body">
+    <slot></slot>
+  </div>
+  <div class="card-footer" part="footer">
+    <slot name="footer"></slot>
+  </div>
+</div>
+@end-template
