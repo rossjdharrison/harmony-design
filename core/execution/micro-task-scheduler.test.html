@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicroTaskScheduler Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      margin: 15px 0;
+      padding: 10px;
+      border-left: 4px solid #ddd;
+    }
+    .test-case.pass {
+      border-left-color: #4caf50;
+      background: #f1f8f4;
+    }
+    .test-case.fail {
+      border-left-color: #f44336;
+      background: #fef1f0;
+    }
+    .test-case.running {
+      border-left-color: #ff9800;
+      background: #fff8e1;
+    }
+    .metrics {
+      background: #e3f2fd;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 14px;
+    }
+    .log {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin: 10px 0;
+    }
+    button {
+      background: #2196f3;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #1976d2; }
+    .controls {
+      margin: 20px 0;
+      padding: 15px;
+      background: #fff;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔄 MicroTaskScheduler Tests</h1>
+  
+  <div class="controls">
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    <button onclick="showMetrics()">Show Metrics</button>
+  </div>
+
+  <div id="results"></div>
+  <div id="metrics-display"></div>
+  <div id="log" class="log"></div>
+
+  <script type="module">
+    import {
+      MicroTaskScheduler,
+      globalMicroTaskScheduler,
+      scheduleMicroTask,
+      scheduleMicroTaskAsync
+    } from './micro-task-scheduler.js';
+
+    const results = document.getElementById('results');
+    const metricsDisplay = document.getElementById('metrics-display');
+    const logDisplay = document.getElementById('log');
+    let testLog = [];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+      const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}`;
+      testLog.push(logEntry);
+      logDisplay.textContent = testLog.slice(-50).join('\n');
+      logDisplay.scrollTop = logDisplay.scrollHeight;
+    }
+
+    function createTestCase(name, status = 'running') {
+      const div = document.createElement('div');
+      div.className = `test-case ${status}`;
+      div.innerHTML = `<strong>${name}</strong><div class="result"></div>`;
+      results.appendChild(div);
+      return div;
+    }
+
+    function updateTestCase(testCase, status, message) {
+      testCase.className = `test-case ${status}`;
+      testCase.querySelector('.result').textContent = message;
+    }
+
+    // Test 1: Basic scheduling
+    async function testBasicScheduling() {
+      const testCase = createTestCase('Test 1: Basic Scheduling');
+      log('Starting basic scheduling test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+        let executed = false;
+
+        const taskId = scheduler.schedule(() => {
+          executed = true;
+          log('Microtask executed');
+        });
+
+        // Microtask should execute after current task
+        if (executed) {
+          throw new Error('Task executed synchronously');
+        }
+
+        // Wait for microtask to execute
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!executed) {
+          throw new Error('Task not executed');
+        }
+
+        updateTestCase(testCase, 'pass', `✓ Task ${taskId} executed correctly`);
+        log('Basic scheduling test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Basic scheduling test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 2: Execution order
+    async function testExecutionOrder() {
+      const testCase = createTestCase('Test 2: Execution Order');
+      log('Starting execution order test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+        const order = [];
+
+        scheduler.schedule(() => order.push(1));
+        scheduler.schedule(() => order.push(2));
+        scheduler.schedule(() => order.push(3));
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (order.join(',') !== '1,2,3') {
+          throw new Error(`Wrong order: ${order.join(',')}`);
+        }
+
+        updateTestCase(testCase, 'pass', '✓ Tasks executed in correct order');
+        log('Execution order test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Execution order test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 3: Context and arguments
+    async function testContextAndArgs() {
+      const testCase = createTestCase('Test 3: Context and Arguments');
+      log('Starting context and arguments test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+        let result = null;
+
+        const context = { value: 42 };
+        const callback = function(a, b) {
+          result = { thisValue: this.value, sum: a + b };
+        };
+
+        scheduler.schedule(callback, {
+          context,
+          args: [10, 20]
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!result || result.thisValue !== 42 || result.sum !== 30) {
+          throw new Error('Context or arguments not passed correctly');
+        }
+
+        updateTestCase(testCase, 'pass', '✓ Context and args passed correctly');
+        log('Context and arguments test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Context and arguments test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 4: Async scheduling
+    async function testAsyncScheduling() {
+      const testCase = createTestCase('Test 4: Async Scheduling');
+      log('Starting async scheduling test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+
+        const result = await scheduler.scheduleAsync(async () => {
+          await new Promise(resolve => setTimeout(resolve, 10));
+          return 'async result';
+        });
+
+        if (result !== 'async result') {
+          throw new Error('Async result not returned correctly');
+        }
+
+        updateTestCase(testCase, 'pass', '✓ Async task completed successfully');
+        log('Async scheduling test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Async scheduling test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 5: Task cancellation
+    async function testCancellation() {
+      const testCase = createTestCase('Test 5: Task Cancellation');
+      log('Starting cancellation test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+        let executed = false;
+
+        const taskId = scheduler.schedule(() => {
+          executed = true;
+        });
+
+        const cancelled = scheduler.cancel(taskId);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!cancelled) {
+          throw new Error('Cancel returned false');
+        }
+
+        if (executed) {
+          throw new Error('Cancelled task was executed');
+        }
+
+        updateTestCase(testCase, 'pass', '✓ Task cancelled successfully');
+        log('Cancellation test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Cancellation test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 6: Batch scheduling
+    async function testBatchScheduling() {
+      const testCase = createTestCase('Test 6: Batch Scheduling');
+      log('Starting batch scheduling test');
+
+      try {
+        const scheduler = new MicroTaskScheduler();
+        const results = [];
+
+        const tasks = [
+          { callback: () => results.push('A') },
+          { callback: () => results.push('B') },
+          { callback: () => results.push('C') }
+        ];
+
+        const taskIds = scheduler.scheduleBatch(tasks);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (taskIds.length !== 3) {
+          throw new Error('Wrong number of task IDs returned');
+        }
+
+        if (results.join('') !== 'ABC') {
+          throw new Error('Batch tasks not executed correctly');
+        }
+
+        updateTestCase(testCase, 'pass', `✓ Batch of ${taskIds.length} tasks executed`);
+        log('Batch scheduling test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Batch scheduling test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 7: Error handling
+    async function testErrorHandling() {
+      const testCase = createTestCase('Test 7: Error Handling');
+      log('Starting error handling test');
+
+      try {
+        let errorCaught = false;
+        const scheduler = new MicroTaskScheduler({
+          errorHandler: (error) => {
+            errorCaught = true;
+            log(`Error handler called: ${error.message}`);
+          }
+        });
+
+        scheduler.schedule(() => {
+          throw new Error('Test error');
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!errorCaught) {
+          throw new Error('Error handler not called');
+        }
+
+        const metrics = scheduler.getMetrics();
+        if (metrics.failed !== 1) {
+          throw new Error('Failed metric not incremented');
+        }
+
+        updateTestCase(testCase, 'pass', '✓ Errors handled correctly');
+        log('Error handling test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Error handling test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 8: Metrics tracking
+    async function testMetrics() {
+      const testCase = createTestCase('Test 8: Metrics Tracking');
+      log('Starting metrics tracking test');
+
+      try {
+        const scheduler = new MicroTaskScheduler({ trackMetrics: true });
+
+        scheduler.schedule(() => {});
+        scheduler.schedule(() => {});
+        const cancelId = scheduler.schedule(() => {});
+        scheduler.cancel(cancelId);
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const metrics = scheduler.getMetrics();
+
+        if (metrics.scheduled !== 3) {
+          throw new Error(`Wrong scheduled count: ${metrics.scheduled}`);
+        }
+
+        if (metrics.executed !== 2) {
+          throw new Error(`Wrong executed count: ${metrics.executed}`);
+        }
+
+        if (metrics.cancelled !== 1) {
+          throw new Error(`Wrong cancelled count: ${metrics.cancelled}`);
+        }
+
+        updateTestCase(testCase, 'pass', 
+          `✓ Metrics: ${metrics.scheduled} scheduled, ${metrics.executed} executed, ${metrics.cancelled} cancelled`);
+        log('Metrics tracking test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Metrics tracking test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 9: Global scheduler
+    async function testGlobalScheduler() {
+      const testCase = createTestCase('Test 9: Global Scheduler');
+      log('Starting global scheduler test');
+
+      try {
+        let executed = false;
+
+        const taskId = scheduleMicroTask(() => {
+          executed = true;
+        }, { label: 'global-test' });
+
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        if (!executed) {
+          throw new Error('Global scheduler task not executed');
+        }
+
+        updateTestCase(testCase, 'pass', `✓ Global scheduler works (task: ${taskId})`);
+        log('Global scheduler test passed');
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Global scheduler test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Test 10: Performance (microtask vs setTimeout)
+    async function testPerformance() {
+      const testCase = createTestCase('Test 10: Performance Comparison');
+      log('Starting performance test');
+
+      try {
+        const scheduler = new MicroTaskScheduler({ trackMetrics: true });
+        const iterations = 100;
+
+        // Measure microtask scheduling
+        const microStart = performance.now();
+        const microPromises = [];
+        for (let i = 0; i < iterations; i++) {
+          microPromises.push(scheduler.scheduleAsync(() => {}));
+        }
+        await Promise.all(microPromises);
+        const microTime = performance.now() - microStart;
+
+        // Measure setTimeout scheduling
+        const timeoutStart = performance.now();
+        const timeoutPromises = [];
+        for (let i = 0; i < iterations; i++) {
+          timeoutPromises.push(new Promise(resolve => setTimeout(resolve, 0)));
+        }
+        await Promise.all(timeoutPromises);
+        const timeoutTime = performance.now() - timeoutStart;
+
+        const speedup = (timeoutTime / microTime).toFixed(2);
+
+        updateTestCase(testCase, 'pass', 
+          `✓ Microtask: ${microTime.toFixed(2)}ms, setTimeout: ${timeoutTime.toFixed(2)}ms (${speedup}x faster)`);
+        log(`Performance test passed: microtask ${speedup}x faster than setTimeout`);
+      } catch (error) {
+        updateTestCase(testCase, 'fail', `✗ ${error.message}`);
+        log(`Performance test failed: ${error.message}`, 'error');
+      }
+    }
+
+    // Run all tests
+    window.runAllTests = async function() {
+      log('=== Starting test suite ===');
+      clearResults();
+      
+      await testBasicScheduling();
+      await testExecutionOrder();
+      await testContextAndArgs();
+      await testAsyncScheduling();
+      await testCancellation();
+      await testBatchScheduling();
+      await testErrorHandling();
+      await testMetrics();
+      await testGlobalScheduler();
+      await testPerformance();
+      
+      log('=== Test suite complete ===');
+      showMetrics();
+    };
+
+    window.clearResults = function() {
+      results.innerHTML = '';
+      testLog = [];
+      logDisplay.textContent = '';
+    };
+
+    window.showMetrics = function() {
+      const metrics = globalMicroTaskScheduler.getMetrics();
+      metricsDisplay.innerHTML = `
+        <div class="test-section">
+          <h3>Global Scheduler Metrics</h3>
+          <div class="metrics">
+            Scheduled: ${metrics.scheduled}<br>
+            Executed: ${metrics.executed}<br>
+            Failed: ${metrics.failed}<br>
+            Cancelled: ${metrics.cancelled}<br>
+            Pending: ${metrics.pending}<br>
+            Completed: ${metrics.completed}<br>
+            Avg Execution Time: ${metrics.averageExecutionTime.toFixed(3)}ms
+          </div>
+        </div>
+      `;
+    };
+
+    // Auto-run tests on load
+    log('Test page loaded');
+    setTimeout(() => runAllTests(), 100);
+  </script>
+</body>
+</html>
