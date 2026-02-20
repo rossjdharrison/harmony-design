@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DispatchTarget Tests</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    h1 { color: #00d9ff; margin-bottom: 0.5rem; }
+    .subtitle { color: #888; margin-bottom: 2rem; }
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #00d9ff;
+      font-size: 1.2rem;
+    }
+    button {
+      background: #00d9ff;
+      color: #0a0a0a;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    button:hover { background: #00b8d9; }
+    button:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #0f0f0f;
+      border-left: 3px solid #00d9ff;
+      border-radius: 4px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .result.error {
+      border-left-color: #ff4444;
+      color: #ff6666;
+    }
+    .result.success {
+      border-left-color: #00ff88;
+      color: #00ff88;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .metric-card {
+      background: #0f0f0f;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #333;
+    }
+    .metric-label {
+      color: #888;
+      font-size: 0.85rem;
+      margin-bottom: 0.25rem;
+    }
+    .metric-value {
+      color: #00d9ff;
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>DispatchTarget Tests</h1>
+  <div class="subtitle">Abstract base class for execution targets</div>
+
+  <div class="test-section">
+    <h2>1. Abstract Class Instantiation</h2>
+    <button onclick="testAbstractInstantiation()">Test Abstract Class</button>
+    <div id="abstract-result" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Concrete Implementation</h2>
+    <button onclick="testConcreteImplementation()">Create Mock Target</button>
+    <button onclick="testDispatch()">Test Dispatch</button>
+    <button onclick="testTimeout()">Test Timeout</button>
+    <div id="concrete-result" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Request Validation</h2>
+    <button onclick="testValidRequest()">Valid Request</button>
+    <button onclick="testInvalidRequest()">Invalid Request</button>
+    <div id="validation-result" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Retry Logic</h2>
+    <button onclick="testRetrySuccess()">Test Retry Success</button>
+    <button onclick="testRetryFailure()">Test Retry Failure</button>
+    <div id="retry-result" class="result" style="display:none;"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>5. Performance Metrics</h2>
+    <button onclick="runMultipleDispatches()">Run 10 Dispatches</button>
+    <button onclick="resetMetrics()">Reset Metrics</button>
+    <div id="metrics-display" class="metrics" style="display:none;">
+      <div class="metric-card">
+        <div class="metric-label">Total Dispatches</div>
+        <div class="metric-value" id="metric-total">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Successful</div>
+        <div class="metric-value" id="metric-success">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Failed</div>
+        <div class="metric-value" id="metric-failed">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label">Avg Latency (ms)</div>
+        <div class="metric-value" id="metric-latency">0</div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { DispatchTarget, TargetType, TargetStatus } from './dispatch-target.js';
+
+    // Mock concrete implementation for testing
+    class MockDispatchTarget extends DispatchTarget {
+      constructor(config = {}) {
+        super(TargetType.WASM, config);
+        this.initialized = false;
+        this.shouldFail = false;
+        this.failCount = 0;
+      }
+
+      async initialize() {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        this.initialized = true;
+        this.status = TargetStatus.IDLE;
+      }
+
+      async dispatch(request) {
+        this.validateRequest(request);
+
+        const requestId = this.generateRequestId();
+        const pendingPromise = this.registerPendingRequest(requestId);
+
+        this.status = TargetStatus.BUSY;
+
+        // Simulate async execution
+        setTimeout(() => {
+          if (this.shouldFail) {
+            this.rejectPendingRequest(requestId, new Error('Simulated failure'));
+          } else {
+            this.resolvePendingRequest(requestId, {
+              nodeId: request.nodeId,
+              outputs: { result: 42 },
+              executionTimeMs: 50,
+            });
+          }
+          this.status = TargetStatus.IDLE;
+        }, 50);
+
+        return pendingPromise;
+      }
+
+      async terminate() {
+        this.status = TargetStatus.DISCONNECTED;
+        this.initialized = false;
+      }
+    }
+
+    // Make available globally for onclick handlers
+    window.MockDispatchTarget = MockDispatchTarget;
+    window.DispatchTarget = DispatchTarget;
+    window.TargetType = TargetType;
+    window.TargetStatus = TargetStatus;
+    window.mockTarget = null;
+
+    function showResult(elementId, message, isError = false) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.className = isError ? 'result error' : 'result success';
+      element.style.display = 'block';
+    }
+
+    window.testAbstractInstantiation = function() {
+      try {
+        new DispatchTarget(TargetType.WASM);
+        showResult('abstract-result', 'ERROR: Should not be able to instantiate abstract class', true);
+      } catch (error) {
+        showResult('abstract-result', `✓ Correctly prevented instantiation:\n${error.message}`);
+      }
+    };
+
+    window.testConcreteImplementation = async function() {
+      try {
+        window.mockTarget = new MockDispatchTarget();
+        await window.mockTarget.initialize();
+        
+        const info = {
+          type: window.mockTarget.type,
+          status: window.mockTarget.status,
+          initialized: window.mockTarget.initialized,
+          isAvailable: window.mockTarget.isAvailable(),
+        };
+        
+        showResult('concrete-result', `✓ Mock target created successfully:\n${JSON.stringify(info, null, 2)}`);
+      } catch (error) {
+        showResult('concrete-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.testDispatch = async function() {
+      try {
+        if (!window.mockTarget) {
+          await testConcreteImplementation();
+        }
+
+        const request = {
+          nodeId: 'test-node-1',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: { timeout: 1000 },
+        };
+
+        const result = await window.mockTarget.dispatch(request);
+        showResult('concrete-result', `✓ Dispatch successful:\n${JSON.stringify(result, null, 2)}`);
+      } catch (error) {
+        showResult('concrete-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.testTimeout = async function() {
+      try {
+        const timeoutTarget = new MockDispatchTarget({ timeoutMs: 100 });
+        await timeoutTarget.initialize();
+
+        // Never resolve the request
+        const originalDispatch = timeoutTarget.dispatch.bind(timeoutTarget);
+        timeoutTarget.dispatch = async function(request) {
+          this.validateRequest(request);
+          const requestId = this.generateRequestId();
+          return this.registerPendingRequest(requestId);
+          // Never resolve or reject
+        };
+
+        const request = {
+          nodeId: 'test-node-timeout',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: {},
+        };
+
+        await timeoutTarget.dispatch(request);
+        showResult('concrete-result', 'ERROR: Should have timed out', true);
+      } catch (error) {
+        showResult('concrete-result', `✓ Timeout handled correctly:\n${error.message}`);
+      }
+    };
+
+    window.testValidRequest = function() {
+      try {
+        if (!window.mockTarget) {
+          throw new Error('Create mock target first');
+        }
+
+        const validRequest = {
+          nodeId: 'test-node-1',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: { timeout: 1000 },
+        };
+
+        window.mockTarget.validateRequest(validRequest);
+        showResult('validation-result', '✓ Valid request passed validation');
+      } catch (error) {
+        showResult('validation-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.testInvalidRequest = function() {
+      try {
+        if (!window.mockTarget) {
+          throw new Error('Create mock target first');
+        }
+
+        const invalidRequests = [
+          null,
+          {},
+          { nodeId: 'test' },
+          { nodeId: 'test', codeHash: 'abc' },
+          { nodeId: 'test', codeHash: 'abc', inputs: {} },
+        ];
+
+        const errors = [];
+        for (const request of invalidRequests) {
+          try {
+            window.mockTarget.validateRequest(request);
+            errors.push(`Request ${JSON.stringify(request)} should have failed validation`);
+          } catch (e) {
+            // Expected
+          }
+        }
+
+        if (errors.length > 0) {
+          showResult('validation-result', `ERRORS:\n${errors.join('\n')}`, true);
+        } else {
+          showResult('validation-result', '✓ All invalid requests correctly rejected');
+        }
+      } catch (error) {
+        showResult('validation-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.testRetrySuccess = async function() {
+      try {
+        let attemptCount = 0;
+        const retryTarget = new MockDispatchTarget({ maxRetries: 3 });
+        await retryTarget.initialize();
+
+        // Fail first 2 attempts, succeed on 3rd
+        const originalDispatch = retryTarget.dispatch.bind(retryTarget);
+        retryTarget.dispatch = async function(request) {
+          attemptCount++;
+          if (attemptCount < 3) {
+            throw new Error(`Attempt ${attemptCount} failed`);
+          }
+          return originalDispatch.call(this, request);
+        };
+
+        const request = {
+          nodeId: 'test-retry',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: {},
+        };
+
+        const result = await retryTarget.dispatch(request);
+        showResult('retry-result', `✓ Retry succeeded after ${attemptCount} attempts:\n${JSON.stringify(result, null, 2)}`);
+      } catch (error) {
+        showResult('retry-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.testRetryFailure = async function() {
+      try {
+        const retryTarget = new MockDispatchTarget({ maxRetries: 2 });
+        await retryTarget.initialize();
+
+        // Always fail
+        retryTarget.dispatch = async function(request) {
+          this.validateRequest(request);
+          throw new Error('Persistent failure');
+        };
+
+        const request = {
+          nodeId: 'test-retry-fail',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: {},
+        };
+
+        await retryTarget.dispatch(request);
+        showResult('retry-result', 'ERROR: Should have failed after retries', true);
+      } catch (error) {
+        showResult('retry-result', `✓ Retry failure handled correctly:\n${error.message}`);
+      }
+    };
+
+    window.runMultipleDispatches = async function() {
+      try {
+        if (!window.mockTarget) {
+          await testConcreteImplementation();
+        }
+
+        window.mockTarget.resetMetrics();
+
+        const request = {
+          nodeId: 'test-metrics',
+          codeHash: 'abc123',
+          inputs: { value: 10 },
+          config: {},
+        };
+
+        for (let i = 0; i < 10; i++) {
+          await window.mockTarget.dispatch(request);
+        }
+
+        updateMetricsDisplay();
+      } catch (error) {
+        showResult('retry-result', `ERROR: ${error.message}`, true);
+      }
+    };
+
+    window.resetMetrics = function() {
+      if (window.mockTarget) {
+        window.mockTarget.resetMetrics();
+        updateMetricsDisplay();
+      }
+    };
+
+    function updateMetricsDisplay() {
+      if (!window.mockTarget) return;
+
+      const metrics = window.mockTarget.getMetrics();
+      document.getElementById('metric-total').textContent = metrics.totalDispatches;
+      document.getElementById('metric-success').textContent = metrics.successfulDispatches;
+      document.getElementById('metric-failed').textContent = metrics.failedDispatches;
+      document.getElementById('metric-latency').textContent = metrics.averageLatencyMs.toFixed(2);
+      document.getElementById('metrics-display').style.display = 'grid';
+    }
+  </script>
+</body>
+</html>
