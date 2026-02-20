@@ -1,0 +1,285 @@
+/**
+ * High Contrast Theme Styles
+ * 
+ * Provides CSS rules for high contrast theme variant.
+ * Applied when [data-theme="high-contrast"] is set on root element.
+ * 
+ * @see {@link ../DESIGN_SYSTEM.md#high-contrast-theme}
+ */
+
+/* Base high contrast styles */
+[data-theme="high-contrast"] {
+  /* Apply high contrast colors globally */
+  background-color: var(--hc-bg-primary);
+  color: var(--hc-fg-primary);
+}
+
+/* Typography enhancements */
+[data-theme="high-contrast"] body,
+[data-theme="high-contrast"] p,
+[data-theme="high-contrast"] span {
+  font-weight: var(--hc-font-weight-normal);
+  letter-spacing: var(--hc-letter-spacing-normal);
+}
+
+[data-theme="high-contrast"] h1,
+[data-theme="high-contrast"] h2,
+[data-theme="high-contrast"] h3,
+[data-theme="high-contrast"] h4,
+[data-theme="high-contrast"] h5,
+[data-theme="high-contrast"] h6 {
+  font-weight: var(--hc-font-weight-bold);
+  color: var(--hc-fg-primary);
+  border-bottom: var(--hc-border-width-thin) solid var(--hc-border-default);
+}
+
+/* Remove shadows - they reduce contrast */
+[data-theme="high-contrast"] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Links */
+[data-theme="high-contrast"] a {
+  color: var(--hc-accent-primary);
+  text-decoration: underline;
+  font-weight: var(--hc-font-weight-medium);
+}
+
+[data-theme="high-contrast"] a:hover {
+  color: var(--hc-accent-secondary);
+  background-color: var(--hc-interactive-hover);
+}
+
+[data-theme="high-contrast"] a:focus {
+  outline: var(--hc-focus-outline-width) solid var(--hc-focus-outline-color);
+  outline-offset: var(--hc-focus-outline-offset);
+}
+
+/* Buttons */
+[data-theme="high-contrast"] button,
+[data-theme="high-contrast"] .button {
+  background-color: var(--hc-bg-secondary);
+  color: var(--hc-fg-primary);
+  border: var(--hc-border-width-medium) solid var(--hc-border-default);
+  font-weight: var(--hc-font-weight-medium);
+  padding: 0.75em 1.5em;
+}
+
+[data-theme="high-contrast"] button:hover,
+[data-theme="high-contrast"] .button:hover {
+  background-color: var(--hc-interactive-hover);
+  border-color: var(--hc-accent-primary);
+}
+
+[data-theme="high-contrast"] button:active,
+[data-theme="high-contrast"] .button:active {
+  background-color: var(--hc-interactive-active);
+  border-color: var(--hc-border-active);
+}
+
+[data-theme="high-contrast"] button:focus,
+[data-theme="high-contrast"] .button:focus {
+  outline: var(--hc-focus-outline-width) solid var(--hc-focus-outline-color);
+  outline-offset: var(--hc-focus-outline-offset);
+}
+
+[data-theme="high-contrast"] button:disabled,
+[data-theme="high-contrast"] .button:disabled {
+  background-color: var(--hc-interactive-disabled);
+  color: var(--hc-fg-disabled);
+  border-color: var(--hc-border-disabled);
+  cursor: not-allowed;
+}
+
+/* Form inputs */
+[data-theme="high-contrast"] input,
+[data-theme="high-contrast"] textarea,
+[data-theme="high-contrast"] select {
+  background-color: var(--hc-bg-secondary);
+  color: var(--hc-fg-primary);
+  border: var(--hc-border-width-medium) solid var(--hc-border-default);
+  font-weight: var(--hc-font-weight-normal);
+  padding: 0.5em;
+}
+
+[data-theme="high-contrast"] input:focus,
+[data-theme="high-contrast"] textarea:focus,
+[data-theme="high-contrast"] select:focus {
+  outline: var(--hc-focus-outline-width) solid var(--hc-focus-outline-color);
+  outline-offset: var(--hc-focus-outline-offset);
+  border-color: var(--hc-border-focus);
+}
+
+[data-theme="high-contrast"] input:disabled,
+[data-theme="high-contrast"] textarea:disabled,
+[data-theme="high-contrast"] select:disabled {
+  background-color: var(--hc-interactive-disabled);
+  color: var(--hc-fg-disabled);
+  border-color: var(--hc-border-disabled);
+}
+
+/* Checkboxes and radio buttons */
+[data-theme="high-contrast"] input[type="checkbox"],
+[data-theme="high-contrast"] input[type="radio"] {
+  width: 1.5em;
+  height: 1.5em;
+  border: var(--hc-border-width-medium) solid var(--hc-border-default);
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+[data-theme="high-contrast"] input[type="checkbox"]:checked,
+[data-theme="high-contrast"] input[type="radio"]:checked {
+  background-color: var(--hc-accent-primary);
+  border-color: var(--hc-accent-primary);
+}
+
+[data-theme="high-contrast"] input[type="checkbox"]:checked::after {
+  content: "✓";
+  display: block;
+  color: var(--hc-bg-primary);
+  font-weight: var(--hc-font-weight-bold);
+  text-align: center;
+  line-height: 1.5em;
+}
+
+[data-theme="high-contrast"] input[type="radio"]:checked::after {
+  content: "";
+  display: block;
+  width: 0.75em;
+  height: 0.75em;
+  background-color: var(--hc-bg-primary);
+  border-radius: 50%;
+  margin: 0.25em;
+}
+
+/* Cards and panels */
+[data-theme="high-contrast"] .card,
+[data-theme="high-contrast"] .panel {
+  background-color: var(--hc-bg-secondary);
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+  padding: 1em;
+}
+
+/* Tables */
+[data-theme="high-contrast"] table {
+  border-collapse: collapse;
+  border: var(--hc-border-width-medium) solid var(--hc-border-default);
+}
+
+[data-theme="high-contrast"] th,
+[data-theme="high-contrast"] td {
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+  padding: 0.75em;
+}
+
+[data-theme="high-contrast"] th {
+  background-color: var(--hc-bg-elevated);
+  font-weight: var(--hc-font-weight-bold);
+}
+
+[data-theme="high-contrast"] tr:nth-child(even) {
+  background-color: var(--hc-bg-tertiary);
+}
+
+/* Status indicators */
+[data-theme="high-contrast"] .status-success,
+[data-theme="high-contrast"] .success {
+  color: var(--hc-accent-success);
+  border-color: var(--hc-accent-success);
+}
+
+[data-theme="high-contrast"] .status-warning,
+[data-theme="high-contrast"] .warning {
+  color: var(--hc-accent-warning);
+  border-color: var(--hc-accent-warning);
+}
+
+[data-theme="high-contrast"] .status-error,
+[data-theme="high-contrast"] .error {
+  color: var(--hc-accent-error);
+  border-color: var(--hc-accent-error);
+}
+
+[data-theme="high-contrast"] .status-info,
+[data-theme="high-contrast"] .info {
+  color: var(--hc-accent-info);
+  border-color: var(--hc-accent-info);
+}
+
+/* Focus visible for all interactive elements */
+[data-theme="high-contrast"] a:focus-visible,
+[data-theme="high-contrast"] button:focus-visible,
+[data-theme="high-contrast"] input:focus-visible,
+[data-theme="high-contrast"] textarea:focus-visible,
+[data-theme="high-contrast"] select:focus-visible,
+[data-theme="high-contrast"] [tabindex]:focus-visible {
+  outline: var(--hc-focus-outline-width) solid var(--hc-focus-outline-color);
+  outline-offset: var(--hc-focus-outline-offset);
+}
+
+/* Images - ensure borders for visibility */
+[data-theme="high-contrast"] img {
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+}
+
+/* Code blocks */
+[data-theme="high-contrast"] code,
+[data-theme="high-contrast"] pre {
+  background-color: var(--hc-bg-elevated);
+  color: var(--hc-fg-primary);
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+  padding: 0.25em 0.5em;
+  font-weight: var(--hc-font-weight-normal);
+}
+
+/* Horizontal rules */
+[data-theme="high-contrast"] hr {
+  border: none;
+  border-top: var(--hc-border-width-medium) solid var(--hc-border-default);
+  margin: 1em 0;
+}
+
+/* Selection highlight */
+[data-theme="high-contrast"] ::selection {
+  background-color: var(--hc-accent-primary);
+  color: var(--hc-bg-primary);
+}
+
+/* Scrollbars (Webkit) */
+[data-theme="high-contrast"] ::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+[data-theme="high-contrast"] ::-webkit-scrollbar-track {
+  background-color: var(--hc-bg-secondary);
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+}
+
+[data-theme="high-contrast"] ::-webkit-scrollbar-thumb {
+  background-color: var(--hc-fg-tertiary);
+  border: var(--hc-border-width-thin) solid var(--hc-border-default);
+}
+
+[data-theme="high-contrast"] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--hc-fg-secondary);
+}
+
+/* Windows High Contrast Mode - respect forced colors */
+@media (forced-colors: active) {
+  [data-theme="high-contrast"] * {
+    forced-color-adjust: auto;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="high-contrast"] * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
