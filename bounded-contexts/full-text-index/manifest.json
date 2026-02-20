@@ -1,0 +1,32 @@
+{
+  "name": "full-text-index",
+  "version": "0.1.0",
+  "description": "Full-text search index for node properties",
+  "entry": "src/lib.rs",
+  "exports": {
+    "create_index": {
+      "params": ["config: String"],
+      "returns": "String"
+    },
+    "add_document": {
+      "params": ["index_id: String", "node_id: String", "content: String"],
+      "returns": "String"
+    },
+    "remove_document": {
+      "params": ["index_id: String", "node_id: String"],
+      "returns": "String"
+    },
+    "search": {
+      "params": ["index_id: String", "query: String"],
+      "returns": "String"
+    },
+    "clear_index": {
+      "params": ["index_id: String"],
+      "returns": "String"
+    }
+  },
+  "memory": {
+    "initial": 256,
+    "maximum": 2048
+  }
+}
