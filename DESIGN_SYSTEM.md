@@ -1,187 +1,321 @@
 # Harmony Design System
 
-This document describes the Harmony Design System: its concepts, how to work with it, and implementation notes.
+This document describes the Harmony Design System architecture, how to work with it, and implementation notes. All code files reference this document, and this document references code files.
+
+## Table of Contents
+
+1. [Overview](#overview)
+2. [Architecture](#architecture)
+3. [Audio Processing Pipeline](#audio-processing-pipeline)
+4. [Event-Driven Communication](#event-driven-communication)
+5. [Component System](#component-system)
+6. [Performance Budgets](#performance-budgets)
+7. [Development Workflow](#development-workflow)
+8. [Testing Strategy](#testing-strategy)
 
 ## Overview
 
-The Harmony Design System is a component library built with Web Components (Custom Elements with Shadow DOM). It follows atomic design principles and integrates with the EventBus architecture for bounded context communication.
+Harmony is a professional audio workstation built with web technologies. The system uses Rust/WASM for audio processing and bounded contexts, with vanilla JavaScript/HTML/CSS for UI rendering.
 
-## Core Principles
+## Architecture
 
-1. **Web Standards First**: Uses native Web Components, no framework dependencies
-2. **Performance Budgets**: 16ms render, 50MB memory, 200ms load time
-3. **Event-Driven Architecture**: Components publish events, never call bounded contexts directly
-4. **Shadow DOM Isolation**: All components use shadow DOM for style encapsulation
-5. **Vanilla JavaScript**: No runtime npm dependencies, only build tools
+### Technology Stack
 
-## Component Levels
+- **Audio Processing**: Rust → WASM (harmony-graph, harmony-sound)
+- **UI Layer**: Vanilla JavaScript + Web Components + Shadow DOM
+- **State Management**: EventBus pattern (core/event-bus.js)
+- **Build Tools**: wasm-pack, esbuild, npm scripts
 
-### Atoms
-Basic building blocks that cannot be broken down further. Examples: buttons, inputs, labels.
+### Bounded Contexts
 
-### Molecules
-Simple combinations of atoms functioning together. Examples: form fields with labels, search boxes.
+Each bounded context is a self-contained Rust crate compiled to WASM:
 
-### Organisms
-Complex components made of molecules and atoms. Examples: navigation bars, forms, cards.
+- `harmony-graph`: Signal graph engine
+- `harmony-sound`: Audio processing domains (effects, synthesis, analysis)
+- `harmony-schemas`: Type definitions and code generation
 
-### Templates
-Page-level layouts combining organisms, molecules, and atoms.
+## Audio Processing Pipeline
 
-## Component Requirements
+### Architecture Overview
 
-All components must satisfy these acceptance criteria:
+Audio processing happens in three layers:
 
-1. **Valid Module Export**: Component exports a class extending HTMLElement
-2. **Browser Rendering**: Renders without errors in Chrome (all states tested)
-3. **No Compilation Errors**: TypeScript/JSDoc types are valid
-4. **Atomic Design Level**: Clearly identified as atom, molecule, or organism
-5. **Value Prop**: Has a `value` property for state management
-6. **Change Handler**: Fires `change` event and supports `onchange` handler
-7. **Placeholder Support**: Has `placeholder` attribute for empty states
+1. **AudioContext** (Web Audio API) - Manages audio graph
+2. **AudioWorklet** (Dedicated thread) - Real-time processing
+3. **WASM Modules** (Compiled Rust) - DSP algorithms
 
-## EventBus Integration
+### Audio Worklet Processors
 
-Components communicate via the EventBus singleton located at `core/event-bus.js`.
+Located in `web/worklets/`:
 
-### Publishing Events
+#### TransportProcessor
+**File**: `web/worklets/transport-processor.js`
 
+Handles playback transport with sample-accurate timing:
+- Play/pause/stop commands
+- Tempo and time signature changes
+- Sample-accurate scheduling
+- Latency compensation
+
+#### ClipPlayerProcessor
+**File**: `web/worklets/clip-player-processor.js`
+
+Plays audio clips with scheduling:
+- Clip loading and buffering
+- Loop points and regions
+- Crossfading and transitions
+- Multi-clip playback
+
+#### EffectsProcessor
+**File**: `web/worklets/effects-processor.js`
+
+Bridges to WASM EffectFunctionRegistry for real-time effects processing:
+- Dynamic effect chain management
+- Real-time parameter automation via AudioParam
+- Zero-copy buffer processing via SharedArrayBuffer
+- Sub-10ms latency guarantee
+
+**Effect Chain Architecture**:
+```
+Input → WASM Memory → Effect 1 → Effect 2 → ... → Effect N → Output
+                ↑                                            ↓
+                └────────── Dry/Wet Mix Parameter ──────────┘
+```
+
+**WASM Interface**:
+- `process_effects(inputPtr, outputPtr, numFrames, numChannels)` - Process audio
+- `add_effect(effectType)` - Add effect to chain
+- `remove_effect(effectId)` - Remove effect from chain
+- `set_parameter(effectId, paramName, value)` - Update parameter
+- `bypass_effect(effectId, bypass)` - Bypass effect
+
+**Control Messages**:
+- `add-effect` - Add effect to chain
+- `remove-effect` - Remove effect from chain
+- `set-parameter` - Update effect parameter
+- `bypass-effect` - Bypass/enable effect
+- `clear-chain` - Clear all effects
+- `get-stats` - Retrieve processing statistics
+
+**Performance Monitoring**:
+The processor tracks:
+- Processed frames count
+- Dropped frames count
+- Average latency (moving average over 100 samples)
+
+Latency exceeding 10ms triggers console warnings.
+
+### WASM Integration Pattern
+
+All audio worklets follow this pattern:
+
+1. **Initialization**: Request WASM module via message port
+2. **Memory Allocation**: Allocate buffers in WASM linear memory
+3. **Processing Loop**: Copy data → Call WASM → Copy results
+4. **Zero-Copy Optimization**: Use SharedArrayBuffer when possible
+
+**Memory Layout Example**:
+```
+WASM Linear Memory:
+[Input Buffer: 128 frames × 2 channels × 4 bytes]
+[Output Buffer: 128 frames × 2 channels × 4 bytes]
+[Effect State: Variable size]
+```
+
+### Real-Time Constraints
+
+**Critical Rules**:
+- No async operations in `process()` callback
+- No memory allocations in audio thread
+- No locks or blocking operations
+- Maximum 10ms end-to-end latency
+
+**Latency Budget Breakdown**:
+- Buffer copy to WASM: <1ms
+- WASM processing: <8ms
+- Buffer copy from WASM: <1ms
+- **Total**: <10ms
+
+## Event-Driven Communication
+
+### EventBus Singleton
+
+**File**: `core/event-bus.js`
+
+The EventBus is a singleton that coordinates all application communication. Only one instance may exist.
+
+**Pattern**:
 ```javascript
-import { EventBus } from '../core/event-bus.js';
+// UI Component publishes event
+eventBus.publish('PlayClicked', { clipId: 123 });
 
+// Bounded Context subscribes
+eventBus.subscribe('PlayClicked', (event) => {
+  // Process command
+  // Publish result
+  eventBus.publish('PlaybackStarted', { clipId: 123 });
+});
+```
+
+**Rules**:
+- UI components publish events, never call BCs directly
+- Bounded Contexts subscribe to commands, publish results
+- EventBus errors must be logged with context
+- EventBusComponent must be available on every page (Ctrl+Shift+E)
+
+## Component System
+
+### Atomic Design Levels
+
+- **Atoms**: `primitives/` - Basic building blocks (buttons, inputs)
+- **Molecules**: `components/` - Simple combinations (labeled input)
+- **Organisms**: `organisms/` - Complex features (mixer channel)
+- **Templates**: `templates/` - Page layouts (app-shell)
+
+### Web Component Pattern
+
+All components use:
+- Shadow DOM for encapsulation
+- Custom Elements API
+- No frameworks or libraries
+- Vanilla JavaScript only
+
+**Example Structure**:
+```javascript
 class MyComponent extends HTMLElement {
-  connectedCallback() {
-    this.eventBus = EventBus.getInstance();
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
   }
-
-  handleAction() {
-    this.eventBus.publish({
-      type: 'user:action',
-      source: 'MyComponent',
-      payload: { value: this.value },
-      timestamp: Date.now()
-    });
+  
+  connectedCallback() {
+    this.render();
+  }
+  
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>/* scoped styles */</style>
+      <div>/* component markup */</div>
+    `;
   }
 }
+
+customElements.define('my-component', MyComponent);
 ```
 
-### Event Format
+## Performance Budgets
 
-All events must follow this structure:
-- `type`: String identifying the event (e.g., 'audiocontext:created')
-- `source`: Component or module name
-- `payload`: Event-specific data
-- `timestamp`: Unix timestamp in milliseconds
+### Render Budget
+- **Maximum**: 16ms per frame (60fps)
+- **Target**: 8ms per frame (120fps capable)
 
-## Audio Components
+### Memory Budget
+- **WASM Heap**: Maximum 50MB per module
+- **Total Application**: Maximum 200MB
 
-### AudioContext Lifecycle Manager
+### Load Budget
+- **Initial Load**: Maximum 200ms
+- **WASM Module Load**: Maximum 100ms
+- **First Paint**: Maximum 500ms
 
-**File**: `components/del-audiocontext-lifecycle-managem.js`  
-**Level**: Molecule  
-**Purpose**: Manages AudioContext lifecycle with automatic state transitions and user gesture handling.
+### Audio Processing Budget
+- **Latency**: Maximum 10ms end-to-end
+- **Buffer Size**: 128 frames (2.9ms at 44.1kHz)
+- **Processing Time**: <8ms per buffer
 
-The AudioContext Lifecycle Manager handles creation, state management, and cleanup of Web Audio API AudioContext instances. It follows best practices for context initialization, requiring user gestures for audio playback, and proper resource cleanup.
+## Development Workflow
 
-**Key Features**:
-- Automatic AudioContext creation with configurable sample rate and latency
-- User gesture handling for browser autoplay policies
-- State management (suspended, running, closed, interrupted)
-- EventBus integration for bounded context communication
-- Visual state indicator with toggle controls
+### Adding a New Effect
 
-**Usage**:
-```html
-<audio-context-lifecycle-manager 
-  value="suspended"
-  placeholder="Click to enable audio"
-  sample-rate="48000"
-  latency-hint="interactive">
-</audio-context-lifecycle-manager>
-```
+1. **Define Schema** (harmony-schemas):
+   ```rust
+   pub struct MyEffect {
+       pub parameter: f32,
+   }
+   ```
 
-**Properties**:
-- `value`: Current state ('suspended', 'running', 'closed')
-- `placeholder`: Text shown before context is initialized
-- `disabled`: Disables interaction
-- `sample-rate`: AudioContext sample rate in Hz (optional)
-- `latency-hint`: Latency optimization ('interactive', 'balanced', 'playback')
+2. **Run Codegen**:
+   ```bash
+   cd harmony-schemas
+   cargo run --bin codegen
+   ```
 
-**Methods**:
-- `getState()`: Returns current AudioContext state object
-- `context`: Getter for the managed AudioContext instance
+3. **Implement Effect** (harmony-graph/src/domains/effects):
+   ```rust
+   impl EffectFunction for MyEffect {
+       fn process(&mut self, input: &[f32], output: &mut [f32]) {
+           // DSP code
+       }
+   }
+   ```
 
-**Events Published**:
-- `audiocontext:created`: When AudioContext is created
-- `audiocontext:statechange`: When state changes
-- `audiocontext:closed`: When context is closed
-- `audiocontext:error`: When an error occurs
+4. **Register Effect** (harmony-graph/src/domains/effects/registry.rs):
+   ```rust
+   registry.register("my-effect", Box::new(MyEffect::default()));
+   ```
 
-**Events Fired**:
-- `change`: When value changes (bubbles, composed)
-- `error`: When an error occurs (bubbles, composed)
+5. **Use in Worklet** (web/worklets/effects-processor.js):
+   ```javascript
+   processor.port.postMessage({
+       type: 'add-effect',
+       data: { effectType: 'my-effect', config: { parameter: 0.5 } }
+   });
+   ```
 
-The component ensures proper cleanup on disconnect and handles AudioContext state transitions according to Web Audio API specifications. It automatically manages the suspended state required by browser autoplay policies and provides user controls to resume audio playback.
+### Testing in Chrome
 
-## File Naming Convention
+**Required for all UI components**:
 
-Component files follow this pattern:
-- `del-{component-name}.js` - Deletable/experimental components
-- `cap-{component-name}.js` - Capability components (stable)
-- Standard component names use kebab-case
+1. Open component in Chrome
+2. Test all states: default, hover, focus, active, disabled
+3. Test complex states: error, loading, empty
+4. Verify performance (60fps target)
+5. Check DevTools Performance panel
 
-## Testing Requirements
+## Testing Strategy
 
-Before marking a task complete:
+### Quality Gates
 
-1. **Chrome Testing**: Load component in Chrome browser
-2. **State Testing**: Verify all states (default, hover, focus, active, disabled, error, loading, empty)
-3. **Performance Testing**: Use Chrome DevTools Performance panel, target 60fps
-4. **Event Testing**: Verify EventBus events are published correctly
-5. **Shadow DOM Testing**: Verify styles are encapsulated
+All PRs must pass:
+- TypeScript compilation
+- ESLint validation
+- Bundle size check (<200KB per chunk)
+- WASM build pipeline
+- Snapshot validation
 
-## Performance Guidelines
+### Performance Testing
 
-### Render Budget: 16ms
-- Keep DOM operations minimal
-- Use `requestAnimationFrame` for animations
-- Batch DOM updates
-- Avoid layout thrashing
+Use Chrome DevTools:
+- **Performance Panel**: Record and analyze frame timing
+- **Memory Panel**: Check for leaks and excessive allocations
+- **Network Panel**: Verify load budget compliance
 
-### Memory Budget: 50MB
-- Clean up event listeners on disconnect
-- Release references to large objects
-- Use WeakMap/WeakSet for caches
-- Profile with Chrome DevTools Memory panel
+### Audio Testing
 
-### Load Budget: 200ms
-- Lazy load non-critical components
-- Use dynamic imports for large modules
-- Minimize initial bundle size
-- Optimize critical rendering path
-
-### Audio Latency: 10ms
-- Use AudioWorklet for processing
-- Minimize buffer sizes (128-256 samples)
-- Avoid synchronous operations in audio thread
-- Use SharedArrayBuffer for data transfer
-
-## Documentation Standards
-
-Documentation must be:
-1. **B1-level English**: Clear, simple, friendly
-2. **Logically Sectioned**: One concern per section
-3. **Concise**: Code lives in files, docs explain concepts
-4. **Well-Linked**: Relative links to code files
-5. **Minimal Code**: Show usage examples, not implementation
+- **Latency Measurement**: Use `performance.now()` in worklet
+- **Buffer Underruns**: Monitor dropped frames counter
+- **Quality Verification**: Listen to processed audio
 
 ## Related Files
 
-- EventBus: `core/event-bus.js`
-- Component Examples: `components/`
-- Test Pages: `test-pages/`
-- Schemas: `harmony-schemas/`
+### Core Infrastructure
+- `core/event-bus.js` - EventBus singleton
+- `src/index.js` - Composition root
 
-## Questions?
+### Audio Worklets
+- `web/worklets/transport-processor.js` - Transport handling
+- `web/worklets/clip-player-processor.js` - Clip playback
+- `web/worklets/effects-processor.js` - Effects processing
 
-See the project README.md for setup instructions and contribution guidelines.
+### Bounded Contexts
+- `harmony-graph/` - Signal graph engine (Rust/WASM)
+- `harmony-sound/` - Audio processing domains (Rust/WASM)
+- `harmony-schemas/` - Type definitions and codegen
+
+### Build Configuration
+- `.github/workflows/ci-build.yml` - CI pipeline with WASM build
+- `package.json` - Build scripts and dev dependencies
+
+---
+
+**Last Updated**: 2025-01-XX (task-cap-effects-impl)
