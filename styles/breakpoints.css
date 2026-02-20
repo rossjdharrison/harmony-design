@@ -1,0 +1,318 @@
+/**
+ * Responsive Breakpoint System - CSS Utilities
+ * 
+ * Provides utility classes and CSS custom properties for responsive design.
+ * Mobile-first approach: styles cascade upward from smallest to largest.
+ * 
+ * Performance: Zero runtime cost - pure CSS
+ * Bundle size: ~2KB minified
+ * 
+ * @see {@link file://../DESIGN_SYSTEM.md#responsive-breakpoints}
+ */
+
+/* ============================================
+   CSS Custom Properties
+   ============================================ */
+
+:root {
+  /* Breakpoint values */
+  --breakpoint-mobile: 0px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+
+  /* Container max-widths (for centered content) */
+  --container-mobile: 100%;
+  --container-tablet: 720px;
+  --container-desktop: 960px;
+  --container-wide: 1320px;
+
+  /* Gutter/padding for responsive spacing */
+  --gutter-mobile: 16px;
+  --gutter-tablet: 24px;
+  --gutter-desktop: 32px;
+  --gutter-wide: 40px;
+}
+
+/* ============================================
+   Visibility Utilities
+   Hide/show elements at specific breakpoints
+   ============================================ */
+
+/* Hide on mobile (show on tablet+) */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: initial;
+  }
+}
+
+/* Hide on tablet (show on mobile and desktop+) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .hide-tablet {
+    display: none;
+  }
+}
+
+/* Hide on desktop (show on mobile/tablet and wide) */
+@media (min-width: 1024px) and (max-width: 1439.98px) {
+  .hide-desktop {
+    display: none;
+  }
+}
+
+/* Hide on wide (show on mobile/tablet/desktop) */
+@media (min-width: 1440px) {
+  .hide-wide {
+    display: none;
+  }
+}
+
+/* Show only on mobile */
+.show-mobile-only {
+  display: initial;
+}
+
+@media (min-width: 768px) {
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+/* Show only on tablet */
+.show-tablet-only {
+  display: none;
+}
+
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .show-tablet-only {
+    display: initial;
+  }
+}
+
+/* Show only on desktop */
+.show-desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) and (max-width: 1439.98px) {
+  .show-desktop-only {
+    display: initial;
+  }
+}
+
+/* Show only on wide */
+.show-wide-only {
+  display: none;
+}
+
+@media (min-width: 1440px) {
+  .show-wide-only {
+    display: initial;
+  }
+}
+
+/* ============================================
+   Container Utilities
+   Centered content with responsive max-widths
+   ============================================ */
+
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--gutter-mobile);
+  padding-right: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: var(--container-tablet);
+    padding-left: var(--gutter-tablet);
+    padding-right: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: var(--container-desktop);
+    padding-left: var(--gutter-desktop);
+    padding-right: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: var(--container-wide);
+    padding-left: var(--gutter-wide);
+    padding-right: var(--gutter-wide);
+  }
+}
+
+/* Fluid container (no max-width) */
+.container-fluid {
+  width: 100%;
+  padding-left: var(--gutter-mobile);
+  padding-right: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .container-fluid {
+    padding-left: var(--gutter-tablet);
+    padding-right: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-fluid {
+    padding-left: var(--gutter-desktop);
+    padding-right: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .container-fluid {
+    padding-left: var(--gutter-wide);
+    padding-right: var(--gutter-wide);
+  }
+}
+
+/* ============================================
+   Responsive Text Utilities
+   ============================================ */
+
+/* Text alignment */
+.text-left-mobile { text-align: left; }
+.text-center-mobile { text-align: center; }
+.text-right-mobile { text-align: right; }
+
+@media (min-width: 768px) {
+  .text-left-tablet { text-align: left; }
+  .text-center-tablet { text-align: center; }
+  .text-right-tablet { text-align: right; }
+}
+
+@media (min-width: 1024px) {
+  .text-left-desktop { text-align: left; }
+  .text-center-desktop { text-align: center; }
+  .text-right-desktop { text-align: right; }
+}
+
+@media (min-width: 1440px) {
+  .text-left-wide { text-align: left; }
+  .text-center-wide { text-align: center; }
+  .text-right-wide { text-align: right; }
+}
+
+/* ============================================
+   Responsive Spacing Utilities
+   ============================================ */
+
+/* Responsive padding */
+.p-responsive {
+  padding: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .p-responsive {
+    padding: var(--gutter-wide);
+  }
+}
+
+/* Responsive margin */
+.m-responsive {
+  margin: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .m-responsive {
+    margin: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .m-responsive {
+    margin: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .m-responsive {
+    margin: var(--gutter-wide);
+  }
+}
+
+/* ============================================
+   Responsive Grid Utilities
+   ============================================ */
+
+.grid-responsive {
+  display: grid;
+  gap: var(--gutter-mobile);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    gap: var(--gutter-tablet);
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    gap: var(--gutter-desktop);
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid-responsive {
+    gap: var(--gutter-wide);
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================
+   Responsive Flexbox Utilities
+   ============================================ */
+
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gutter-mobile);
+}
+
+@media (min-width: 768px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: var(--gutter-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .flex-responsive {
+    gap: var(--gutter-desktop);
+  }
+}
+
+@media (min-width: 1440px) {
+  .flex-responsive {
+    gap: var(--gutter-wide);
+  }
+}
