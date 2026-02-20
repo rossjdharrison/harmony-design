@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/semantic-types/transform3d.json",
+  "title": "Transform3D Semantic Type",
+  "description": "Represents a 3D transformation in space with position, rotation, and scale components",
+  "type": "object",
+  "properties": {
+    "semantic_type": {
+      "type": "string",
+      "const": "Transform3D",
+      "description": "Identifies this parameter as a 3D transformation"
+    },
+    "position": {
+      "type": "object",
+      "description": "3D position in space",
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X coordinate"
+        },
+        "y": {
+          "type": "number",
+          "description": "Y coordinate"
+        },
+        "z": {
+          "type": "number",
+          "description": "Z coordinate"
+        }
+      },
+      "required": ["x", "y", "z"]
+    },
+    "rotation": {
+      "type": "object",
+      "description": "3D rotation as Euler angles or quaternion",
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "euler"
+            },
+            "x": {
+              "type": "number",
+              "description": "Rotation around X axis in radians"
+            },
+            "y": {
+              "type": "number",
+              "description": "Rotation around Y axis in radians"
+            },
+            "z": {
+              "type": "number",
+              "description": "Rotation around Z axis in radians"
+            },
+            "order": {
+              "type": "string",
+              "enum": ["XYZ", "YXZ", "ZXY", "ZYX", "YZX", "XZY"],
+              "default": "XYZ",
+              "description": "Rotation order"
+            }
+          },
+          "required": ["type", "x", "y", "z"]
+        },
+        {
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "quaternion"
+            },
+            "x": {
+              "type": "number",
+              "description": "Quaternion X component"
+            },
+            "y": {
+              "type": "number",
+              "description": "Quaternion Y component"
+            },
+            "z": {
+              "type": "number",
+              "description": "Quaternion Z component"
+            },
+            "w": {
+              "type": "number",
+              "description": "Quaternion W component"
+            }
+          },
+          "required": ["type", "x", "y", "z", "w"]
+        }
+      ]
+    },
+    "scale": {
+      "type": "object",
+      "description": "3D scale factors",
+      "properties": {
+        "x": {
+          "type": "number",
+          "description": "X scale factor",
+          "default": 1.0
+        },
+        "y": {
+          "type": "number",
+          "description": "Y scale factor",
+          "default": 1.0
+        },
+        "z": {
+          "type": "number",
+          "description": "Z scale factor",
+          "default": 1.0
+        }
+      },
+      "required": ["x", "y", "z"]
+    },
+    "unit": {
+      "type": "string",
+      "enum": ["meters", "centimeters", "millimeters", "inches", "feet"],
+      "default": "meters",
+      "description": "Unit of measurement for position coordinates"
+    }
+  },
+  "required": ["semantic_type", "position"],
+  "additionalProperties": false
+}
