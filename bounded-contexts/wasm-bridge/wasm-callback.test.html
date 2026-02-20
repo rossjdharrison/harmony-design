@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WASMCallback Test Suite</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    h1 { color: #60a5fa; }
+    h2 { color: #34d399; margin-top: 2rem; }
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+    .test-result {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9rem;
+    }
+    .test-pass {
+      background: #064e3b;
+      border-left: 4px solid #10b981;
+    }
+    .test-fail {
+      background: #7f1d1d;
+      border-left: 4px solid #ef4444;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+    .stat-card {
+      background: #262626;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #404040;
+    }
+    .stat-label {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat-value {
+      color: #60a5fa;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 0.25rem;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+    pre {
+      background: #0a0a0a;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔗 WASMCallback Test Suite</h1>
+  <p>Testing JavaScript callback registration and invocation for WASM modules</p>
+
+  <div class="test-section">
+    <h2>Test Controls</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="testBasicRegistration()">Test Registration</button>
+    <button onclick="testInvocation()">Test Invocation</button>
+    <button onclick="testPersistence()">Test Persistence</button>
+    <button onclick="testBatchRegistration()">Test Batch Registration</button>
+    <button onclick="testPerformance()">Test Performance</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Statistics</h2>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="results"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Invocation History</h2>
+    <pre id="history"></pre>
+  </div>
+
+  <script type="module">
+    import { WASMCallback } from './wasm-callback.js';
+
+    let testCallback;
+    let testResults = [];
+
+    function init() {
+      testCallback = new WASMCallback();
+      testCallback.setDebugMode(true);
+      updateStats();
+    }
+
+    function logResult(testName, passed, message) {
+      testResults.push({ testName, passed, message });
+      const resultsDiv = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'test-pass' : 'test-fail'}`;
+      resultDiv.textContent = `${passed ? '✓' : '✗'} ${testName}: ${message}`;
+      resultsDiv.appendChild(resultDiv);
+    }
+
+    function updateStats() {
+      const stats = testCallback.getStats();
+      const statsDiv = document.getElementById('stats');
+      statsDiv.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-label">Total Callbacks</div>
+          <div class="stat-value">${stats.totalCallbacks}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Persistent Callbacks</div>
+          <div class="stat-value">${stats.persistentCallbacks}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Invocations</div>
+          <div class="stat-value">${stats.totalInvocations}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">History Size</div>
+          <div class="stat-value">${stats.historySize}</div>
+        </div>
+      `;
+    }
+
+    function updateHistory() {
+      const history = testCallback.getInvocationHistory(20);
+      const historyDiv = document.getElementById('history');
+      historyDiv.textContent = JSON.stringify(history, null, 2);
+    }
+
+    window.testBasicRegistration = function() {
+      try {
+        const callbackId = testCallback.register(
+          () => 'test',
+          'testCallback',
+          false
+        );
+        
+        if (typeof callbackId === 'number' && callbackId > 0) {
+          logResult('Basic Registration', true, `Registered callback with ID ${callbackId}`);
+        } else {
+          logResult('Basic Registration', false, 'Invalid callback ID returned');
+        }
+        
+        const info = testCallback.getCallbackInfo(callbackId);
+        if (info && info.name === 'testCallback') {
+          logResult('Callback Info', true, 'Callback info retrieved correctly');
+        } else {
+          logResult('Callback Info', false, 'Failed to retrieve callback info');
+        }
+        
+        updateStats();
+      } catch (error) {
+        logResult('Basic Registration', false, error.message);
+      }
+    };
+
+    window.testInvocation = function() {
+      try {
+        let callCount = 0;
+        const callbackId = testCallback.register(
+          (a, b) => {
+            callCount++;
+            return a + b;
+          },
+          'addCallback',
+          false
+        );
+        
+        const result = testCallback.invoke(callbackId, 5, 3);
+        
+        if (result === 8 && callCount === 1) {
+          logResult('Callback Invocation', true, `Callback returned ${result}, called ${callCount} times`);
+        } else {
+          logResult('Callback Invocation', false, `Expected 8 and 1 call, got ${result} and ${callCount}`);
+        }
+        
+        // Test multiple invocations
+        testCallback.invoke(callbackId, 10, 20);
+        testCallback.invoke(callbackId, 1, 1);
+        
+        const info = testCallback.getCallbackInfo(callbackId);
+        if (info.invocationCount === 3) {
+          logResult('Invocation Count', true, `Tracked ${info.invocationCount} invocations correctly`);
+        } else {
+          logResult('Invocation Count', false, `Expected 3 invocations, got ${info.invocationCount}`);
+        }
+        
+        updateStats();
+        updateHistory();
+      } catch (error) {
+        logResult('Callback Invocation', false, error.message);
+      }
+    };
+
+    window.testPersistence = function() {
+      try {
+        const tempId = testCallback.register(() => 'temp', 'tempCallback', false);
+        const persistId = testCallback.register(() => 'persist', 'persistCallback', true);
+        
+        const beforeStats = testCallback.getStats();
+        testCallback.clearNonPersistent();
+        const afterStats = testCallback.getStats();
+        
+        const tempInfo = testCallback.getCallbackInfo(tempId);
+        const persistInfo = testCallback.getCallbackInfo(persistId);
+        
+        if (!tempInfo && persistInfo) {
+          logResult('Persistence', true, 'Non-persistent cleared, persistent retained');
+        } else {
+          logResult('Persistence', false, 'Persistence behavior incorrect');
+        }
+        
+        updateStats();
+      } catch (error) {
+        logResult('Persistence', false, error.message);
+      }
+    };
+
+    window.testBatchRegistration = function() {
+      try {
+        const callbacks = {
+          add: (a, b) => a + b,
+          multiply: (a, b) => a * b,
+          concat: (a, b) => `${a}${b}`
+        };
+        
+        const ids = testCallback.registerBatch(callbacks, false);
+        
+        if (Object.keys(ids).length === 3) {
+          logResult('Batch Registration', true, `Registered ${Object.keys(ids).length} callbacks`);
+          
+          const addResult = testCallback.invoke(ids.add, 2, 3);
+          const multiplyResult = testCallback.invoke(ids.multiply, 4, 5);
+          const concatResult = testCallback.invoke(ids.concat, 'hello', 'world');
+          
+          if (addResult === 5 && multiplyResult === 20 && concatResult === 'helloworld') {
+            logResult('Batch Invocation', true, 'All batch callbacks work correctly');
+          } else {
+            logResult('Batch Invocation', false, 'Batch callback results incorrect');
+          }
+        } else {
+          logResult('Batch Registration', false, 'Incorrect number of callbacks registered');
+        }
+        
+        updateStats();
+        updateHistory();
+      } catch (error) {
+        logResult('Batch Registration', false, error.message);
+      }
+    };
+
+    window.testPerformance = function() {
+      try {
+        const iterations = 10000;
+        const callbackId = testCallback.register(
+          (x) => x * 2,
+          'perfCallback',
+          false
+        );
+        
+        const startTime = performance.now();
+        for (let i = 0; i < iterations; i++) {
+          testCallback.invoke(callbackId, i);
+        }
+        const endTime = performance.now();
+        
+        const totalTime = endTime - startTime;
+        const avgTime = totalTime / iterations;
+        
+        if (avgTime < 0.1) { // Target: <0.1ms per invocation
+          logResult('Performance', true, `${iterations} invocations in ${totalTime.toFixed(2)}ms (avg: ${avgTime.toFixed(4)}ms)`);
+        } else {
+          logResult('Performance', false, `Average invocation time ${avgTime.toFixed(4)}ms exceeds 0.1ms target`);
+        }
+        
+        updateStats();
+      } catch (error) {
+        logResult('Performance', false, error.message);
+      }
+    };
+
+    window.testErrorHandling = function() {
+      try {
+        const callbackId = testCallback.register(
+          () => { throw new Error('Test error'); },
+          'errorCallback',
+          false
+        );
+        
+        try {
+          testCallback.invoke(callbackId);
+          logResult('Error Handling', false, 'Expected error was not thrown');
+        } catch (error) {
+          logResult('Error Handling', true, `Error caught correctly: ${error.message}`);
+        }
+        
+        updateHistory();
+      } catch (error) {
+        logResult('Error Handling', false, error.message);
+      }
+    };
+
+    window.testUnregister = function() {
+      try {
+        const callbackId = testCallback.register(() => 'test', 'unregisterTest', false);
+        
+        const unregistered = testCallback.unregister(callbackId);
+        if (!unregistered) {
+          logResult('Unregister', false, 'Unregister returned false');
+          return;
+        }
+        
+        try {
+          testCallback.invoke(callbackId);
+          logResult('Unregister', false, 'Invocation should have failed after unregister');
+        } catch (error) {
+          logResult('Unregister', true, 'Callback correctly unavailable after unregister');
+        }
+        
+        updateStats();
+      } catch (error) {
+        logResult('Unregister', false, error.message);
+      }
+    };
+
+    window.runAllTests = function() {
+      clearResults();
+      testCallback = new WASMCallback();
+      testCallback.setDebugMode(true);
+      
+      testBasicRegistration();
+      testInvocation();
+      testPersistence();
+      testBatchRegistration();
+      testErrorHandling();
+      testUnregister();
+      testPerformance();
+      
+      // Summary
+      setTimeout(() => {
+        const passed = testResults.filter(r => r.passed).length;
+        const total = testResults.length;
+        const resultsDiv = document.getElementById('results');
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = `test-result ${passed === total ? 'test-pass' : 'test-fail'}`;
+        summaryDiv.innerHTML = `<strong>Summary: ${passed}/${total} tests passed</strong>`;
+        resultsDiv.insertBefore(summaryDiv, resultsDiv.firstChild);
+      }, 100);
+    };
+
+    window.clearResults = function() {
+      document.getElementById('results').innerHTML = '';
+      testResults = [];
+    };
+
+    // Initialize on load
+    init();
+  </script>
+</body>
+</html>
