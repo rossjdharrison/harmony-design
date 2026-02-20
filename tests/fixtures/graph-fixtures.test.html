@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Fixtures Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 10px;
+    }
+    
+    .graph-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 10px 0;
+    }
+    
+    .info-item {
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    
+    .info-label {
+      font-weight: bold;
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    .info-value {
+      color: #333;
+      font-size: 1.1em;
+    }
+    
+    .graph-viz {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 0.9em;
+      overflow-x: auto;
+    }
+    
+    .success {
+      color: #28a745;
+    }
+    
+    .error {
+      color: #dc3545;
+    }
+    
+    .node {
+      fill: #007bff;
+      stroke: #0056b3;
+      stroke-width: 2;
+    }
+    
+    .edge {
+      stroke: #6c757d;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+    
+    svg {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>Graph Test Fixtures</h1>
+  <p>Testing pre-built graph structures for algorithm testing</p>
+  
+  <div id="test-results"></div>
+
+  <script type="module">
+    import * as GraphFixtures from './graph-fixtures.js';
+
+    const resultsContainer = document.getElementById('test-results');
+
+    /**
+     * Renders test results for a fixture
+     */
+    function renderFixtureTest(name, graph) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      
+      const validation = GraphFixtures.validateGraph(graph);
+      const validationStatus = validation.valid 
+        ? '<span class="success">✓ Valid</span>' 
+        : '<span class="error">✗ Invalid</span>';
+      
+      section.innerHTML = `
+        <h2>${name} Graph ${validationStatus}</h2>
+        <div class="graph-info">
+          <div class="info-item">
+            <div class="info-label">Nodes</div>
+            <div class="info-value">${graph.metadata.nodeCount}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Edges</div>
+            <div class="info-value">${graph.metadata.edgeCount}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Type</div>
+            <div class="info-value">${graph.metadata.type}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Acyclic</div>
+            <div class="info-value">${graph.metadata.isAcyclic ? 'Yes' : 'No'}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Connected</div>
+            <div class="info-value">${graph.metadata.isConnected ? 'Yes' : 'No'}</div>
+          </div>
+        </div>
+        <div class="graph-viz">
+          <strong>Nodes:</strong> ${graph.nodes.map(n => n.id).join(', ')}<br>
+          <strong>Edges:</strong><br>
+          ${graph.edges.map(e => `  ${e.source} → ${e.target} (weight: ${e.weight})`).join('<br>')}
+        </div>
+      `;
+      
+      if (!validation.valid) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.innerHTML = '<strong>Validation Errors:</strong><br>' + 
+          validation.errors.map(e => `  • ${e}`).join('<br>');
+        section.appendChild(errorDiv);
+      }
+      
+      resultsContainer.appendChild(section);
+    }
+
+    /**
+     * Run all fixture tests
+     */
+    function runTests() {
+      console.log('Testing Graph Fixtures...');
+      
+      // Test each fixture
+      const fixtures = [
+        { name: 'Linear', fn: () => GraphFixtures.createLinearGraph() },
+        { name: 'Tree', fn: () => GraphFixtures.createTreeGraph() },
+        { name: 'Cyclic', fn: () => GraphFixtures.createCyclicGraph() },
+        { name: 'DAG', fn: () => GraphFixtures.createDAG() },
+        { name: 'Disconnected', fn: () => GraphFixtures.createDisconnectedGraph() },
+        { name: 'Weighted', fn: () => GraphFixtures.createWeightedGraph() },
+        { name: 'Complex DAG', fn: () => GraphFixtures.createComplexDAG() },
+        { name: 'Diamond', fn: () => GraphFixtures.createDiamondGraph() },
+        { name: 'Self-Loop', fn: () => GraphFixtures.createSelfLoopGraph() },
+        { name: 'Large (20 nodes)', fn: () => GraphFixtures.createLargeGraph(20, 0.15) },
+        { name: 'Audio', fn: () => GraphFixtures.createAudioGraph() }
+      ];
+      
+      fixtures.forEach(({ name, fn }) => {
+        try {
+          const graph = fn();
+          renderFixtureTest(name, graph);
+          console.log(`✓ ${name} fixture created successfully`);
+        } catch (error) {
+          console.error(`✗ ${name} fixture failed:`, error);
+          const section = document.createElement('div');
+          section.className = 'test-section';
+          section.innerHTML = `
+            <h2>${name} Graph <span class="error">✗ Error</span></h2>
+            <div class="error">${error.message}</div>
+          `;
+          resultsContainer.appendChild(section);
+        }
+      });
+      
+      // Test getFixture function
+      console.log('\nTesting getFixture function...');
+      try {
+        const linearGraph = GraphFixtures.getFixture('linear');
+        console.log('✓ getFixture("linear") works');
+        
+        const largeGraph = GraphFixtures.getFixture('large', 50, 0.2);
+        console.log('✓ getFixture("large", 50, 0.2) works');
+      } catch (error) {
+        console.error('✗ getFixture failed:', error);
+      }
+      
+      // Test validation
+      console.log('\nTesting validation...');
+      const invalidGraph = {
+        nodes: [{ id: 'A' }],
+        edges: [{ id: 'e1', source: 'A', target: 'B' }] // B doesn't exist
+      };
+      const validation = GraphFixtures.validateGraph(invalidGraph);
+      console.log('Invalid graph validation:', validation);
+      
+      console.log('\n✓ All tests complete');
+    }
+
+    // Run tests when page loads
+    runTests();
+  </script>
+</body>
+</html>
