@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.systems/schemas/intent-node.schema.json",
+  "title": "Intent Graph Node",
+  "description": "Schema definition for Intent nodes in the Harmony graph system. Intents represent user goals or actions that trigger system behaviors. See DESIGN_SYSTEM.md § Graph Engine for architecture details.",
+  "type": "object",
+  "required": ["id", "type", "name", "category"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the intent node (UUID v4)",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "type": {
+      "type": "string",
+      "const": "Intent",
+      "description": "Node type discriminator, must be 'Intent'"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable intent name (e.g., 'Play Audio', 'Stop Playback', 'Adjust Volume')",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "category": {
+      "type": "string",
+      "description": "Intent category for grouping and routing",
+      "enum": [
+        "playback",
+        "navigation",
+        "editing",
+        "export",
+        "import",
+        "settings",
+        "collaboration",
+        "automation",
+        "spatial",
+        "system"
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the intent's purpose and behavior",
+      "maxLength": 512
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Named parameters required or accepted by this intent",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["type", "required"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["string", "number", "boolean", "object", "array"],
+            "description": "Parameter data type"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether this parameter is required"
+          },
+          "default": {
+            "description": "Default value if parameter is not provided"
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable parameter description",
+            "maxLength": 256
+          },
+          "validation": {
+            "type": "object",
+            "description": "Validation rules for the parameter",
+            "properties": {
+              "min": {
+                "type": "number",
+                "description": "Minimum value (for numbers)"
+              },
+              "max": {
+                "type": "number",
+                "description": "Maximum value (for numbers)"
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regular expression pattern (for strings)"
+              },
+              "enum": {
+                "type": "array",
+                "description": "Allowed values"
+              }
+            }
+          }
+        }
+      }
+    },
+    "handlers": {
+      "type": "array",
+      "description": "List of bounded contexts or components that can handle this intent",
+      "items": {
+        "type": "object",
+        "required": ["nodeId", "priority"],
+        "properties": {
+          "nodeId": {
+            "type": "string",
+            "description": "Reference to handler node (Component or BoundedContext)",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Handler priority (higher = preferred), used for routing",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "conditions": {
+            "type": "object",
+            "description": "Conditions under which this handler is applicable",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "triggers": {
+      "type": "array",
+      "description": "UI or system events that can trigger this intent",
+      "items": {
+        "type": "object",
+        "required": ["eventType"],
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "description": "Event type that triggers this intent (e.g., 'click', 'keydown', 'command')",
+            "minLength": 1
+          },
+          "selector": {
+            "type": "string",
+            "description": "CSS selector for DOM events (optional)"
+          },
+          "keyBinding": {
+            "type": "object",
+            "description": "Keyboard shortcut configuration",
+            "properties": {
+              "key": {
+                "type": "string",
+                "description": "Key code or character"
+              },
+              "ctrl": {
+                "type": "boolean",
+                "description": "Requires Ctrl/Cmd key"
+              },
+              "shift": {
+                "type": "boolean",
+                "description": "Requires Shift key"
+              },
+              "alt": {
+                "type": "boolean",
+                "description": "Requires Alt key"
+              }
+            },
+            "required": ["key"]
+          },
+          "condition": {
+            "type": "string",
+            "description": "JavaScript expression that must evaluate to true for trigger to activate"
+          }
+        }
+      }
+    },
+    "outcomes": {
+      "type": "array",
+      "description": "Possible outcomes or result events published after intent execution",
+      "items": {
+        "type": "object",
+        "required": ["eventType", "status"],
+        "properties": {
+          "eventType": {
+            "type": "string",
+            "description": "Event type published as outcome",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failure", "partial", "cancelled"],
+            "description": "Outcome status"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this outcome",
+            "maxLength": 256
+          }
+        }
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Required permissions to execute this intent",
+      "items": {
+        "type": "string",
+        "enum": [
+          "audio.read",
+          "audio.write",
+          "project.read",
+          "project.write",
+          "export",
+          "import",
+          "settings.read",
+          "settings.write",
+          "collaboration",
+          "system"
+        ]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for tooling, analytics, or extensions",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Schema version for this intent",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of intent creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last update"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorization and search",
+          "items": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "analytics": {
+          "type": "object",
+          "description": "Analytics configuration",
+          "properties": {
+            "track": {
+              "type": "boolean",
+              "description": "Whether to track usage of this intent"
+            },
+            "category": {
+              "type": "string",
+              "description": "Analytics category"
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "object",
+      "description": "Graph edges connecting this intent to other nodes",
+      "properties": {
+        "triggeredBy": {
+          "type": "array",
+          "description": "Components or events that can trigger this intent",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "triggers": {
+          "type": "array",
+          "description": "Intents or commands triggered by this intent",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "handledBy": {
+          "type": "array",
+          "description": "Bounded contexts that handle this intent",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        },
+        "affects": {
+          "type": "array",
+          "description": "Graph nodes affected by executing this intent",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
