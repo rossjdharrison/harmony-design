@@ -1,0 +1,181 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Architecture/System Overview" />
+
+# Architecture Overview
+
+Harmony is built on a layered architecture that separates concerns while maintaining high performance.
+
+## Three-Layer Architecture
+
+### Layer 1: UI Components (Vanilla JS)
+
+The presentation layer consists of Web Components built with vanilla JavaScript:
+
+- **No frameworks**: Pure Web Components with Shadow DOM
+- **Event-driven**: Publish/subscribe through EventBus
+- **Atomic design**: Organized from primitives to templates
+- **Performance-first**: 16ms render budget per frame
+
+**Technologies**: HTML, CSS, Vanilla JavaScript, Web Components API
+
+### Layer 2: Core Logic (Rust → WASM)
+
+Business logic and performance-critical code runs in WebAssembly:
+
+- **Bounded contexts**: Domain logic isolated in separate modules
+- **Graph engine**: Node-based processing graph
+- **Audio processing**: Real-time DSP algorithms
+- **State management**: Centralized state with TypeNavigator
+
+**Technologies**: Rust, WebAssembly, wasm-bindgen, harmony-schemas
+
+### Layer 3: Hardware Acceleration (GPU)
+
+Graphics and audio rendering leverage hardware acceleration:
+
+- **WebGPU**: GPU-accelerated visualization and effects
+- **AudioWorklet**: Low-latency audio processing
+- **SharedArrayBuffer**: Zero-copy data transfer
+- **Compute shaders**: Parallel processing on GPU
+
+**Technologies**: WebGPU, AudioWorklet, GLSL, WGSL
+
+## Data Flow
+
+```
+User Interaction
+      ↓
+UI Component (publishes event)
+      ↓
+EventBus (validates, routes)
+      ↓
+Bounded Context (WASM)
+      ↓
+Graph Engine / Audio Engine (WASM)
+      ↓
+GPU Rendering / Audio Output
+      ↓
+State Update (published back)
+      ↓
+UI Component (reactive update)
+```
+
+## Bounded Contexts
+
+Harmony uses Domain-Driven Design with bounded contexts:
+
+- **Audio Playback**: Transport control, timing, playback state
+- **Graph Management**: Node/edge CRUD, validation, execution
+- **Project Management**: Load, save, undo/redo
+- **Plugin Management**: VST loading, parameter automation
+- **Mixer**: Routing, levels, effects chains
+
+Each context:
+- Has its own schema in `harmony-schemas`
+- Compiles to separate WASM module
+- Communicates only through EventBus
+- Maintains its own state slice
+
+## Schema-Driven Development
+
+All data structures are defined in `harmony-schemas`:
+
+```rust
+// harmony-schemas/src/commands.rs
+#[derive(Serialize, Deserialize)]
+pub enum Command {
+    Play,
+    Pause,
+    Stop,
+    LoadProject { path: String },
+    // ...
+}
+```
+
+Changes to schemas trigger codegen:
+1. Edit schema in `harmony-schemas`
+2. Run `npm run codegen`
+3. Generated code updates in `harmony-dev/crates`
+4. TypeScript types generated for UI layer
+
+## Performance Architecture
+
+### Render Pipeline
+
+```
+RAF Callback (every 16ms)
+      ↓
+Collect dirty components
+      ↓
+Batch DOM updates
+      ↓
+GPU command buffer
+      ↓
+Submit to GPU
+      ↓
+Present frame
+```
+
+### Audio Pipeline
+
+```
+AudioWorklet callback (every 128 samples)
+      ↓
+Read from SharedArrayBuffer
+      ↓
+Process in WASM (no async!)
+      ↓
+Write to output buffer
+      ↓
+Hardware audio output
+```
+
+### Memory Management
+
+- **WASM heap**: 50MB maximum, monitored
+- **GPU buffers**: Pooled and reused
+- **Component instances**: Lazy instantiation
+- **Event history**: Ring buffer with size limit
+
+## Build Pipeline
+
+```
+Source Code
+      ↓
+Schema changes → Codegen
+      ↓
+Rust → wasm-pack → WASM modules
+      ↓
+Vite → Bundle JS/CSS
+      ↓
+Quality gates (tests, linting, size checks)
+      ↓
+Deploy artifacts
+```
+
+## Testing Strategy
+
+- **Unit tests**: Rust code with `cargo test`
+- **Component tests**: Web Test Runner for UI
+- **Integration tests**: Playwright for E2E
+- **Visual tests**: Storybook snapshots
+- **Performance tests**: Lighthouse CI
+
+## Development Tools
+
+- **Storybook**: Component development and documentation
+- **EventBus Debugger**: Real-time event monitoring (Ctrl+Shift+E)
+- **TypeNavigator**: State inspection and queries
+- **Chrome DevTools**: Performance profiling
+- **WASM debugging**: Source maps for Rust code
+
+## Deployment
+
+Harmony can be deployed as:
+
+- **Web app**: Static hosting (Vercel, Netlify)
+- **Desktop app**: Tauri wrapper (not Electron)
+- **Embedded**: iframe integration in other apps
+
+All deployments share the same codebase and WASM modules.

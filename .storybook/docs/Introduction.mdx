@@ -1,0 +1,67 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Introduction/Welcome" />
+
+# Harmony Design System
+
+Welcome to the Harmony Design System documentation. This is a comprehensive design system built for high-performance audio applications with GPU-first rendering and WASM-powered processing.
+
+## What is Harmony?
+
+Harmony is a modern design system that combines:
+
+- **Atomic Design Methodology**: Organized from primitives to templates
+- **Web Components**: Native, framework-agnostic components with Shadow DOM
+- **GPU-First Rendering**: Hardware-accelerated graphics for audio visualization
+- **WASM Performance**: Core logic in Rust compiled to WebAssembly
+- **Event-Driven Architecture**: Decoupled components communicating via EventBus
+
+## Performance Targets
+
+Harmony is built with strict performance budgets:
+
+- **Render Budget**: Maximum 16ms per frame (60fps)
+- **Memory Budget**: Maximum 50MB WASM heap
+- **Load Budget**: Maximum 200ms initial load time
+- **Audio Latency**: Maximum 10ms end-to-end
+
+## Getting Started
+
+1. **Browse Components**: Explore the component library organized by atomic design levels
+2. **Read Guides**: Learn how to create components, customize tokens, and extend the graph
+3. **View Examples**: See real-world usage patterns and compositions
+4. **API Reference**: Detailed documentation of props, events, and slots
+
+## Architecture Overview
+
+```
+┌─────────────────────────────────────────┐
+│           UI Layer (Vanilla JS)         │
+│  Components → EventBus → Bounded Contexts│
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│        Core Logic (Rust → WASM)         │
+│  Graph Engine, Audio Processing, State  │
+└─────────────────────────────────────────┘
+                    ↓
+┌─────────────────────────────────────────┐
+│      Hardware Acceleration (GPU)        │
+│  WebGPU Rendering, Audio Worklets       │
+└─────────────────────────────────────────┘
+```
+
+## Documentation Structure
+
+- **Introduction**: System overview and getting started
+- **Foundations**: Tokens, theming, and design principles
+- **Components**: Atomic design hierarchy (Primitives → Templates)
+- **Patterns**: Common usage patterns and best practices
+- **Guides**: Step-by-step implementation guides
+- **API Reference**: Generated documentation from code
+
+## Next Steps
+
+- [Installation Guide](?path=/docs/guides-installation--docs)
+- [Component Development](?path=/docs/guides-component-development--docs)
+- [Architecture Overview](?path=/docs/architecture-overview--docs)

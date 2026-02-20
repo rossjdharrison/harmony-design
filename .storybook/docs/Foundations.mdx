@@ -1,0 +1,114 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Foundations/Design Tokens" />
+
+# Design Tokens
+
+Design tokens are the visual design atoms of the Harmony Design System. They store visual design attributes like colors, typography, spacing, and timing values.
+
+## Token Categories
+
+### Color Tokens
+
+Color tokens define the color palette used throughout the system:
+
+```css
+--color-primary: #6366f1;
+--color-primary-hover: #4f46e5;
+--color-primary-active: #4338ca;
+
+--color-surface: #ffffff;
+--color-surface-alt: #f9fafb;
+--color-border: #e5e7eb;
+
+--color-text: #111827;
+--color-text-secondary: #6b7280;
+--color-text-disabled: #9ca3af;
+```
+
+### Spacing Tokens
+
+Spacing tokens create consistent rhythm and hierarchy:
+
+```css
+--spacing-xs: 4px;
+--spacing-sm: 8px;
+--spacing-md: 16px;
+--spacing-lg: 24px;
+--spacing-xl: 32px;
+--spacing-2xl: 48px;
+```
+
+### Typography Tokens
+
+Typography tokens define text styles:
+
+```css
+--font-family-sans: system-ui, -apple-system, sans-serif;
+--font-family-mono: 'SF Mono', Monaco, monospace;
+
+--font-size-xs: 12px;
+--font-size-sm: 14px;
+--font-size-base: 16px;
+--font-size-lg: 18px;
+--font-size-xl: 20px;
+
+--font-weight-normal: 400;
+--font-weight-medium: 500;
+--font-weight-bold: 700;
+```
+
+### Motion Tokens
+
+Motion tokens define animation timing:
+
+```css
+--duration-instant: 100ms;
+--duration-fast: 200ms;
+--duration-normal: 300ms;
+--duration-slow: 500ms;
+
+--easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+--easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+--easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
+```
+
+## Using Tokens
+
+Tokens are available as CSS custom properties:
+
+```javascript
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: block;
+          padding: var(--spacing-md);
+          background: var(--color-surface);
+          border: 1px solid var(--color-border);
+          border-radius: var(--radius-md);
+        }
+      </style>
+      <slot></slot>
+    `;
+  }
+}
+```
+
+## Customizing Tokens
+
+See the [Token Customization Guide](?path=/docs/guides-token-customization--docs) for details on overriding tokens.
+
+## Token Files
+
+Token definitions are located in:
+- `/tokens/colors.css` - Color palette
+- `/tokens/spacing.css` - Spacing scale
+- `/tokens/typography.css` - Typography system
+- `/tokens/motion.css` - Animation timing

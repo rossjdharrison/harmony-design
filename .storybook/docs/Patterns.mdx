@@ -1,0 +1,169 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Patterns/Event-Driven Communication" />
+
+# Event-Driven Communication
+
+Harmony uses an event-driven architecture where components communicate through the EventBus, maintaining loose coupling and testability.
+
+## The EventBus Pattern
+
+Components never call bounded contexts directly. Instead:
+
+1. **UI publishes events** → User interactions trigger custom events
+2. **EventBus routes events** → Central bus validates and routes messages
+3. **Bounded contexts handle** → Core logic processes commands
+4. **Results published back** → BCs emit result events
+5. **UI updates reactively** → Components listen for state changes
+
+## Example: Play Button
+
+```javascript
+/**
+ * Play button component
+ * Publishes play/pause events, never calls audio engine directly
+ */
+class PlayButton extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this._isPlaying = false;
+  }
+
+  connectedCallback() {
+    this.render();
+    this.setupEventListeners();
+    this.subscribeToPlaybackState();
+  }
+
+  setupEventListeners() {
+    const button = this.shadowRoot.querySelector('button');
+    button.addEventListener('click', () => this.handleClick());
+  }
+
+  handleClick() {
+    // Publish command event (never call BC directly)
+    const event = new CustomEvent('harmony:command', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        type: this._isPlaying ? 'Pause' : 'Play',
+        timestamp: Date.now()
+      }
+    });
+    this.dispatchEvent(event);
+  }
+
+  subscribeToPlaybackState() {
+    // Listen for state change events from BC
+    window.addEventListener('harmony:playback-state-changed', (e) => {
+      this._isPlaying = e.detail.isPlaying;
+      this.render();
+    });
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        button {
+          padding: var(--spacing-md);
+          background: var(--color-primary);
+          color: white;
+          border: none;
+          border-radius: var(--radius-md);
+          cursor: pointer;
+        }
+      </style>
+      <button>${this._isPlaying ? 'Pause' : 'Play'}</button>
+    `;
+  }
+}
+
+customElements.define('play-button', PlayButton);
+```
+
+## EventBus Command Pattern
+
+Commands follow a strict schema:
+
+```javascript
+{
+  type: 'CommandType',      // Must match schema
+  timestamp: 1234567890,    // Required for ordering
+  payload: {                // Optional command data
+    // Command-specific fields
+  }
+}
+```
+
+## Bounded Context Handler
+
+```javascript
+/**
+ * Audio playback bounded context
+ * Subscribes to commands, publishes results
+ */
+class AudioPlaybackContext {
+  constructor(eventBus) {
+    this.eventBus = eventBus;
+    this.isPlaying = false;
+  }
+
+  initialize() {
+    // Subscribe to commands
+    this.eventBus.subscribe('Play', (event) => this.handlePlay(event));
+    this.eventBus.subscribe('Pause', (event) => this.handlePause(event));
+  }
+
+  async handlePlay(event) {
+    try {
+      // Process command in WASM
+      await this.audioEngine.play();
+      this.isPlaying = true;
+
+      // Publish result event
+      this.eventBus.publish({
+        type: 'PlaybackStarted',
+        timestamp: Date.now(),
+        payload: { success: true }
+      });
+
+      // Publish state change
+      window.dispatchEvent(new CustomEvent('harmony:playback-state-changed', {
+        detail: { isPlaying: true }
+      }));
+    } catch (error) {
+      // Publish error event
+      this.eventBus.publish({
+        type: 'PlaybackError',
+        timestamp: Date.now(),
+        payload: { error: error.message }
+      });
+    }
+  }
+}
+```
+
+## Event Naming Convention
+
+- **Commands**: `Play`, `Pause`, `Stop`, `LoadProject`
+- **Results**: `PlaybackStarted`, `PlaybackPaused`, `ProjectLoaded`
+- **Errors**: `PlaybackError`, `LoadError`, `ValidationError`
+- **State Changes**: `harmony:playback-state-changed`, `harmony:project-changed`
+
+## Debugging Events
+
+The EventBusComponent provides real-time event monitoring:
+
+- Press `Ctrl+Shift+E` to open the event debugger
+- View all events with timestamps and payloads
+- Filter by event type
+- Inspect validation errors
+
+## Best Practices
+
+1. **Never bypass EventBus**: Components must not call BCs directly
+2. **Validate early**: EventBus validates all commands against schema
+3. **Log errors**: All validation failures must be logged with context
+4. **Use TypeNavigator**: Query state through read-only navigator
+5. **Test events**: Mock EventBus for component testing

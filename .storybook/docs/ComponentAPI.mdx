@@ -1,0 +1,353 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="API Reference/Component API" />
+
+# Component API Patterns
+
+All Harmony components follow consistent API patterns for props, events, slots, and CSS custom properties.
+
+## Standard Props
+
+### Via Attributes
+
+```html
+<harmony-button 
+  variant="primary"
+  size="medium"
+  disabled
+>
+  Click me
+</harmony-button>
+```
+
+### Via Properties
+
+```javascript
+const button = document.querySelector('harmony-button');
+button.variant = 'secondary';
+button.disabled = true;
+```
+
+## Standard Events
+
+All components emit namespaced events:
+
+```javascript
+button.addEventListener('harmony:click', (event) => {
+  console.log('Button clicked:', event.detail);
+});
+
+button.addEventListener('harmony:focus', (event) => {
+  console.log('Button focused');
+});
+
+button.addEventListener('harmony:blur', (event) => {
+  console.log('Button blurred');
+});
+```
+
+### Event Detail Structure
+
+```javascript
+{
+  detail: {
+    component: 'harmony-button',  // Component name
+    timestamp: 1234567890,        // Event timestamp
+    // Component-specific data
+  }
+}
+```
+
+## Standard Slots
+
+Components use named slots for composition:
+
+```html
+<harmony-card>
+  <span slot="header">Card Title</span>
+  <p>Card content goes here</p>
+  <div slot="footer">
+    <harmony-button>Action</harmony-button>
+  </div>
+</harmony-card>
+```
+
+### Default Slot
+
+```html
+<harmony-button>
+  <!-- Default slot content -->
+  <harmony-icon name="play"></harmony-icon>
+  Play
+</harmony-button>
+```
+
+## CSS Custom Properties
+
+All components expose CSS custom properties for theming:
+
+```css
+harmony-button {
+  --button-bg: var(--color-primary);
+  --button-color: white;
+  --button-padding: var(--spacing-md);
+  --button-radius: var(--radius-md);
+  --button-transition: var(--duration-fast);
+}
+```
+
+### State-Specific Properties
+
+```css
+harmony-button {
+  --button-bg-hover: var(--color-primary-hover);
+  --button-bg-active: var(--color-primary-active);
+  --button-bg-disabled: var(--color-disabled);
+}
+```
+
+## Standard Methods
+
+Components expose public methods:
+
+```javascript
+const button = document.querySelector('harmony-button');
+
+// Focus management
+button.focus();
+button.blur();
+
+// State queries
+const isDisabled = button.disabled;
+const variant = button.variant;
+
+// Validation (for form components)
+const isValid = await input.validate();
+const errors = input.getErrors();
+```
+
+## Lifecycle
+
+Components follow standard Web Component lifecycle:
+
+```javascript
+class HarmonyButton extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    // Initialize state
+  }
+
+  connectedCallback() {
+    // Component added to DOM
+    this.render();
+    this.setupEventListeners();
+  }
+
+  disconnectedCallback() {
+    // Component removed from DOM
+    this.cleanup();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    // Attribute changed
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+
+  static get observedAttributes() {
+    return ['variant', 'size', 'disabled'];
+  }
+}
+```
+
+## Accessibility
+
+All components implement ARIA patterns:
+
+```html
+<button
+  role="button"
+  aria-label="Play audio"
+  aria-pressed="false"
+  aria-disabled="false"
+  tabindex="0"
+>
+  Play
+</button>
+```
+
+### Keyboard Support
+
+- **Tab**: Focus navigation
+- **Enter/Space**: Activate buttons
+- **Arrow keys**: Navigate lists/menus
+- **Escape**: Close modals/dropdowns
+
+## Performance
+
+Components follow performance best practices:
+
+- **Lazy rendering**: Only render when visible
+- **Event delegation**: Use event bubbling
+- **RAF batching**: Batch DOM updates
+- **Memory cleanup**: Remove listeners in disconnectedCallback
+
+## Example: Complete Component
+
+```javascript
+/**
+ * Harmony Button Component
+ * @element harmony-button
+ * 
+ * @attr {string} variant - Button style variant (primary|secondary|tertiary)
+ * @attr {string} size - Button size (small|medium|large)
+ * @attr {boolean} disabled - Disabled state
+ * 
+ * @fires harmony:click - Fired when button is clicked
+ * @fires harmony:focus - Fired when button receives focus
+ * @fires harmony:blur - Fired when button loses focus
+ * 
+ * @slot - Default slot for button content
+ * 
+ * @cssprop --button-bg - Background color
+ * @cssprop --button-color - Text color
+ * @cssprop --button-padding - Internal padding
+ */
+class HarmonyButton extends HTMLElement {
+  static get observedAttributes() {
+    return ['variant', 'size', 'disabled'];
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+  }
+
+  connectedCallback() {
+    this.render();
+    this.setupEventListeners();
+  }
+
+  disconnectedCallback() {
+    // Cleanup if needed
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue !== newValue) {
+      this.render();
+    }
+  }
+
+  setupEventListeners() {
+    const button = this.shadowRoot.querySelector('button');
+    
+    button.addEventListener('click', (e) => {
+      if (!this.disabled) {
+        this.dispatchEvent(new CustomEvent('harmony:click', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            component: 'harmony-button',
+            timestamp: Date.now()
+          }
+        }));
+      }
+    });
+
+    button.addEventListener('focus', () => {
+      this.dispatchEvent(new CustomEvent('harmony:focus', {
+        bubbles: true,
+        composed: true
+      }));
+    });
+
+    button.addEventListener('blur', () => {
+      this.dispatchEvent(new CustomEvent('harmony:blur', {
+        bubbles: true,
+        composed: true
+      }));
+    });
+  }
+
+  get variant() {
+    return this.getAttribute('variant') || 'primary';
+  }
+
+  set variant(value) {
+    this.setAttribute('variant', value);
+  }
+
+  get size() {
+    return this.getAttribute('size') || 'medium';
+  }
+
+  set size(value) {
+    this.setAttribute('size', value);
+  }
+
+  get disabled() {
+    return this.hasAttribute('disabled');
+  }
+
+  set disabled(value) {
+    if (value) {
+      this.setAttribute('disabled', '');
+    } else {
+      this.removeAttribute('disabled');
+    }
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: inline-block;
+        }
+
+        button {
+          padding: var(--button-padding, var(--spacing-md));
+          background: var(--button-bg, var(--color-primary));
+          color: var(--button-color, white);
+          border: none;
+          border-radius: var(--button-radius, var(--radius-md));
+          font-size: var(--font-size-base);
+          cursor: pointer;
+          transition: all var(--duration-fast);
+        }
+
+        button:hover:not(:disabled) {
+          background: var(--button-bg-hover, var(--color-primary-hover));
+        }
+
+        button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .size-small {
+          padding: var(--spacing-sm);
+          font-size: var(--font-size-sm);
+        }
+
+        .size-large {
+          padding: var(--spacing-lg);
+          font-size: var(--font-size-lg);
+        }
+      </style>
+      <button 
+        class="variant-${this.variant} size-${this.size}"
+        ?disabled="${this.disabled}"
+        aria-disabled="${this.disabled}"
+      >
+        <slot></slot>
+      </button>
+    `;
+  }
+}
+
+customElements.define('harmony-button', HarmonyButton);
+```
+
+See individual component documentation for specific API details.
