@@ -226,7 +226,7 @@ export function tokenToCSSValue(token) {
     case TokenCategory.COLOR:
       if (typeof value === 'object' && value.hex) {
         return value.alpha !== undefined 
-          ? `${value.hex}${Math.round(value.alpha * 255).toString(16).padStart(2, '0')}`
+          ? `${value.hex}${Math.floor(value.alpha * 255).toString(16).padStart(2, '0')}`
           : value.hex;
       }
       return String(value);

@@ -263,5 +263,7 @@ export function runTests() {
 
 // Run tests if executed directly
 if (import.meta.url === `file://${process.argv[1]}`) {
-  runTests();
+  const passed = runTests();
+  // Explicitly exit so open Effect/Observable subscriptions don't hang the process.
+  process.exit(passed ? 0 : 1);
 }
