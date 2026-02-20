@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPUFallback Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #e0e0e0;
+    }
+    
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .test-section h2 {
+      margin-top: 0;
+      color: #4a9eff;
+    }
+    
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-family: monospace;
+    }
+    
+    .status.success {
+      background: #1a3a1a;
+      border: 1px solid #2a5a2a;
+      color: #5aff5a;
+    }
+    
+    .status.error {
+      background: #3a1a1a;
+      border: 1px solid #5a2a2a;
+      color: #ff5a5a;
+    }
+    
+    .status.info {
+      background: #1a1a3a;
+      border: 1px solid #2a2a5a;
+      color: #5a5aff;
+    }
+    
+    button {
+      background: #4a9eff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    
+    button:hover {
+      background: #6ab0ff;
+    }
+    
+    button:disabled {
+      background: #333;
+      cursor: not-allowed;
+    }
+    
+    .capability-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    
+    .capability-badge.webgpu {
+      background: #1a5a1a;
+      color: #5aff5a;
+    }
+    
+    .capability-badge.webgl2 {
+      background: #5a5a1a;
+      color: #ffff5a;
+    }
+    
+    .capability-badge.cpu {
+      background: #5a1a1a;
+      color: #ff5a5a;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      padding: 8px;
+      margin: 4px 0;
+      background: #2a2a2a;
+      border-radius: 4px;
+    }
+    
+    .feature-list li::before {
+      content: '✓ ';
+      color: #5aff5a;
+      font-weight: bold;
+    }
+    
+    .performance-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .metric {
+      background: #2a2a2a;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .metric-label {
+      font-size: 12px;
+      color: #888;
+    }
+    
+    .metric-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #4a9eff;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 GPUFallback Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Initialization & Detection</h2>
+    <button id="btn-init">Initialize GPU Fallback</button>
+    <button id="btn-capability">Get Capability Info</button>
+    <div id="init-status"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Operation Registration & Execution</h2>
+    <button id="btn-register">Register Test Operations</button>
+    <button id="btn-execute-gpu">Execute GPU Operation</button>
+    <button id="btn-execute-cpu">Execute CPU Operation</button>
+    <button id="btn-execute-auto">Execute with Auto-Fallback</button>
+    <div id="operation-status"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Performance Testing</h2>
+    <button id="btn-perf-test">Run Performance Comparison</button>
+    <div id="perf-status"></div>
+    <div id="perf-metrics" class="performance-metrics"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>Error Handling & Fallback</h2>
+    <button id="btn-force-error">Simulate GPU Error</button>
+    <button id="btn-test-fallback">Test Fallback Chain</button>
+    <div id="error-status"></div>
+  </div>
+
+  <script type="module">
+    import { 
+      GPUFallback, 
+      GPUCapability, 
+      GPUFeature,
+      getGPUFallback,
+      initializeGPUFallback 
+    } from './gpu-fallback.js';
+
+    let fallback = null;
+
+    // Helper to display status
+    function showStatus(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      const statusDiv = document.createElement('div');
+      statusDiv.className = `status ${type}`;
+      statusDiv.textContent = message;
+      element.appendChild(statusDiv);
+      
+      // Auto-scroll to latest
+      statusDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Helper to clear status
+    function clearStatus(elementId) {
+      document.getElementById(elementId).innerHTML = '';
+    }
+
+    // Test: Initialize GPU Fallback
+    document.getElementById('btn-init').addEventListener('click', async () => {
+      clearStatus('init-status');
+      showStatus('init-status', 'Initializing GPU fallback system...', 'info');
+      
+      try {
+        fallback = getGPUFallback();
+        const capability = await fallback.initialize();
+        
+        const badgeClass = capability === GPUCapability.WEBGPU ? 'webgpu' :
+                          capability === GPUCapability.WEBGL2 ? 'webgl2' : 'cpu';
+        
+        showStatus('init-status', 
+          `✓ Initialized with capability: ${capability}`, 
+          'success');
+        
+        // Show capability badge
+        const info = fallback.getCapabilityInfo();
+        let infoHTML = `<div class="capability-badge ${badgeClass}">${capability.toUpperCase()}</div>`;
+        
+        if (info.features.length > 0) {
+          infoHTML += '<ul class="feature-list">';
+          info.features.forEach(feature => {
+            infoHTML += `<li>${feature}</li>`;
+          });
+          infoHTML += '</ul>';
+        }
+        
+        if (info.adapterInfo) {
+          infoHTML += `<p>Vendor: ${info.adapterInfo.vendor}</p>`;
+          infoHTML += `<p>Architecture: ${info.adapterInfo.architecture}</p>`;
+        }
+        
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'status info';
+        infoDiv.innerHTML = infoHTML;
+        document.getElementById('init-status').appendChild(infoDiv);
+        
+      } catch (error) {
+        showStatus('init-status', `✗ Initialization failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Test: Get Capability Info
+    document.getElementById('btn-capability').addEventListener('click', () => {
+      clearStatus('init-status');
+      
+      if (!fallback) {
+        showStatus('init-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      const info = fallback.getCapabilityInfo();
+      showStatus('init-status', JSON.stringify(info, null, 2), 'info');
+    });
+
+    // Test: Register Operations
+    document.getElementById('btn-register').addEventListener('click', () => {
+      clearStatus('operation-status');
+      
+      if (!fallback) {
+        showStatus('operation-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      // Register GPU implementation (matrix multiply simulation)
+      fallback.registerGPUImplementation('matrixMultiply', async (device, size) => {
+        await new Promise(resolve => setTimeout(resolve, 10)); // Simulate GPU work
+        return { result: 'GPU computed', size, time: 10 };
+      });
+      
+      // Register CPU fallback
+      fallback.registerCPUFallback('matrixMultiply', async (size) => {
+        await new Promise(resolve => setTimeout(resolve, 50)); // Simulate CPU work
+        return { result: 'CPU computed', size, time: 50 };
+      });
+      
+      // Register CPU-only operation
+      fallback.registerCPUFallback('dataTransform', async (data) => {
+        await new Promise(resolve => setTimeout(resolve, 20));
+        return { result: 'Transformed', items: data.length };
+      });
+      
+      showStatus('operation-status', '✓ Registered test operations', 'success');
+      showStatus('operation-status', '  - matrixMultiply (GPU + CPU)', 'info');
+      showStatus('operation-status', '  - dataTransform (CPU only)', 'info');
+    });
+
+    // Test: Execute GPU Operation
+    document.getElementById('btn-execute-gpu').addEventListener('click', async () => {
+      clearStatus('operation-status');
+      
+      if (!fallback) {
+        showStatus('operation-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      try {
+        const start = performance.now();
+        const result = await fallback.execute('matrixMultiply', 1024);
+        const duration = performance.now() - start;
+        
+        showStatus('operation-status', 
+          `✓ Operation completed in ${duration.toFixed(2)}ms`, 
+          'success');
+        showStatus('operation-status', JSON.stringify(result, null, 2), 'info');
+      } catch (error) {
+        showStatus('operation-status', `✗ Execution failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Test: Execute CPU Operation
+    document.getElementById('btn-execute-cpu').addEventListener('click', async () => {
+      clearStatus('operation-status');
+      
+      if (!fallback) {
+        showStatus('operation-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      try {
+        const start = performance.now();
+        const result = await fallback.execute('dataTransform', [1, 2, 3, 4, 5]);
+        const duration = performance.now() - start;
+        
+        showStatus('operation-status', 
+          `✓ CPU operation completed in ${duration.toFixed(2)}ms`, 
+          'success');
+        showStatus('operation-status', JSON.stringify(result, null, 2), 'info');
+      } catch (error) {
+        showStatus('operation-status', `✗ Execution failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Test: Execute with Auto-Fallback
+    document.getElementById('btn-execute-auto').addEventListener('click', async () => {
+      clearStatus('operation-status');
+      
+      if (!fallback) {
+        showStatus('operation-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      showStatus('operation-status', 'Testing auto-fallback behavior...', 'info');
+      
+      try {
+        const result = await fallback.execute('matrixMultiply', 512);
+        showStatus('operation-status', 
+          `✓ Auto-fallback succeeded: ${result.result}`, 
+          'success');
+      } catch (error) {
+        showStatus('operation-status', `✗ Auto-fallback failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Test: Performance Comparison
+    document.getElementById('btn-perf-test').addEventListener('click', async () => {
+      clearStatus('perf-status');
+      document.getElementById('perf-metrics').innerHTML = '';
+      
+      if (!fallback) {
+        showStatus('perf-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      showStatus('perf-status', 'Running performance comparison...', 'info');
+      
+      const iterations = 10;
+      const sizes = [256, 512, 1024];
+      
+      for (const size of sizes) {
+        let totalTime = 0;
+        
+        for (let i = 0; i < iterations; i++) {
+          const start = performance.now();
+          await fallback.execute('matrixMultiply', size);
+          totalTime += performance.now() - start;
+        }
+        
+        const avgTime = totalTime / iterations;
+        const capability = fallback.capability;
+        
+        const metricDiv = document.createElement('div');
+        metricDiv.className = 'metric';
+        metricDiv.innerHTML = `
+          <div class="metric-label">Size ${size}x${size} (${capability})</div>
+          <div class="metric-value">${avgTime.toFixed(2)}ms</div>
+        `;
+        document.getElementById('perf-metrics').appendChild(metricDiv);
+      }
+      
+      showStatus('perf-status', '✓ Performance test completed', 'success');
+    });
+
+    // Test: Simulate GPU Error
+    document.getElementById('btn-force-error').addEventListener('click', () => {
+      clearStatus('error-status');
+      
+      if (!fallback) {
+        showStatus('error-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      // Register operation that will fail on GPU
+      fallback.registerGPUImplementation('errorOperation', async (device) => {
+        throw new Error('Simulated GPU device lost error');
+      });
+      
+      fallback.registerCPUFallback('errorOperation', async () => {
+        return { result: 'CPU fallback succeeded' };
+      });
+      
+      showStatus('error-status', '✓ Registered error-prone operation', 'success');
+      showStatus('error-status', 'Click "Test Fallback Chain" to execute', 'info');
+    });
+
+    // Test: Fallback Chain
+    document.getElementById('btn-test-fallback').addEventListener('click', async () => {
+      clearStatus('error-status');
+      
+      if (!fallback) {
+        showStatus('error-status', '⚠ Please initialize first', 'error');
+        return;
+      }
+      
+      try {
+        showStatus('error-status', 'Executing operation that will fail on GPU...', 'info');
+        const result = await fallback.execute('errorOperation');
+        showStatus('error-status', 
+          `✓ Fallback successful: ${result.result}`, 
+          'success');
+      } catch (error) {
+        showStatus('error-status', `✗ Fallback failed: ${error.message}`, 'error');
+      }
+    });
+
+    // Auto-initialize on load
+    window.addEventListener('load', () => {
+      document.getElementById('btn-init').click();
+      setTimeout(() => {
+        document.getElementById('btn-register').click();
+      }, 500);
+    });
+  </script>
+</body>
+</html>
