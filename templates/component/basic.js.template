@@ -1,0 +1,156 @@
+/**
+ * @fileoverview {{componentName}} Component
+ * Generated on {{timestamp}}
+ * 
+ * @see {@link ../../../DESIGN_SYSTEM.md#{{componentKebab}}} for design documentation
+ */
+
+/**
+ * {{componentName}} - A {{componentType}} component
+ * 
+ * @class {{componentName}}
+ * @extends {HTMLElement}
+ * 
+ * @example
+ * <{{componentKebab}}></{{componentKebab}}>
+ * 
+ * @example
+ * const element = document.createElement('{{componentKebab}}');
+ * document.body.appendChild(element);
+ */
+class {{componentName}} extends HTMLElement {
+  /**
+   * Observed attributes for reactive updates
+   * @returns {string[]} List of observed attributes
+   */
+  static get observedAttributes() {
+    return ['disabled', 'variant'];
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this._render();
+  }
+
+  /**
+   * Called when element is connected to DOM
+   */
+  connectedCallback() {
+    this._setupEventListeners();
+  }
+
+  /**
+   * Called when element is disconnected from DOM
+   */
+  disconnectedCallback() {
+    this._cleanupEventListeners();
+  }
+
+  /**
+   * Called when an observed attribute changes
+   * @param {string} name - Attribute name
+   * @param {string} oldValue - Previous value
+   * @param {string} newValue - New value
+   */
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
+    this._render();
+  }
+
+  /**
+   * Renders the component's shadow DOM
+   * @private
+   */
+  _render() {
+    const disabled = this.hasAttribute('disabled');
+    const variant = this.getAttribute('variant') || 'default';
+
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: inline-block;
+          box-sizing: border-box;
+        }
+
+        :host([hidden]) {
+          display: none;
+        }
+
+        .{{componentKebab}} {
+          /* Base styles */
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--harmony-border-color, #ccc);
+          border-radius: var(--harmony-border-radius, 4px);
+          background: var(--harmony-bg-color, #fff);
+          font-family: var(--harmony-font-family, system-ui);
+          font-size: var(--harmony-font-size, 1rem);
+          transition: all 0.2s ease;
+        }
+
+        .{{componentKebab}}:hover {
+          border-color: var(--harmony-border-color-hover, #999);
+        }
+
+        .{{componentKebab}}[disabled] {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .{{componentKebab}}[variant="primary"] {
+          background: var(--harmony-primary-color, #0066cc);
+          color: white;
+          border-color: var(--harmony-primary-color, #0066cc);
+        }
+      </style>
+      <div class="{{componentKebab}}" 
+           ${disabled ? 'disabled' : ''} 
+           variant="${variant}">
+        <slot></slot>
+      </div>
+    `;
+  }
+
+  /**
+   * Sets up event listeners
+   * @private
+   */
+  _setupEventListeners() {
+    // Add event listeners here
+  }
+
+  /**
+   * Cleans up event listeners
+   * @private
+   */
+  _cleanupEventListeners() {
+    // Remove event listeners here
+  }
+
+  /**
+   * Publishes an event via EventBus
+   * @param {string} eventType - Event type
+   * @param {Object} payload - Event payload
+   * @private
+   */
+  _publishEvent(eventType, payload) {
+    const event = new CustomEvent('harmony:event', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        type: eventType,
+        source: '{{componentKebab}}',
+        payload: payload,
+        timestamp: Date.now()
+      }
+    });
+    this.dispatchEvent(event);
+  }
+}
+
+// Register the custom element
+if (!customElements.get('{{componentKebab}}')) {
+  customElements.define('{{componentKebab}}', {{componentName}});
+}
+
+export default {{componentName}};

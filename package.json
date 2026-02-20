@@ -1,7 +1,10 @@
 {
-  "name": "harmony-design",
-  "version": "0.1.0",
-  "type": "module",
-  "description": "Harmony Design System — vanilla JS, zero dependencies",
-  "private": true
+    "name":  "harmony-design",
+    "version":  "0.1.0",
+    "type":  "module",
+    "description":  "Harmony Design System — vanilla JS, zero dependencies",
+    "private":  true,
+    "scripts":  {
+
+                }
 }

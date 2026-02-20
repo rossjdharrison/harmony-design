@@ -1,0 +1,281 @@
+/**
+ * @fileoverview {{componentName}} Component (Stateful)
+ * Generated on {{timestamp}}
+ * 
+ * @see {@link ../../../DESIGN_SYSTEM.md#{{componentKebab}}} for design documentation
+ */
+
+/**
+ * {{componentName}} - A stateful {{componentType}} component
+ * 
+ * @class {{componentName}}
+ * @extends {HTMLElement}
+ * 
+ * @fires {{componentKebab}}:statechange - Fired when internal state changes
+ * 
+ * @example
+ * <{{componentKebab}} initial-value="0"></{{componentKebab}}>
+ */
+class {{componentName}} extends HTMLElement {
+  static get observedAttributes() {
+    return ['disabled', 'variant', 'initial-value'];
+  }
+
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    
+    // Internal state management
+    this._state = {
+      value: 0,
+      history: [],
+      maxHistory: 10
+    };
+    
+    this._render();
+  }
+
+  connectedCallback() {
+    this._setupEventListeners();
+    this._subscribeToEvents();
+  }
+
+  disconnectedCallback() {
+    this._cleanupEventListeners();
+    this._unsubscribeFromEvents();
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
+    
+    if (name === 'initial-value') {
+      this._setState({ value: parseInt(newValue, 10) || 0 });
+    }
+    
+    this._render();
+  }
+
+  /**
+   * Gets the current state
+   * @returns {Object} Current state
+   */
+  getState() {
+    return { ...this._state };
+  }
+
+  /**
+   * Updates the state and triggers re-render
+   * @param {Object} updates - State updates
+   * @private
+   */
+  _setState(updates) {
+    const oldState = { ...this._state };
+    
+    // Update state
+    Object.assign(this._state, updates);
+    
+    // Add to history
+    this._state.history.push({
+      timestamp: Date.now(),
+      state: { ...oldState }
+    });
+    
+    // Trim history if needed
+    if (this._state.history.length > this._state.maxHistory) {
+      this._state.history.shift();
+    }
+    
+    // Re-render
+    this._render();
+    
+    // Publish state change event
+    this._publishEvent('{{componentKebab}}:statechange', {
+      oldState,
+      newState: this.getState()
+    });
+  }
+
+  /**
+   * Reverts to previous state
+   */
+  undo() {
+    if (this._state.history.length === 0) return;
+    
+    const previousState = this._state.history.pop();
+    this._state = { ...previousState.state, history: this._state.history };
+    this._render();
+  }
+
+  /**
+   * Renders the component
+   * @private
+   */
+  _render() {
+    const disabled = this.hasAttribute('disabled');
+    const variant = this.getAttribute('variant') || 'default';
+
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: block;
+          box-sizing: border-box;
+        }
+
+        :host([hidden]) {
+          display: none;
+        }
+
+        .{{componentKebab}} {
+          padding: 1rem;
+          border: 1px solid var(--harmony-border-color, #ccc);
+          border-radius: var(--harmony-border-radius, 4px);
+          background: var(--harmony-bg-color, #fff);
+          font-family: var(--harmony-font-family, system-ui);
+        }
+
+        .{{componentKebab}}__value {
+          font-size: 1.5rem;
+          font-weight: bold;
+          margin-bottom: 0.5rem;
+        }
+
+        .{{componentKebab}}__controls {
+          display: flex;
+          gap: 0.5rem;
+        }
+
+        .{{componentKebab}}__button {
+          padding: 0.5rem 1rem;
+          border: 1px solid var(--harmony-border-color, #ccc);
+          border-radius: var(--harmony-border-radius, 4px);
+          background: var(--harmony-bg-color, #fff);
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .{{componentKebab}}__button:hover {
+          background: var(--harmony-bg-color-hover, #f5f5f5);
+        }
+
+        .{{componentKebab}}__button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+      </style>
+      <div class="{{componentKebab}}" variant="${variant}">
+        <div class="{{componentKebab}}__value">${this._state.value}</div>
+        <div class="{{componentKebab}}__controls">
+          <button class="{{componentKebab}}__button" data-action="increment" ${disabled ? 'disabled' : ''}>
+            Increment
+          </button>
+          <button class="{{componentKebab}}__button" data-action="decrement" ${disabled ? 'disabled' : ''}>
+            Decrement
+          </button>
+          <button class="{{componentKebab}}__button" data-action="reset" ${disabled ? 'disabled' : ''}>
+            Reset
+          </button>
+          <button class="{{componentKebab}}__button" data-action="undo" ${disabled || this._state.history.length === 0 ? 'disabled' : ''}>
+            Undo
+          </button>
+        </div>
+        <slot></slot>
+      </div>
+    `;
+    
+    this._attachInternalListeners();
+  }
+
+  /**
+   * Attaches listeners to internal elements
+   * @private
+   */
+  _attachInternalListeners() {
+    const buttons = this.shadowRoot.querySelectorAll('[data-action]');
+    buttons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        this._handleAction(action);
+      });
+    });
+  }
+
+  /**
+   * Handles internal actions
+   * @param {string} action - Action name
+   * @private
+   */
+  _handleAction(action) {
+    switch (action) {
+      case 'increment':
+        this._setState({ value: this._state.value + 1 });
+        break;
+      case 'decrement':
+        this._setState({ value: this._state.value - 1 });
+        break;
+      case 'reset':
+        this._setState({ value: 0 });
+        break;
+      case 'undo':
+        this.undo();
+        break;
+    }
+  }
+
+  /**
+   * Sets up event listeners
+   * @private
+   */
+  _setupEventListeners() {
+    // External event listeners
+  }
+
+  /**
+   * Cleans up event listeners
+   * @private
+   */
+  _cleanupEventListeners() {
+    // Cleanup
+  }
+
+  /**
+   * Subscribes to EventBus events
+   * @private
+   */
+  _subscribeToEvents() {
+    // Subscribe to relevant events
+  }
+
+  /**
+   * Unsubscribes from EventBus events
+   * @private
+   */
+  _unsubscribeFromEvents() {
+    // Unsubscribe
+  }
+
+  /**
+   * Publishes an event via EventBus
+   * @param {string} eventType - Event type
+   * @param {Object} payload - Event payload
+   * @private
+   */
+  _publishEvent(eventType, payload) {
+    const event = new CustomEvent('harmony:event', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        type: eventType,
+        source: '{{componentKebab}}',
+        payload: payload,
+        timestamp: Date.now()
+      }
+    });
+    this.dispatchEvent(event);
+  }
+}
+
+if (!customElements.get('{{componentKebab}}')) {
+  customElements.define('{{componentKebab}}', {{componentName}});
+}
+
+export default {{componentName}};

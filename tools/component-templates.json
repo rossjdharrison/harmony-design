@@ -1,0 +1,36 @@
+{
+  "templates": {
+    "primitive": {
+      "description": "Basic UI building blocks (buttons, inputs, labels)",
+      "directory": "primitives",
+      "examples": ["button", "input", "label", "icon"]
+    },
+    "molecule": {
+      "description": "Combinations of primitives (form-field, card, menu-item)",
+      "directory": "components",
+      "examples": ["form-field", "card", "menu-item", "list-item"]
+    },
+    "organism": {
+      "description": "Complex components (forms, modals, navigation)",
+      "directory": "organisms",
+      "examples": ["form", "modal", "navigation", "data-table"]
+    }
+  },
+  "commonCategories": {
+    "primitives": ["inputs", "buttons", "indicators", "layout"],
+    "components": ["forms", "cards", "lists", "navigation"],
+    "organisms": ["sections", "overlays", "collections"]
+  },
+  "requiredAttributes": ["disabled", "value"],
+  "requiredMethods": ["render", "emit"],
+  "requiredEvents": ["change"],
+  "cssCustomProperties": [
+    "--spacing-md",
+    "--surface-primary",
+    "--border-primary",
+    "--radius-md",
+    "--text-primary",
+    "--font-family-base",
+    "--font-size-base"
+  ]
+}
