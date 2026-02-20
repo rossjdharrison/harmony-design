@@ -1,0 +1,35 @@
+{
+  "id": "component-lifecycle",
+  "name": "Component Lifecycle",
+  "version": "1.0.0",
+  "description": "Component lifecycle management in WASM",
+  "entryPoints": [
+    {
+      "type": "wasm",
+      "path": "./pkg/component_lifecycle.wasm"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "wasm-bridge",
+      "version": "1.0.0",
+      "lazy": false
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "webassembly",
+      "version": "1.0.0",
+      "required": true
+    }
+  ],
+  "metadata": {
+    "wasmMemory": {
+      "initial": 128,
+      "maximum": 256,
+      "shared": false
+    }
+  },
+  "priority": 70,
+  "tags": ["lifecycle", "components", "wasm"]
+}

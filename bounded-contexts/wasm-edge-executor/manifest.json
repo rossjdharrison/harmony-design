@@ -1,0 +1,43 @@
+{
+  "id": "wasm-edge-executor",
+  "name": "WASM Edge Executor",
+  "version": "1.0.0",
+  "description": "Binary format executor for edge/node operations",
+  "entryPoints": [
+    {
+      "type": "wasm",
+      "path": "./pkg/wasm_edge_executor.wasm"
+    },
+    {
+      "type": "js",
+      "path": "./edge-binary-format.js",
+      "export": "EdgeBinaryFormat"
+    }
+  ],
+  "dependencies": [],
+  "capabilities": [
+    {
+      "name": "webassembly",
+      "version": "1.0.0",
+      "required": true
+    },
+    {
+      "name": "shared-array-buffer",
+      "version": "1.0.0",
+      "required": false
+    }
+  ],
+  "metadata": {
+    "wasmMemory": {
+      "initial": 256,
+      "maximum": 512,
+      "shared": false
+    },
+    "performance": {
+      "maxLatency": "1ms",
+      "targetThroughput": "1M ops/sec"
+    }
+  },
+  "priority": 80,
+  "tags": ["core", "graph", "wasm", "performance"]
+}

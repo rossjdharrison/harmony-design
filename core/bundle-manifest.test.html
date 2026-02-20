@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BundleManifest Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-result {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>BundleManifest Tests</h1>
+  <div id="test-results"></div>
+
+  <script type="module">
+    import {
+      validateManifest,
+      resolveDependencies,
+      checkCapabilities,
+      createWasmManifest,
+      createModuleManifest,
+      serializeManifest,
+      deserializeManifest
+    } from './bundle-manifest.js';
+
+    const results = document.getElementById('test-results');
+
+    function addResult(title, passed, message) {
+      const section = document.createElement('div');
+      section.className = 'test-section';
+      
+      const heading = document.createElement('h2');
+      heading.textContent = title;
+      section.appendChild(heading);
+      
+      const result = document.createElement('div');
+      result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      result.textContent = passed ? `✓ PASS: ${message}` : `✗ FAIL: ${message}`;
+      section.appendChild(result);
+      
+      results.appendChild(section);
+    }
+
+    // Test 1: Validate valid manifest
+    console.log('Test 1: Validate valid manifest');
+    const validManifest = {
+      id: 'test-bundle',
+      name: 'Test Bundle',
+      version: '1.0.0',
+      description: 'A test bundle',
+      entryPoints: [
+        { type: 'wasm', path: './test.wasm' }
+      ],
+      dependencies: [],
+      capabilities: [
+        { name: 'webassembly', version: '1.0.0', required: true }
+      ]
+    };
+    const validation1 = validateManifest(validManifest);
+    addResult(
+      'Test 1: Valid Manifest',
+      validation1.valid,
+      validation1.valid ? 'Valid manifest accepted' : validation1.errors.join(', ')
+    );
+
+    // Test 2: Validate invalid manifest (missing required fields)
+    console.log('Test 2: Validate invalid manifest');
+    const invalidManifest = {
+      name: 'Invalid Bundle',
+      // Missing id, version, entryPoints
+    };
+    const validation2 = validateManifest(invalidManifest);
+    addResult(
+      'Test 2: Invalid Manifest Detection',
+      !validation2.valid && validation2.errors.length > 0,
+      !validation2.valid ? `Correctly rejected: ${validation2.errors.length} errors found` : 'Should have rejected invalid manifest'
+    );
+
+    // Test 3: Dependency resolution
+    console.log('Test 3: Dependency resolution');
+    const manifests = [
+      {
+        id: 'bundle-c',
+        name: 'Bundle C',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './c.js' }],
+        dependencies: [
+          { name: 'bundle-a', version: '1.0.0', lazy: false }
+        ],
+        capabilities: []
+      },
+      {
+        id: 'bundle-b',
+        name: 'Bundle B',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './b.js' }],
+        dependencies: [
+          { name: 'bundle-a', version: '1.0.0', lazy: false }
+        ],
+        capabilities: []
+      },
+      {
+        id: 'bundle-a',
+        name: 'Bundle A',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './a.js' }],
+        dependencies: [],
+        capabilities: []
+      }
+    ];
+    const resolution = resolveDependencies(manifests);
+    const correctOrder = resolution.order[0] === 'bundle-a' && 
+                        resolution.order.includes('bundle-b') && 
+                        resolution.order.includes('bundle-c');
+    addResult(
+      'Test 3: Dependency Resolution',
+      correctOrder && resolution.errors.length === 0,
+      correctOrder ? `Correct order: ${resolution.order.join(' → ')}` : 'Incorrect dependency order'
+    );
+
+    // Test 4: Circular dependency detection
+    console.log('Test 4: Circular dependency detection');
+    const circularManifests = [
+      {
+        id: 'bundle-x',
+        name: 'Bundle X',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './x.js' }],
+        dependencies: [{ name: 'bundle-y', version: '1.0.0', lazy: false }],
+        capabilities: []
+      },
+      {
+        id: 'bundle-y',
+        name: 'Bundle Y',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './y.js' }],
+        dependencies: [{ name: 'bundle-x', version: '1.0.0', lazy: false }],
+        capabilities: []
+      }
+    ];
+    const circularResolution = resolveDependencies(circularManifests);
+    addResult(
+      'Test 4: Circular Dependency Detection',
+      circularResolution.errors.length > 0,
+      circularResolution.errors.length > 0 ? 'Circular dependency detected' : 'Failed to detect circular dependency'
+    );
+
+    // Test 5: Capability checking
+    console.log('Test 5: Capability checking');
+    const capabilities = [
+      { name: 'webassembly', version: '1.0.0', required: true },
+      { name: 'webgpu', version: '1.0.0', required: false, fallback: 'webgl2' }
+    ];
+    const capCheck = checkCapabilities(capabilities);
+    addResult(
+      'Test 5: Capability Checking',
+      typeof capCheck.available === 'boolean',
+      `WebAssembly: ${capCheck.missing.includes('webassembly') ? 'missing' : 'available'}, WebGPU: ${capCheck.missing.includes('webgpu') ? 'missing' : 'available'}`
+    );
+
+    // Test 6: Create WASM manifest
+    console.log('Test 6: Create WASM manifest');
+    const wasmManifest = createWasmManifest({
+      id: 'graph-engine',
+      name: 'Graph Engine',
+      version: '1.0.0',
+      wasmPath: './graph-engine.wasm',
+      description: 'Core graph processing engine'
+    });
+    const wasmValidation = validateManifest(wasmManifest);
+    addResult(
+      'Test 6: WASM Manifest Creation',
+      wasmValidation.valid && wasmManifest.entryPoints[0].type === 'wasm',
+      wasmValidation.valid ? 'WASM manifest created correctly' : 'Invalid WASM manifest'
+    );
+
+    // Test 7: Create module manifest
+    console.log('Test 7: Create module manifest');
+    const moduleManifest = createModuleManifest({
+      id: 'ui-components',
+      name: 'UI Components',
+      version: '1.0.0',
+      modulePath: './components.js',
+      exportName: 'Components'
+    });
+    const moduleValidation = validateManifest(moduleManifest);
+    addResult(
+      'Test 7: Module Manifest Creation',
+      moduleValidation.valid && moduleManifest.entryPoints[0].type === 'js',
+      moduleValidation.valid ? 'Module manifest created correctly' : 'Invalid module manifest'
+    );
+
+    // Test 8: Serialization/Deserialization
+    console.log('Test 8: Serialization/Deserialization');
+    try {
+      const serialized = serializeManifest(validManifest, true);
+      const deserialized = deserializeManifest(serialized);
+      const matches = deserialized.id === validManifest.id && 
+                     deserialized.version === validManifest.version;
+      addResult(
+        'Test 8: Serialization/Deserialization',
+        matches,
+        matches ? 'Manifest serialized and deserialized correctly' : 'Serialization mismatch'
+      );
+    } catch (error) {
+      addResult(
+        'Test 8: Serialization/Deserialization',
+        false,
+        `Error: ${error.message}`
+      );
+    }
+
+    // Test 9: Invalid entry point type
+    console.log('Test 9: Invalid entry point type');
+    const invalidEntryPoint = {
+      id: 'test-bundle',
+      name: 'Test Bundle',
+      version: '1.0.0',
+      entryPoints: [
+        { type: 'invalid-type', path: './test.js' }
+      ],
+      dependencies: [],
+      capabilities: []
+    };
+    const validation9 = validateManifest(invalidEntryPoint);
+    addResult(
+      'Test 9: Invalid Entry Point Type',
+      !validation9.valid,
+      !validation9.valid ? 'Invalid entry point type rejected' : 'Should have rejected invalid type'
+    );
+
+    // Test 10: Priority-based loading order
+    console.log('Test 10: Priority-based loading order');
+    const priorityManifests = [
+      {
+        id: 'low-priority',
+        name: 'Low Priority',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './low.js' }],
+        dependencies: [],
+        capabilities: [],
+        priority: 10
+      },
+      {
+        id: 'high-priority',
+        name: 'High Priority',
+        version: '1.0.0',
+        entryPoints: [{ type: 'js', path: './high.js' }],
+        dependencies: [],
+        capabilities: [],
+        priority: 90
+      }
+    ];
+    const priorityResolution = resolveDependencies(priorityManifests);
+    const priorityOrder = priorityResolution.order[0] === 'high-priority';
+    addResult(
+      'Test 10: Priority-Based Loading',
+      priorityOrder,
+      priorityOrder ? 'High priority loaded first' : 'Priority order incorrect'
+    );
+
+    console.log('All tests completed');
+  </script>
+</body>
+</html>

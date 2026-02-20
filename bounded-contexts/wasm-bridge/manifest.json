@@ -1,0 +1,39 @@
+{
+  "id": "wasm-bridge",
+  "name": "WASM Bridge",
+  "version": "1.0.0",
+  "description": "JavaScript ↔ WASM communication layer with callback support",
+  "entryPoints": [
+    {
+      "type": "wasm",
+      "path": "./pkg/wasm_bridge.wasm"
+    },
+    {
+      "type": "js",
+      "path": "./wasm-bridge.js",
+      "export": "WASMBridge"
+    },
+    {
+      "type": "js",
+      "path": "./wasm-callback.js",
+      "export": "WASMCallback"
+    }
+  ],
+  "dependencies": [],
+  "capabilities": [
+    {
+      "name": "webassembly",
+      "version": "1.0.0",
+      "required": true
+    }
+  ],
+  "metadata": {
+    "wasmMemory": {
+      "initial": 64,
+      "maximum": 256,
+      "shared": false
+    }
+  },
+  "priority": 90,
+  "tags": ["core", "bridge", "wasm"]
+}
