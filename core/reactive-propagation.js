@@ -75,7 +75,11 @@ class Observable {
    * @private
    */
   _notifySubscribers(oldValue, newValue) {
-    this._subscribers.forEach(callback => {
+    // Snapshot before iterating: if a subscriber triggers _compute() which
+    // re-subscribes to this observable, the new callback must NOT fire in
+    // the current notification cycle (that would cause an infinite loop).
+    const snapshot = new Set(this._subscribers);
+    snapshot.forEach(callback => {
       try {
         callback(newValue, oldValue);
       } catch (error) {
@@ -187,7 +191,9 @@ class Computed {
    * @private
    */
   _notifySubscribers(oldValue, newValue) {
-    this._subscribers.forEach(callback => {
+    // Snapshot to avoid re-entrancy if a subscriber causes further mutations.
+    const snapshot = new Set(this._subscribers);
+    snapshot.forEach(callback => {
       try {
         callback(newValue, oldValue);
       } catch (error) {
