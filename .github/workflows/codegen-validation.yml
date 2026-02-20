@@ -1,0 +1,68 @@
+name: Codegen Validation
+
+on:
+  pull_request:
+    paths:
+      - 'schemas/**/*.json'
+      - 'tools/codegen/**'
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-codegen:
+    name: Validate Generated Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install Python dependencies
+        run: |
+          pip install pytest
+          
+      - name: Run codegen tests
+        run: |
+          cd tools/codegen
+          pytest test_rust_struct_generator.py -v
+          
+      - name: Generate Rust structs
+        run: |
+          python tools/codegen/generate-all-structs.py
+          
+      - name: Check for uncommitted changes
+        run: |
+          git diff --exit-code harmony-graph/src/generated/
+        continue-on-error: false
+        
+      - name: Verify Rust compilation
+        if: always()
+        run: |
+          cd harmony-graph
+          if [ -f Cargo.toml ]; then
+            cargo check --all-features
+          else
+            echo "Skipping Rust compilation check (no Cargo.toml)"
+          fi
+          
+      - name: Report status
+        if: failure()
+        run: |
+          echo "❌ Codegen validation failed!"
+          echo ""
+          echo "Possible causes:"
+          echo "1. Schema changed but generated code not committed"
+          echo "2. Generated code doesn't compile"
+          echo "3. Codegen tests failed"
+          echo ""
+          echo "To fix:"
+          echo "  python tools/codegen/generate-all-structs.py"
+          echo "  git add harmony-graph/src/generated/"
+          echo "  git commit -m 'chore: regenerate Rust structs from schema'"
+          exit 1
