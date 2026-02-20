@@ -132,7 +132,9 @@ function testEffect() {
   
   // Test cleanup
   let cleanupCalled = false;
+  let effect2Runs = 0;
   const effect2 = new Effect(() => {
+    effect2Runs++;
     counter.get();
     return () => { cleanupCalled = true; };
   });
@@ -145,9 +147,9 @@ function testEffect() {
   effect2.stop();
   console.assert(cleanupCalled === true, 'Cleanup should be called on stop');
   
-  const runsBefore = effectRuns;
+  const effect2RunsBefore = effect2Runs;
   counter.set(15);
-  console.assert(effectRuns === runsBefore, 'Stopped effect should not run');
+  console.assert(effect2Runs === effect2RunsBefore, 'Stopped effect should not run');
   
   console.log('✓ Effect tests passed');
 }
