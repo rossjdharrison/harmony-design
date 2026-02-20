@@ -36,3 +36,40 @@ The Domain schema defines bounded context nodes in the knowledge graph. Each dom
 - Schema: ``harmony-schemas/schemas/domain.schema.json``
 - Validator: ``harmony-schemas/utils/schema-validator.js``
 - Examples: ``harmony-schemas/examples/validate-domain.js``
+
+### Cross-Graph Edge Schema
+
+**Location**: ``harmony-schemas/cross-graph-edge-schema.json``
+
+The Cross-Graph Edge schema defines edges connecting nodes across different graph types (Component, Intent, Domain). These edges enable multi-graph navigation and relationship tracking.
+
+**Required Fields**:
+- ``id``: Unique edge identifier (pattern: ``edge-*``)
+- ``sourceGraph``: Source graph type (component|intent|domain)
+- ``sourceNodeId``: Source node ID within its graph
+- ``targetGraph``: Target graph type (component|intent|domain)
+- ``targetNodeId``: Target node ID within its graph
+- ``edgeType``: Semantic relationship type
+
+**Edge Types**:
+- ``implements``: Target implements source (Intent ? Component)
+- ``triggers``: Source triggers target (Component ? Domain)
+- ``depends-on``: Source depends on target
+- ``provides-data-to``: Data flow from source to target
+- ``consumes-data-from``: Data flow from target to source
+- ``validates-against``: Validation relationship
+- ``renders-for``: Rendering relationship
+- ``handles-event-from``: Event handling relationship
+
+**Indexing (Required)**:
+All cross-graph edges MUST be indexed per Policy 22. Configure indexing with:
+- ``indexed: true`` (required)
+- ``indexKeys``: Array of index types (composite-source, composite-target, edgeType)
+- ``priority``: Query priority (low|medium|high|critical)
+
+**Validation**: Run ``node harmony-schemas/validate-cross-graph-edge.js``
+
+**Examples**: See ``harmony-schemas/examples/cross-graph-edge-*.json``
+
+**Related**: Component Schema, Intent Schema, Domain Schema, Graph Architecture
+
