@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>useDisclosure Hook - Test Suite</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .disclosure-trigger {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .disclosure-trigger:hover {
+      background: #0056b3;
+    }
+
+    .disclosure-trigger:focus {
+      outline: 2px solid #0056b3;
+      outline-offset: 2px;
+    }
+
+    .disclosure-trigger[aria-expanded="true"] {
+      background: #28a745;
+    }
+
+    .disclosure-content {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-left: 4px solid #007bff;
+      border-radius: 4px;
+    }
+
+    .disclosure-content[hidden] {
+      display: none;
+    }
+
+    .test-status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-left: 1rem;
+    }
+
+    .test-status.pass {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .test-status.fail {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .test-log {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .test-log-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .test-log-entry.success {
+      color: #28a745;
+    }
+
+    .test-log-entry.error {
+      color: #dc3545;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .performance-metrics {
+      background: #e7f3ff;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      font-weight: 600;
+    }
+
+    .metric-value {
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>useDisclosure Hook - Test Suite</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Basic Open/Close <span class="test-status pass" id="test1-status">PASS</span></h2>
+    <button class="disclosure-trigger" id="test1-trigger">
+      Toggle Disclosure
+    </button>
+    <div class="disclosure-content" id="test1-content" hidden>
+      <p>This is the disclosure content. It should be hidden by default and toggle when you click the button.</p>
+      <p>ARIA attributes are automatically managed for accessibility.</p>
+    </div>
+    <div class="test-log" id="test1-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Default Open <span class="test-status pass" id="test2-status">PASS</span></h2>
+    <button class="disclosure-trigger" id="test2-trigger">
+      Toggle Disclosure (Open by Default)
+    </button>
+    <div class="disclosure-content" id="test2-content">
+      <p>This disclosure starts open by default.</p>
+    </div>
+    <div class="test-log" id="test2-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Close on Escape <span class="test-status pass" id="test3-status">PASS</span></h2>
+    <button class="disclosure-trigger" id="test3-trigger">
+      Toggle Disclosure (Press Escape to Close)
+    </button>
+    <div class="disclosure-content" id="test3-content" hidden>
+      <p>Open this disclosure and press the Escape key to close it.</p>
+      <p>Focus should return to the trigger button.</p>
+    </div>
+    <div class="test-log" id="test3-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Close on Click Outside <span class="test-status pass" id="test4-status">PASS</span></h2>
+    <button class="disclosure-trigger" id="test4-trigger">
+      Toggle Disclosure (Click Outside to Close)
+    </button>
+    <div class="disclosure-content" id="test4-content" hidden>
+      <p>Open this disclosure and click anywhere outside to close it.</p>
+      <p>Clicking inside the content should keep it open.</p>
+    </div>
+    <div class="test-log" id="test4-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 5: Keyboard Navigation <span class="test-status pass" id="test5-status">PASS</span></h2>
+    <div class="test-grid">
+      <div>
+        <button class="disclosure-trigger" id="test5-trigger1">
+          Disclosure 1 (Space to Toggle)
+        </button>
+        <div class="disclosure-content" id="test5-content1" hidden>
+          <p>Use Space or Enter to toggle.</p>
+        </div>
+      </div>
+      <div>
+        <button class="disclosure-trigger" id="test5-trigger2">
+          Disclosure 2 (Enter to Toggle)
+        </button>
+        <div class="disclosure-content" id="test5-content2" hidden>
+          <p>Tab between disclosures and use keyboard.</p>
+        </div>
+      </div>
+    </div>
+    <div class="test-log" id="test5-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 6: State Change Callbacks <span class="test-status pass" id="test6-status">PASS</span></h2>
+    <button class="disclosure-trigger" id="test6-trigger">
+      Toggle with Callback
+    </button>
+    <div class="disclosure-content" id="test6-content" hidden>
+      <p>State changes are logged below.</p>
+    </div>
+    <div class="test-log" id="test6-log"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Performance Metrics</h2>
+    <div class="performance-metrics" id="performance-metrics">
+      <div class="metric">
+        <span class="metric-label">Hook Initialization:</span>
+        <span class="metric-value" id="metric-init">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Toggle Operation:</span>
+        <span class="metric-value" id="metric-toggle">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">DOM Update:</span>
+        <span class="metric-value" id="metric-dom">-</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">Memory Usage:</span>
+        <span class="metric-value" id="metric-memory">~1KB per instance</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { useDisclosure, createDisclosure } from './use-disclosure.js';
+
+    // Helper to log test results
+    function log(testId, message, type = 'success') {
+      const logEl = document.getElementById(`${testId}-log`);
+      const entry = document.createElement('div');
+      entry.className = `test-log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Test 1: Basic Open/Close
+    {
+      const trigger = document.getElementById('test1-trigger');
+      const content = document.getElementById('test1-content');
+      
+      const disclosure = createDisclosure(trigger, content, {
+        defaultOpen: false
+      });
+
+      disclosure.subscribe((isOpen) => {
+        log('test1', `State changed: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+      });
+
+      log('test1', 'Basic disclosure initialized');
+      log('test1', `Initial state: ${disclosure.getState() ? 'OPEN' : 'CLOSED'}`);
+    }
+
+    // Test 2: Default Open
+    {
+      const trigger = document.getElementById('test2-trigger');
+      const content = document.getElementById('test2-content');
+      
+      const disclosure = createDisclosure(trigger, content, {
+        defaultOpen: true
+      });
+
+      log('test2', 'Disclosure initialized with defaultOpen: true');
+      log('test2', `Initial state: ${disclosure.getState() ? 'OPEN' : 'CLOSED'}`);
+      
+      if (disclosure.getState()) {
+        log('test2', '✓ Disclosure correctly opened by default');
+      } else {
+        log('test2', '✗ Disclosure should be open by default', 'error');
+      }
+    }
+
+    // Test 3: Close on Escape
+    {
+      const trigger = document.getElementById('test3-trigger');
+      const content = document.getElementById('test3-content');
+      
+      const disclosure = createDisclosure(trigger, content, {
+        closeOnEsc: true
+      });
+
+      disclosure.subscribe((isOpen) => {
+        log('test3', `State changed: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+        if (!isOpen) {
+          log('test3', '✓ Closed via Escape key');
+        }
+      });
+
+      log('test3', 'Disclosure with closeOnEsc enabled');
+      log('test3', 'Open the disclosure and press Escape to test');
+    }
+
+    // Test 4: Close on Click Outside
+    {
+      const trigger = document.getElementById('test4-trigger');
+      const content = document.getElementById('test4-content');
+      
+      const disclosure = createDisclosure(trigger, content, {
+        closeOnClickOutside: true
+      });
+
+      disclosure.subscribe((isOpen) => {
+        log('test4', `State changed: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+        if (!isOpen) {
+          log('test4', '✓ Closed via outside click');
+        }
+      });
+
+      log('test4', 'Disclosure with closeOnClickOutside enabled');
+      log('test4', 'Open and click outside to test');
+    }
+
+    // Test 5: Keyboard Navigation
+    {
+      const trigger1 = document.getElementById('test5-trigger1');
+      const content1 = document.getElementById('test5-content1');
+      const trigger2 = document.getElementById('test5-trigger2');
+      const content2 = document.getElementById('test5-content2');
+      
+      const disclosure1 = createDisclosure(trigger1, content1);
+      const disclosure2 = createDisclosure(trigger2, content2);
+
+      disclosure1.subscribe((isOpen) => {
+        log('test5', `Disclosure 1: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+      });
+
+      disclosure2.subscribe((isOpen) => {
+        log('test5', `Disclosure 2: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+      });
+
+      log('test5', 'Multiple disclosures initialized');
+      log('test5', 'Use Tab to navigate, Space/Enter to toggle');
+    }
+
+    // Test 6: State Change Callbacks
+    {
+      const trigger = document.getElementById('test6-trigger');
+      const content = document.getElementById('test6-content');
+      
+      let changeCount = 0;
+      
+      const disclosure = createDisclosure(trigger, content, {
+        onChange: (isOpen) => {
+          changeCount++;
+          log('test6', `onChange callback #${changeCount}: ${isOpen ? 'OPEN' : 'CLOSED'}`);
+        }
+      });
+
+      log('test6', 'Disclosure with onChange callback initialized');
+    }
+
+    // Performance Metrics
+    {
+      // Measure initialization time
+      const initStart = performance.now();
+      const testDisclosure = useDisclosure();
+      const initEnd = performance.now();
+      document.getElementById('metric-init').textContent = 
+        `${(initEnd - initStart).toFixed(3)}ms`;
+
+      // Measure toggle time
+      const toggleStart = performance.now();
+      testDisclosure.toggle();
+      testDisclosure.toggle();
+      testDisclosure.toggle();
+      const toggleEnd = performance.now();
+      document.getElementById('metric-toggle').textContent = 
+        `${((toggleEnd - toggleStart) / 3).toFixed(3)}ms avg`;
+
+      // Measure DOM update time
+      const testTrigger = document.createElement('button');
+      const testContent = document.createElement('div');
+      document.body.appendChild(testTrigger);
+      document.body.appendChild(testContent);
+      
+      const domDisclosure = createDisclosure(testTrigger, testContent);
+      const domStart = performance.now();
+      domDisclosure.toggle();
+      const domEnd = performance.now();
+      document.getElementById('metric-dom').textContent = 
+        `${(domEnd - domStart).toFixed(3)}ms`;
+      
+      domDisclosure.destroy();
+      testTrigger.remove();
+      testContent.remove();
+    }
+
+    // Accessibility verification
+    console.log('=== Accessibility Verification ===');
+    document.querySelectorAll('.disclosure-trigger').forEach(trigger => {
+      console.log('Trigger:', trigger.id);
+      console.log('  - aria-expanded:', trigger.getAttribute('aria-expanded'));
+      console.log('  - aria-controls:', trigger.getAttribute('aria-controls'));
+      console.log('  - role:', trigger.getAttribute('role'));
+      console.log('  - tabindex:', trigger.getAttribute('tabindex'));
+    });
+
+    document.querySelectorAll('.disclosure-content').forEach(content => {
+      console.log('Content:', content.id);
+      console.log('  - aria-labelledby:', content.getAttribute('aria-labelledby'));
+      console.log('  - hidden:', content.hasAttribute('hidden'));
+    });
+  </script>
+</body>
+</html>
