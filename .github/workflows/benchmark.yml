@@ -1,4 +1,14 @@
-name: Benchmark CI (Core)\n\n# Manual-only until all benchmark scripts are implemented.\n# TODO: restore push/pull_request triggers after adding the runner scripts.\non:\n  workflow_dispatch:\n    inputs:\n      benchmark_suite:\n        description: 'Benchmark suite to run (all, gpu, wasm, audio)'\n        required: false\n        default: 'all'
+name: Benchmark CI (Core)
+
+# Manual-only until all benchmark scripts are implemented.
+# TODO: restore push/pull_request triggers after adding the runner scripts.
+on:
+  workflow_dispatch:
+    inputs:
+      benchmark_suite:
+        description: 'Benchmark suite to run (all, gpu, wasm, audio)'
+        required: false
+        default: 'all'
 
 jobs:
   # WASM Performance Benchmarks
