@@ -291,3 +291,341 @@ The test page verifies:
 - Context initialization and state management
 - Batch updates and persistence
 - Memory usage (< 1KB for typical flag sets)
+## Feature Flag Context
+
+The Feature Flag Context provides a vanilla JavaScript context system for managing feature flags across the application. It follows Web Component patterns and integrates with the EventBus for state propagation.
+
+### Overview
+
+Feature flags allow you to enable or disable features dynamically without deploying new code. The context system provides:
+
+- **Web Component-based context provider** - <feature-flag-context> wraps components that need feature flags
+- **Reactive state management** - Subscribers are notified when flags change
+- **EventBus integration** - Publishes and listens to feature flag events
+- **Utility functions** - Helper functions for easy access to feature flags
+
+### Implementation
+
+**Location**: `contexts/feature-flag-context.js`
+
+The context is implemented as a custom element that manages feature flag state:
+
+```javascript
+<feature-flag-context>
+  <my-component></my-component>
+</feature-flag-context>
+```
+
+### Usage Patterns
+
+#### In Web Components
+
+Components can access the context using the `useFeatureFlags` utility:
+
+```javascript
+import { useFeatureFlags } from './contexts/feature-flag-context.js';
+
+class MyComponent extends HTMLElement {
+  connectedCallback() {
+    const { isEnabled, subscribe } = useFeatureFlags(this);
+    
+    if (isEnabled('newFeature')) {
+      this.renderNewFeature();
+    }
+    
+    // Subscribe to changes
+    this.unsubscribe = subscribe((flags) => {
+      this.render();
+    });
+  }
+  
+  disconnectedCallback() {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+    }
+  }
+}
+```
+
+#### Direct Context Access
+
+Components can also access the context directly:
+
+```javascript
+import { getFeatureFlagContext } from './contexts/feature-flag-context.js';
+
+const context = getFeatureFlagContext(this);
+const isEnabled = context.isEnabled('featureName');
+```
+
+#### Updating Flags
+
+Flags can be updated programmatically:
+
+```javascript
+const context = document.querySelector('feature-flag-context');
+context.updateFlag('newFeature', true);
+```
+
+### EventBus Integration
+
+The context publishes and subscribes to feature flag events:
+
+**Published Events**:
+- `feature-flag:updated` - When a flag is updated via `updateFlag()`
+
+**Subscribed Events**:
+- `feature-flag:updated` - Updates from external sources
+- `environment:changed` - Reloads flags when environment changes
+
+### API Reference
+
+#### FeatureFlagContext Methods
+
+- `isEnabled(flagName: string): boolean` - Check if a flag is enabled
+- `getAllFlags(): Object` - Get all feature flags as an object
+- `subscribe(callback: Function): Function` - Subscribe to changes, returns unsubscribe function
+- `unsubscribe(callback: Function): void` - Unsubscribe from changes
+- `updateFlag(flagName: string, enabled: boolean): void` - Update a flag
+
+#### Utility Functions
+
+- `getFeatureFlagContext(element: HTMLElement): FeatureFlagContext|null` - Find nearest context
+- `useFeatureFlags(element: HTMLElement): FeatureFlagState` - Get feature flag utilities
+
+### Configuration Integration
+
+Feature flags are loaded from `config/feature-flags.js` using the `getFeatureFlags()` function. This allows flags to be defined based on environment variables and configuration.
+
+### Testing
+
+**Test File**: `contexts/feature-flag-context.test.html`
+
+Open the test file in Chrome to verify:
+- Context initialization
+- Feature flag checking
+- Subscribe/unsubscribe functionality
+- Flag updates
+- Utility functions
+- Interactive demo
+
+### Performance Considerations
+
+- Context uses `display: contents` to avoid affecting layout
+- Subscribers are stored in a Set for efficient add/remove
+- AbortController is used for automatic event cleanup
+- State changes are batched to minimize re-renders
+
+### Related Files
+
+- `config/feature-flags.js` - Feature flag configuration
+- `config/environment-loader.js` - Environment configuration
+- `core/event-bus.js` - EventBus implementation
+
+
+
+## Feature Flag Hook
+
+The `useFeatureFlag` hook checks if a feature is enabled in your app.
+
+**Location:** `hooks/useFeatureFlag.js`
+
+### Basic Usage
+
+Check a single feature flag:
+
+```javascript
+import { useFeatureFlag } from './hooks/useFeatureFlag.js';
+
+const isNewUIEnabled = useFeatureFlag('new-mixer-ui');
+if (isNewUIEnabled) {
+  // Show new UI
+}
+```
+
+### With Default Value
+
+Provide a fallback if the flag doesn't exist:
+
+```javascript
+const isEnabled = useFeatureFlag('experimental-feature', false);
+```
+
+### Check Multiple Flags
+
+Check if ALL flags are enabled:
+
+```javascript
+import { useFeatureFlags } from './hooks/useFeatureFlag.js';
+
+const allEnabled = useFeatureFlags('feature-a', 'feature-b', 'feature-c');
+```
+
+Check if ANY flag is enabled:
+
+```javascript
+import { useAnyFeatureFlag } from './hooks/useFeatureFlag.js';
+
+const anyEnabled = useAnyFeatureFlag('feature-a', 'feature-b');
+```
+
+### Runtime Toggle
+
+Toggle flags during development:
+
+```javascript
+import { useFeatureFlagToggle } from './hooks/useFeatureFlag.js';
+
+const toggleFlag = useFeatureFlagToggle();
+toggleFlag('new-feature', true);  // Enable
+toggleFlag('old-feature', false); // Disable
+```
+
+### Get All Flags
+
+Useful for debug panels:
+
+```javascript
+import { useAllFeatureFlags } from './hooks/useFeatureFlag.js';
+
+const allFlags = useAllFeatureFlags();
+// Returns Map<string, boolean>
+```
+
+### Requirements
+
+- Must be used inside a `<feature-flag-provider>` component
+- Flag keys must be non-empty strings
+- Returns boolean values
+- Logs warnings for missing flags
+
+### Performance
+
+- O(1) lookup via Map
+- No memory allocation (returns primitive boolean)
+- Suitable for frequent checks in render loops
+
+### Related
+
+- [Feature Flag Context](file://./contexts/FeatureFlagContext.js) - Provider component
+- [Environment Hook](file://./hooks/useEnvironment.js) - Environment configuration
+- [Config Context](file://./contexts/ConfigContext.js) - Typed config access
+
+
+## Feature Flag Types
+
+TypeScript type definitions provide autocomplete and type safety for feature flags.
+
+### Type Definitions
+
+All feature flag types are defined in `types/feature-flags.d.ts`:
+
+- **FeatureFlagKey**: Union type of all valid flag keys
+- **FeatureFlag**: Configuration object for a single flag
+- **FeatureFlagConfig**: Map of all flags
+- **FeatureFlagContextValue**: Context API interface
+
+### Using Types in JavaScript
+
+Use JSDoc comments to import types:
+
+```javascript
+/**
+ * @typedef {import('./types/feature-flags').FeatureFlagKey} FeatureFlagKey
+ */
+
+/**
+ * @param {FeatureFlagKey} key
+ */
+function checkFeature(key) {
+  // VS Code provides autocomplete for 'key'
+}
+```
+
+### Adding New Flags
+
+1. Add the flag key to `FeatureFlagKey` union in `types/feature-flags.d.ts`
+2. Add to `VALID_FLAG_KEYS` array in `types/feature-flags.js`
+3. Add default configuration in `contexts/feature-flag-context.js`
+
+### Type Guards
+
+Runtime validation functions in `types/feature-flags.js`:
+
+- `isFeatureFlagKey(key)`: Validates flag key
+- `isFeatureFlag(obj)`: Validates flag object
+- `validateDependencies()`: Checks flag dependencies
+
+### Autocomplete Support
+
+TypeScript provides autocomplete in:
+- VS Code with JSDoc comments
+- Function parameters
+- Object properties
+- Event payloads
+
+See `types/README.md` for detailed usage examples.
+
+
+## Code Quality and Linting
+
+### ESLint Configuration
+
+The project uses strict ESLint rules to ensure code quality, consistency, and accessibility compliance.
+
+**Configuration Files:**
+- .eslintrc.json - Main configuration entry point
+- config/eslint.config.js - Detailed rule definitions
+- config/eslint-a11y-rules.js - Custom accessibility rules for Web Components
+
+**Key Features:**
+
+1. **Policy Enforcement**: Automatically catches violations like npm imports in runtime code
+2. **TypeScript Support**: Strict type checking and validation
+3. **Accessibility**: Custom rules for WCAG 2.1 Level AA compliance
+4. **Performance**: Rules enforce performance budgets (16ms render, 50MB memory)
+5. **Web Components**: Specialized rules for custom element development
+
+**Running Linting:**
+
+```bash
+# Validate configuration and run linting
+node scripts/validate-eslint.js
+
+# Auto-fix issues where possible
+node scripts/validate-eslint.js --fix
+
+# Lint specific files
+npx eslint components/my-component.js
+```
+
+**Critical Rules:**
+
+- **No npm imports**: Runtime code must use relative paths only (./file.js)
+- **JSDoc required**: All functions, methods, and classes must have documentation
+- **No console.log**: Use console.warn/error/info instead
+- **Strict equality**: Always use === instead of ==
+- **Async safety**: No async operations in loops, proper promise handling
+
+**Accessibility Rules:**
+
+The configuration includes custom rules for Web Components:
+- Interactive elements must have keyboard handlers
+- ARIA attributes must be valid and properly used
+- Focus management must be explicit
+- Color contrast requirements (enforced in tests)
+
+**Integration:**
+
+ESLint runs automatically in:
+- Pre-commit hooks (via Husky)
+- CI/CD pipeline (on every PR)
+- IDE integration (VS Code, WebStorm)
+
+For full accessibility validation, use axe-core integration tests in 	ests/a11y/.
+
+**Related Files:**
+- Validation script: scripts/validate-eslint.js
+- Pre-commit hook: .husky/pre-commit
+- CI workflow: .github/workflows/ci-build.yml
+

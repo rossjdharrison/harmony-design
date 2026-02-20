@@ -1,0 +1,19 @@
+{
+  "name": "@harmony/feature-flag-cli",
+  "version": "1.0.0",
+  "description": "Command-line tool for managing feature flags in Harmony Design System",
+  "type": "module",
+  "bin": {
+    "harmony-flags": "./cli.js"
+  },
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": [
+    "feature-flags",
+    "cli",
+    "harmony"
+  ],
+  "author": "Harmony Design System",
+  "license": "MIT"
+}

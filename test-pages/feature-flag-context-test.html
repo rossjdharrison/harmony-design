@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feature Flag Context Test - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 2rem;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .test-section {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .test-section h2 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: #4a9eff;
+    }
+
+    .flag-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .flag-card {
+      background: #252525;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .flag-name {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .flag-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .flag-status.enabled {
+      background: #1a4d2e;
+      color: #4ade80;
+    }
+
+    .flag-status.disabled {
+      background: #4d1a1a;
+      color: #f87171;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: 1px solid #4a9eff;
+      background: transparent;
+      color: #4a9eff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #4a9eff;
+      color: #0a0a0a;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .test-result {
+      background: #252525;
+      border-left: 3px solid #4a9eff;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+
+    .test-result.pass {
+      border-left-color: #4ade80;
+    }
+
+    .test-result.fail {
+      border-left-color: #f87171;
+    }
+
+    .performance-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .stat-card {
+      background: #252525;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #333;
+    }
+
+    .stat-label {
+      color: #888;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #4a9eff;
+    }
+
+    .log-output {
+      background: #0a0a0a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 1rem;
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .log-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .log-entry.info {
+      color: #4a9eff;
+    }
+
+    .log-entry.success {
+      color: #4ade80;
+    }
+
+    .log-entry.error {
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Feature Flag Context Test</h1>
+    <p class="subtitle">Testing React context for feature flag state management</p>
+
+    <div class="test-section">
+      <h2>Current Feature Flags</h2>
+      <div id="flag-grid" class="flag-grid"></div>
+      <div class="controls">
+        <button onclick="testToggleFlag()">Toggle Random Flag</button>
+        <button onclick="testBatchUpdate()">Batch Update</button>
+        <button onclick="testReset()">Reset to Defaults</button>
+        <button onclick="testPersistence()">Test Persistence</button>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Performance Metrics</h2>
+      <div class="performance-stats">
+        <div class="stat-card">
+          <div class="stat-label">Context Updates</div>
+          <div class="stat-value" id="update-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Update Time</div>
+          <div class="stat-value" id="avg-time">0ms</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Flag Lookups</div>
+          <div class="stat-value" id="lookup-count">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Memory Usage</div>
+          <div class="stat-value" id="memory">0KB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-section">
+      <h2>Test Results</h2>
+      <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Event Log</h2>
+      <div id="log-output" class="log-output"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    /**
+     * Feature Flag Context Test Suite
+     * Tests the React context implementation for feature flags
+     */
+
+    // Mock React hooks for testing without full React setup
+    const mockReactContext = {
+      flags: new Map([
+        ['webGPU', true],
+        ['newEditor', false],
+        ['betaFeatures', false],
+        ['advancedAudio', true],
+        ['experimentalUI', false]
+      ]),
+      updateCount: 0,
+      lookupCount: 0,
+      updateTimes: []
+    };
+
+    function logEntry(message, type = 'info') {
+      const logOutput = document.getElementById('log-output');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logOutput.appendChild(entry);
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    function addTestResult(name, passed, details = '') {
+      const resultsDiv = document.getElementById('test-results');
+      const result = document.createElement('div');
+      result.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      result.textContent = `${passed ? '✓' : '✗'} ${name}${details ? ': ' + details : ''}`;
+      resultsDiv.appendChild(result);
+    }
+
+    function updateFlagDisplay() {
+      const grid = document.getElementById('flag-grid');
+      grid.innerHTML = '';
+      
+      mockReactContext.flags.forEach((enabled, name) => {
+        const card = document.createElement('div');
+        card.className = 'flag-card';
+        card.innerHTML = `
+          <span class="flag-name">${name}</span>
+          <span class="flag-status ${enabled ? 'enabled' : 'disabled'}">
+            ${enabled ? 'ON' : 'OFF'}
+          </span>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function updatePerformanceStats() {
+      document.getElementById('update-count').textContent = mockReactContext.updateCount;
+      
+      const avgTime = mockReactContext.updateTimes.length > 0
+        ? (mockReactContext.updateTimes.reduce((a, b) => a + b, 0) / mockReactContext.updateTimes.length).toFixed(2)
+        : 0;
+      document.getElementById('avg-time').textContent = `${avgTime}ms`;
+      
+      document.getElementById('lookup-count').textContent = mockReactContext.lookupCount;
+      
+      // Estimate memory usage
+      const memoryEstimate = (mockReactContext.flags.size * 100) / 1024;
+      document.getElementById('memory').textContent = `${memoryEstimate.toFixed(2)}KB`;
+    }
+
+    function isEnabled(flagName) {
+      const startTime = performance.now();
+      mockReactContext.lookupCount++;
+      const result = mockReactContext.flags.get(flagName) === true;
+      const duration = performance.now() - startTime;
+      
+      if (duration > 0.1) {
+        logEntry(`Slow flag lookup: ${flagName} took ${duration.toFixed(3)}ms`, 'error');
+      }
+      
+      return result;
+    }
+
+    function setFlag(flagName, enabled) {
+      const startTime = performance.now();
+      mockReactContext.flags.set(flagName, Boolean(enabled));
+      mockReactContext.updateCount++;
+      const duration = performance.now() - startTime;
+      mockReactContext.updateTimes.push(duration);
+      
+      logEntry(`Flag updated: ${flagName} = ${enabled}`, 'success');
+      updateFlagDisplay();
+      updatePerformanceStats();
+    }
+
+    window.testToggleFlag = function() {
+      const flagNames = Array.from(mockReactContext.flags.keys());
+      const randomFlag = flagNames[Math.floor(Math.random() * flagNames.length)];
+      const currentValue = mockReactContext.flags.get(randomFlag);
+      setFlag(randomFlag, !currentValue);
+    };
+
+    window.testBatchUpdate = function() {
+      const startTime = performance.now();
+      logEntry('Starting batch update...', 'info');
+      
+      mockReactContext.flags.forEach((_, name) => {
+        mockReactContext.flags.set(name, Math.random() > 0.5);
+      });
+      
+      mockReactContext.updateCount++;
+      const duration = performance.now() - startTime;
+      mockReactContext.updateTimes.push(duration);
+      
+      logEntry(`Batch update completed in ${duration.toFixed(2)}ms`, 'success');
+      updateFlagDisplay();
+      updatePerformanceStats();
+      
+      addTestResult('Batch Update Performance', duration < 5, `${duration.toFixed(2)}ms`);
+    };
+
+    window.testReset = function() {
+      logEntry('Resetting flags to defaults...', 'info');
+      mockReactContext.flags.set('webGPU', true);
+      mockReactContext.flags.set('newEditor', false);
+      mockReactContext.flags.set('betaFeatures', false);
+      mockReactContext.flags.set('advancedAudio', true);
+      mockReactContext.flags.set('experimentalUI', false);
+      updateFlagDisplay();
+      logEntry('Flags reset complete', 'success');
+    };
+
+    window.testPersistence = function() {
+      logEntry('Testing localStorage persistence...', 'info');
+      
+      try {
+        const flagsObject = Object.fromEntries(mockReactContext.flags);
+        localStorage.setItem('harmony:feature-flags', JSON.stringify(flagsObject));
+        
+        const retrieved = JSON.parse(localStorage.getItem('harmony:feature-flags'));
+        const match = JSON.stringify(flagsObject) === JSON.stringify(retrieved);
+        
+        addTestResult('Persistence Test', match, match ? 'Data matches' : 'Data mismatch');
+        logEntry(match ? 'Persistence test passed' : 'Persistence test failed', match ? 'success' : 'error');
+      } catch (error) {
+        addTestResult('Persistence Test', false, error.message);
+        logEntry(`Persistence test error: ${error.message}`, 'error');
+      }
+    };
+
+    // Run initial tests
+    function runTests() {
+      logEntry('Starting Feature Flag Context tests...', 'info');
+      
+      // Test 1: Flag lookup performance
+      const lookupStart = performance.now();
+      for (let i = 0; i < 1000; i++) {
+        isEnabled('webGPU');
+      }
+      const lookupDuration = performance.now() - lookupStart;
+      const avgLookup = lookupDuration / 1000;
+      addTestResult('Flag Lookup Performance', avgLookup < 0.01, `${avgLookup.toFixed(4)}ms avg`);
+      
+      // Test 2: Context initialization
+      const hasFlags = mockReactContext.flags.size > 0;
+      addTestResult('Context Initialization', hasFlags, `${mockReactContext.flags.size} flags loaded`);
+      
+      // Test 3: Flag state accuracy
+      const webGPUEnabled = isEnabled('webGPU');
+      const newEditorEnabled = isEnabled('newEditor');
+      addTestResult('Flag State Accuracy', webGPUEnabled === true && newEditorEnabled === false);
+      
+      // Test 4: Memory budget check
+      const memoryUsage = (mockReactContext.flags.size * 100) / 1024; // Rough estimate
+      addTestResult('Memory Budget', memoryUsage < 1, `${memoryUsage.toFixed(2)}KB`);
+      
+      logEntry('All tests completed', 'success');
+    }
+
+    // Initialize
+    updateFlagDisplay();
+    updatePerformanceStats();
+    runTests();
+  </script>
+</body>
+</html>

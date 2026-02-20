@@ -1,0 +1,13 @@
+{
+  "flags": {
+    "example-feature": {
+      "enabled": false,
+      "description": "Example feature flag",
+      "createdAt": "2025-02-15T00:00:00.000Z"
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastModified": "2025-02-15T00:00:00.000Z"
+  }
+}
