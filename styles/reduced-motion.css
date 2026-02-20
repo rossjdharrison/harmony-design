@@ -1,0 +1,107 @@
+/**
+ * Reduced Motion Mode Styles
+ * 
+ * Provides CSS-based reduced motion support that respects prefers-reduced-motion.
+ * Applied globally when user preference is detected.
+ * 
+ * Related: utils/reduced-motion.js
+ * Documentation: DESIGN_SYSTEM.md#reduced-motion-mode
+ */
+
+/* Global reduced motion media query */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* Disable animations */
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    
+    /* Disable transitions */
+    transition-duration: 0.01ms !important;
+    
+    /* Disable smooth scroll */
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Class-based approach for JavaScript control */
+.prefers-reduced-motion *,
+.prefers-reduced-motion *::before,
+.prefers-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Safe animations that can run even with reduced motion */
+.motion-safe-fade {
+  transition: opacity 0.15s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-safe-fade {
+    transition: opacity 0.01ms;
+  }
+}
+
+/* Disable specific animation types */
+@media (prefers-reduced-motion: reduce) {
+  .motion-scale {
+    transform: none !important;
+  }
+  
+  .motion-rotate {
+    transform: none !important;
+  }
+  
+  .motion-translate {
+    transform: none !important;
+  }
+  
+  .motion-parallax {
+    transform: none !important;
+  }
+}
+
+/* Allow essential animations (loading indicators, etc.) */
+.motion-essential {
+  /* These animations run regardless of preference */
+  /* Use sparingly and only for critical feedback */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-essential {
+    /* Simplified version for reduced motion */
+    animation-duration: 0.5s !important;
+  }
+}
+
+/* Focus indicators should always be visible */
+@media (prefers-reduced-motion: reduce) {
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+    transition: none !important;
+  }
+}
+
+/* Crossfade alternative for reduced motion */
+.motion-crossfade {
+  transition: opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-crossfade {
+    transition: opacity 0.1s ease;
+  }
+}
+
+/* Instant state changes for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .motion-instant {
+    transition: none !important;
+    animation: none !important;
+  }
+}

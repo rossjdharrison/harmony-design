@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reduced Motion Mode Test</title>
+  <link rel="stylesheet" href="../styles/reduced-motion.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: #f5f5f5;
+    }
+    
+    .test-section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    h1, h2 {
+      margin-top: 0;
+    }
+    
+    .status {
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+    
+    .status.reduced {
+      background: #fff3cd;
+      border: 2px solid #ffc107;
+      color: #856404;
+    }
+    
+    .status.normal {
+      background: #d4edda;
+      border: 2px solid #28a745;
+      color: #155724;
+    }
+    
+    .animated-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 8px;
+      margin: 2rem 0;
+      transition: transform 0.5s ease, opacity 0.5s ease;
+    }
+    
+    .animated-box:hover {
+      transform: scale(1.2) rotate(10deg);
+      opacity: 0.8;
+    }
+    
+    .slide-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      border-radius: 8px;
+      margin: 2rem 0;
+      animation: slide 2s ease-in-out infinite;
+    }
+    
+    @keyframes slide {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(200px); }
+    }
+    
+    .rotate-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      border-radius: 8px;
+      margin: 2rem 0;
+      animation: rotate 3s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .fade-box {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+      border-radius: 8px;
+      margin: 2rem 0;
+      animation: fade 2s ease-in-out infinite;
+    }
+    
+    @keyframes fade {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #667eea;
+      color: white;
+      cursor: pointer;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .scroll-container {
+      height: 200px;
+      overflow-y: auto;
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      padding: 1rem;
+    }
+    
+    .scroll-target {
+      height: 600px;
+      background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .result {
+      padding: 1rem;
+      background: #f8f9fa;
+      border-left: 4px solid #667eea;
+      margin-top: 1rem;
+      font-family: monospace;
+    }
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .info {
+      padding: 1rem;
+      background: #e7f3ff;
+      border-left: 4px solid #2196f3;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Reduced Motion Mode Test Suite</h1>
+  
+  <div class="info">
+    <strong>How to test:</strong>
+    <ul>
+      <li>Check your OS settings: Enable "Reduce motion" or "Prefers reduced motion"</li>
+      <li>Windows: Settings → Accessibility → Visual effects → Animation effects</li>
+      <li>macOS: System Preferences → Accessibility → Display → Reduce motion</li>
+      <li>Or use browser DevTools to emulate the preference</li>
+    </ul>
+  </div>
+  
+  <div class="test-section">
+    <h2>1. Motion Preference Detection</h2>
+    <div id="status" class="status"></div>
+    <button id="checkPreference">Check Current Preference</button>
+    <button id="toggleSimulate">Toggle Simulated Reduced Motion</button>
+    <div id="preferenceResult" class="result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>2. CSS Animation Tests</h2>
+    <p>These animations should stop or simplify with reduced motion:</p>
+    
+    <h3>Hover Transform (should disable)</h3>
+    <div class="animated-box"></div>
+    
+    <h3>Continuous Slide (should stop)</h3>
+    <div class="slide-box"></div>
+    
+    <h3>Continuous Rotation (should stop)</h3>
+    <div class="rotate-box"></div>
+    
+    <h3>Fade Animation (should stop)</h3>
+    <div class="fade-box"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>3. JavaScript Animation Tests</h2>
+    <button id="testWebAnimation">Test Web Animation</button>
+    <button id="testTransition">Test Transition</button>
+    <div id="jsAnimBox" style="width: 100px; height: 100px; background: #667eea; border-radius: 8px; margin-top: 1rem;"></div>
+    <div id="animResult" class="result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>4. Scroll Behavior Test</h2>
+    <button id="testScroll">Scroll to Bottom (smooth)</button>
+    <button id="testScrollTop">Scroll to Top (smooth)</button>
+    <div class="scroll-container" id="scrollContainer">
+      <div class="scroll-target" id="scrollTarget">
+        Scroll Target
+      </div>
+    </div>
+    <div id="scrollResult" class="result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>5. Motion Duration Tests</h2>
+    <button id="testDuration">Test Motion Duration</button>
+    <div id="durationResult" class="result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>6. Motion Alternative Tests</h2>
+    <button id="testAlternative">Test Motion Alternative</button>
+    <div id="alternativeResult" class="result"></div>
+  </div>
+  
+  <div class="test-section">
+    <h2>7. Motion Manager Tests</h2>
+    <button id="initManager">Initialize Manager</button>
+    <button id="destroyManager">Destroy Manager</button>
+    <div id="managerResult" class="result"></div>
+  </div>
+
+  <script type="module">
+    import {
+      prefersReducedMotion,
+      watchMotionPreference,
+      getMotionDuration,
+      getMotionAlternative,
+      animateWithMotionSupport,
+      transitionWithMotionSupport,
+      scrollWithMotionSupport,
+      ReducedMotionManager,
+      getReducedMotionManager,
+      initReducedMotionSupport,
+      MotionPreference,
+      MotionAlternative,
+    } from './reduced-motion.js';
+    
+    // Update status display
+    function updateStatus() {
+      const status = document.getElementById('status');
+      const reduced = prefersReducedMotion();
+      
+      status.className = `status ${reduced ? 'reduced' : 'normal'}`;
+      status.textContent = reduced 
+        ? '⚠️ Reduced Motion Mode ACTIVE - Animations should be minimal'
+        : '✓ Normal Motion Mode - Full animations enabled';
+    }
+    
+    updateStatus();
+    
+    // Watch for preference changes
+    const cleanup = watchMotionPreference((preference) => {
+      updateStatus();
+      document.getElementById('preferenceResult').textContent = 
+        `Preference changed to: ${preference}`;
+    });
+    
+    // Test 1: Check preference
+    document.getElementById('checkPreference').addEventListener('click', () => {
+      const reduced = prefersReducedMotion();
+      document.getElementById('preferenceResult').textContent = 
+        `prefersReducedMotion() = ${reduced}\n` +
+        `MediaQuery matches: ${window.matchMedia('(prefers-reduced-motion: reduce)').matches}`;
+    });
+    
+    // Simulate toggle (for testing without OS settings)
+    let simulatedReduced = false;
+    document.getElementById('toggleSimulate').addEventListener('click', () => {
+      simulatedReduced = !simulatedReduced;
+      if (simulatedReduced) {
+        document.documentElement.classList.add('prefers-reduced-motion');
+      } else {
+        document.documentElement.classList.remove('prefers-reduced-motion');
+      }
+      document.getElementById('preferenceResult').textContent = 
+        `Simulated reduced motion: ${simulatedReduced}`;
+    });
+    
+    // Test 3: Web Animation API
+    document.getElementById('testWebAnimation').addEventListener('click', () => {
+      const box = document.getElementById('jsAnimBox');
+      const animation = animateWithMotionSupport(
+        box,
+        [
+          { transform: 'translateX(0px)', background: '#667eea' },
+          { transform: 'translateX(200px)', background: '#764ba2' }
+        ],
+        { duration: 1000, easing: 'ease-in-out' }
+      );
+      
+      document.getElementById('animResult').textContent = 
+        animation 
+          ? 'Animation started (normal motion)'
+          : 'Animation skipped, final state applied (reduced motion)';
+    });
+    
+    // Test 3: Transition
+    document.getElementById('testTransition').addEventListener('click', async () => {
+      const box = document.getElementById('jsAnimBox');
+      document.getElementById('animResult').textContent = 'Transition starting...';
+      
+      const startTime = performance.now();
+      await transitionWithMotionSupport(
+        box,
+        { transform: 'scale(1.5)', background: '#f5576c' },
+        500,
+        'ease-out'
+      );
+      const duration = performance.now() - startTime;
+      
+      document.getElementById('animResult').textContent = 
+        `Transition completed in ${duration.toFixed(0)}ms\n` +
+        `(Should be ~500ms for normal, <50ms for reduced motion)`;
+      
+      // Reset
+      setTimeout(() => {
+        box.style.transform = '';
+        box.style.background = '#667eea';
+      }, 1000);
+    });
+    
+    // Test 4: Scroll behavior
+    document.getElementById('testScroll').addEventListener('click', () => {
+      const container = document.getElementById('scrollContainer');
+      const startTime = performance.now();
+      
+      scrollWithMotionSupport(container, { top: 600, behavior: 'smooth' });
+      
+      setTimeout(() => {
+        const duration = performance.now() - startTime;
+        document.getElementById('scrollResult').textContent = 
+          `Scroll initiated (duration: ${duration.toFixed(0)}ms)\n` +
+          `Behavior: ${prefersReducedMotion() ? 'auto (instant)' : 'smooth'}`;
+      }, 100);
+    });
+    
+    document.getElementById('testScrollTop').addEventListener('click', () => {
+      const container = document.getElementById('scrollContainer');
+      scrollWithMotionSupport(container, { top: 0, behavior: 'smooth' });
+    });
+    
+    // Test 5: Duration
+    document.getElementById('testDuration').addEventListener('click', () => {
+      const normal = getMotionDuration(500);
+      const custom = getMotionDuration(500, 100);
+      
+      document.getElementById('durationResult').textContent = 
+        `Default duration (500ms): ${normal}ms\n` +
+        `Custom reduced (100ms): ${custom}ms\n` +
+        `Reduced motion active: ${prefersReducedMotion()}`;
+    });
+    
+    // Test 6: Alternative
+    document.getElementById('testAlternative').addEventListener('click', () => {
+      const defaultAnim = getMotionAlternative('slide');
+      const customAnim = getMotionAlternative('rotate', MotionAlternative.MINIMAL);
+      
+      document.getElementById('alternativeResult').textContent = 
+        `Default alternative for 'slide': ${defaultAnim}\n` +
+        `Custom alternative for 'rotate': ${customAnim}\n` +
+        `Reduced motion active: ${prefersReducedMotion()}`;
+    });
+    
+    // Test 7: Manager
+    let manager = null;
+    
+    document.getElementById('initManager').addEventListener('click', () => {
+      manager = getReducedMotionManager();
+      manager.init();
+      
+      document.getElementById('managerResult').textContent = 
+        'Manager initialized\n' +
+        `Class on root: ${document.documentElement.classList.contains('prefers-reduced-motion')}\n` +
+        `Watching for preference changes: ${manager.initialized}`;
+    });
+    
+    document.getElementById('destroyManager').addEventListener('click', () => {
+      if (manager) {
+        manager.destroy();
+        document.getElementById('managerResult').textContent = 
+          'Manager destroyed\n' +
+          `Class removed: ${!document.documentElement.classList.contains('prefers-reduced-motion')}`;
+      }
+    });
+    
+    // Initialize manager on load
+    initReducedMotionSupport();
+    
+    console.log('Reduced Motion Test Suite loaded');
+    console.log('Current preference:', prefersReducedMotion() ? 'REDUCED' : 'NORMAL');
+  </script>
+</body>
+</html>
