@@ -4,42 +4,66 @@ AST transformation runner for bulk code updates across the Harmony Design System
 
 ## Purpose
 
-Automates code transformations using Abstract Syntax Tree (AST) manipulation to:
-- Refactor components consistently
-- Update API patterns across codebase
-- Migrate deprecated patterns
-- Enforce coding standards
+Automates code transformations using AST parsing and manipulation. Useful for:
+- Migrating API patterns across components
+- Adding/updating JSDoc comments
+- Refactoring event patterns
+- Updating import statements
 
 ## Usage
 
 ```bash
-node tools/codemod-runner/run.js --transform=<transform-name> --path=<target-path>
+node tools/codemod-runner/cli.js --transform=<transform-name> --path=<target-path>
 ```
 
-### Examples
+### Options
+
+- `--transform`: Name of transform to run (from transforms/ directory)
+- `--path`: Target file or directory path
+- `--dry-run`: Preview changes without writing
+- `--verbose`: Show detailed output
+
+### Example
 
 ```bash
-# Run a specific transform on components directory
-node tools/codemod-runner/run.js --transform=update-event-pattern --path=components
+# Add JSDoc comments to all components
+node tools/codemod-runner/cli.js --transform=add-jsdoc --path=components/
 
-# Dry run (preview changes without applying)
-node tools/codemod-runner/run.js --transform=update-event-pattern --path=components --dry-run
-
-# Run on specific file
-node tools/codemod-runner/run.js --transform=add-jsdoc --path=components/Button.js
+# Update event patterns (dry run)
+node tools/codemod-runner/cli.js --transform=update-event-pattern --path=primitives/ --dry-run
 ```
 
 ## Creating Transforms
 
-See `transforms/` directory for examples. Each transform exports a function that receives AST and returns modified AST.
+Create a new file in `tools/codemod-runner/transforms/`:
+
+```javascript
+/**
+ * Transform description
+ * @param {Object} ast - Parsed AST
+ * @param {string} filePath - File being transformed
+ * @returns {Object} Modified AST
+ */
+export function transform(ast, filePath) {
+  // Modify AST here
+  return ast;
+}
+```
 
 ## Architecture
 
-- **Parser**: Uses Acorn for JavaScript parsing
-- **Transformer**: Applies registered transforms
-- **Writer**: Outputs modified code
-- **Reporter**: Logs changes and statistics
+- `cli.js` - Command line interface
+- `src/runner.js` - Orchestrates transformation pipeline
+- `src/parser.js` - Parses JavaScript to AST
+- `src/writer.js` - Writes modified AST back to files
+- `src/file-scanner.js` - Finds files to transform
+- `src/transform-loader.js` - Loads transform modules
+- `transforms/` - Individual transformation implementations
 
-## Related Documentation
+## Performance
 
-See [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md#codemod-runner) for integration details.
+- Processes files in parallel (max 4 concurrent)
+- Skips unchanged files
+- Memory efficient streaming for large codebases
+
+See: harmony-design/DESIGN_SYSTEM.md#codemod-runner

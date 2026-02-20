@@ -1,555 +1,279 @@
-$before
+# Harmony Design System
 
-## Developer Guides
-
-### Component Development Guide
-
-**Location**: [`docs/component-development-guide.md`](./docs/component-development-guide.md)
-
-A complete guide for creating new components in the Harmony Design System. This guide covers:
-
-- Component architecture and Web Components patterns
-- File structure and Atomic Design organization
-- Step-by-step implementation instructions
-- Event-driven communication patterns
-- Performance requirements and testing
-- Common patterns and code examples
-
-**When to use this guide**:
-- Creating new UI components (primitives, molecules, organisms)
-- Learning the Harmony component patterns
-- Understanding event-driven architecture
-- Implementing reactive attributes
-- Testing components in Chrome
-
-All component implementations must follow the patterns in this guide to ensure consistency, performance, and maintainability.
-
-## em
-
-## Version History
-
-For detailed version history, breaking changes, and migration guides, see [CHANGELOG.md](./CHANGELOG.md).
-
-
-**Version**: 1.0.0  
-**Last Updated**: 2025-01-09
-
-## Welcome
-
-This is the Harmony Design System documentation. It describes how the system works, how to use it, and how to contribute. All documentation is written in clear, B1-level English.
+Complete design system documentation for the Harmony audio workstation.
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Getting Started](#getting-started)
-3. [Architecture](#architecture)
-4. [Graph Model](#graph-model)
-5. [Component System](#component-system)
-6. [Event System](#event-system)
-7. [Performance](#performance)
-8. [Development Workflow](#development-workflow)
-9. [Testing](#testing)
-10. [Deployment](#deployment)
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Components](#components)
+- [Tokens](#tokens)
+- [Patterns](#patterns)
+- [Development](#development)
+- [Tools](#tools)
 
 ## Overview
 
-Harmony is a design system built for high-performance web applications. It uses:
-- **Web Components** for UI elements
-- **Reactive Graph Model** for state management
-- **WebAssembly** for computation-heavy tasks
-- **GPU-First Audio** processing
-- **Atomic Design** principles
+Harmony is a GPU-accelerated audio workstation built with Web Components, Rust/WASM, and WebGPU. The design system provides reusable UI primitives, molecules, organisms, and templates following Atomic Design principles.
 
-**Key Files:**
-- Main entry point: `src/index.js`
-- Core components: `components/`
-- Documentation: `docs/`
+### Core Principles
 
-## Getting Started
-
-### Installation
-
-See detailed instructions: [`docs/installation.md`](docs/installation.md)
-
-Quick start:
-```bash
-git clone <repository-url>
-cd harmony-design
-npm install
-npm run dev
-```
-
-### Your First Component
-
-```javascript
-// components/my-component.js
-class MyComponent extends HTMLElement {
-  connectedCallback() {
-    this.attachShadow({ mode: 'open' });
-    this.render();
-  }
-  
-  render() {
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host { display: block; }
-      </style>
-      <div>Hello, Harmony!</div>
-    `;
-  }
-}
-
-customElements.define('my-component', MyComponent);
-```
+1. **Performance First**: 60fps UI, <10ms audio latency
+2. **Web Standards**: Native Web Components, no frameworks
+3. **Type Safety**: TypeScript definitions, schema-driven
+4. **Accessibility**: ARIA compliant, keyboard navigable
+5. **Reactive**: Event-driven architecture via EventBus
 
 ## Architecture
 
-### High-Level Overview
+### Technology Stack
 
-See full details: [`docs/architecture.md`](docs/architecture.md)
+- **UI Layer**: Vanilla HTML/CSS/JS with Web Components
+- **Logic Layer**: Rust compiled to WASM
+- **Audio Processing**: WebGPU + AudioWorklet
+- **State Management**: EventBus + Bounded Contexts
+- **Storage**: IndexedDB for projects, schemas for validation
 
-The system has three main layers:
+### Bounded Contexts
 
-1. **Presentation Layer** - Web Components (HTML/CSS/JS)
-2. **Logic Layer** - Bounded Contexts (Rust → WASM)
-3. **Data Layer** - Graph Model + IndexedDB
+Core logic organized into bounded contexts (Rust → WASM):
+- Audio Engine
+- Project Management
+- Plugin System
+- MIDI Processing
 
-**Rule**: UI rendering uses vanilla JS. Core logic uses Rust/WASM.
+UI components publish events; bounded contexts subscribe and respond.
 
-### Directory Structure
+## Components
 
-```
-harmony-design/
-├── components/          # UI components
-├── bounded-contexts/    # Rust WASM modules
-├── harmony-graph/       # Graph engine
-├── harmony-schemas/     # Type definitions
-├── docs/               # Documentation
-├── tests/              # Test suites
-└── tools/              # Build and dev tools
-```
+### Primitives
 
-## Graph Model
+Basic building blocks (atoms):
+- Buttons, inputs, labels
+- Icons, badges, avatars
+- Progress bars, sliders
 
-### Core Concepts
+### Molecules
 
-See full documentation: [`docs/graph-model.md`](docs/graph-model.md)
+Simple combinations:
+- Form fields (label + input + error)
+- Search bars (input + icon + button)
+- Cards (container + header + content)
 
-The Graph Model is a reactive computation graph that powers:
-- Component state management
-- Event propagation
-- Dependency tracking
-- Side effect coordination
+### Organisms
 
-#### Nodes
+Complex components:
+- Navigation bars
+- Modal dialogs
+- Data tables
+- Audio mixers
 
-Nodes represent computational units:
-- **Source Nodes**: Entry points (user input, timers)
-- **Transform Nodes**: Pure computations
-- **Effect Nodes**: Side effects (DOM updates, network)
-- **Sink Nodes**: Terminal operations (logging, analytics)
+### Templates
 
-**Example:**
-```javascript
-graph.addNode({
-  id: 'my-transform',
-  type: 'transform',
-  compute: (inputs) => inputs.value * 2,
-  dependencies: ['input-node']
-});
-```
+Page-level layouts:
+- App shell
+- Dashboard
+- Project editor
 
-See implementation: `harmony-graph/src/graph.js`
+## Tokens
 
-#### Edges
+Design tokens defined in `tokens/`:
+- Colors: `colors.json`
+- Typography: `typography.json`
+- Spacing: `spacing.json`
+- Shadows: `shadows.json`
 
-Edges define relationships between nodes:
-- **Data Flow**: Value propagation
-- **Event Flow**: Event propagation
-- **Dependency**: Execution ordering
+Tokens generate CSS custom properties via build script.
 
-**Example:**
-```javascript
-graph.addEdge({
-  source: 'input-node',
-  target: 'my-transform',
-  type: 'data-flow'
-});
-```
+## Patterns
 
-#### Events
+### Event-Driven Communication
 
-Events trigger node computations:
-- `NodeStateChanged` - Node value updated
-- `PropagationStarted` - Update wave begins
-- `PropagationCompleted` - Update wave finished
-
-See event system: `core/event-bus.js`
-
-#### Propagation
-
-Propagation updates dependent nodes automatically:
-
-1. Detect changes in source nodes
-2. Sort affected nodes topologically
-3. Batch updates in single frame
-4. Execute computations in order
-
-**Performance**: Must complete within 16ms (60fps budget).
-
-See propagation details: [`docs/graph-model.md#propagation`](docs/graph-model.md#propagation)
-
-### Integration with Components
-
-Components register as graph nodes:
+Components publish events, never call bounded contexts directly:
 
 ```javascript
-class ReactiveComponent extends HTMLElement {
-  connectedCallback() {
-    this.nodeId = graph.addNode({
-      id: `component-${this.id}`,
-      type: 'effect',
-      compute: (inputs) => this.render(inputs)
-    });
+// Component publishes event
+EventBus.publish('audio.play', { trackId: '123' });
+
+// Bounded context subscribes
+EventBus.subscribe('audio.play', handlePlay);
+```
+
+### Shadow DOM Encapsulation
+
+All components use shadow DOM for style isolation:
+
+```javascript
+class MyComponent extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
   }
 }
 ```
 
-See base component: `components/primitives/base-component.js`
-
-## Component System
-
-### Atomic Design
-
-Components follow atomic design principles:
-
-- **Atoms**: `components/primitives/` - Basic elements
-- **Molecules**: `components/molecules/` - Simple combinations
-- **Organisms**: `organisms/` - Complex sections
-- **Templates**: `templates/` - Page layouts
-
-### Web Components
-
-All components use Web Components standard:
-- Custom elements
-- Shadow DOM
-- HTML templates
-
-**Rule**: All components must use shadow DOM for style encapsulation.
-
-### Component Lifecycle
-
-See bounded context: `bounded-contexts/component-lifecycle/`
-
-Lifecycle hooks:
-- `connectedCallback()` - Component added to DOM
-- `disconnectedCallback()` - Component removed
-- `attributeChangedCallback()` - Attribute changed
-- `adoptedCallback()` - Component moved to new document
-
-## Event System
-
-### EventBus
-
-Central event bus for application-wide communication.
-
-See implementation: `core/event-bus.js`
-
-**Pattern**:
-```javascript
-// Publish event
-eventBus.publish('ButtonClicked', { buttonId: 'submit' });
-
-// Subscribe to event
-eventBus.subscribe('ButtonClicked', (event) => {
-  console.log('Button clicked:', event.buttonId);
-});
-```
-
-**Rule**: UI components publish events, never call bounded contexts directly.
-
-### EventBus Debugger
-
-Press `Ctrl+Shift+E` to open the EventBus debugger on any page.
-
-See component: `components/event-bus-component.js`
-
-### Event Validation
-
-Events are validated against schemas:
-
-See schemas: `harmony-schemas/src/events.rs`
-
-## Performance
-
 ### Performance Budgets
 
-**Critical constraints** (cannot be violated):
+- Render: 16ms per frame (60fps)
+- Memory: 50MB WASM heap
+- Load: 200ms initial
+- Audio: 10ms end-to-end latency
 
-1. **Render Budget**: 16ms per frame (60fps)
-2. **Memory Budget**: 50MB WASM heap
-3. **Load Budget**: 200ms initial load
-4. **Audio Latency**: 10ms end-to-end
+## Development
 
-See monitoring: `performance/`
+### Component Creation
 
-### Optimization Techniques
-
-- **Graph Pruning**: Remove unused nodes
-- **Memoization**: Cache computation results
-- **Batch Updates**: Group related changes
-- **Lazy Loading**: Load components on demand
-
-See guidelines: `docs/performance.md`
-
-### Performance Monitoring
-
-```javascript
-// See: performance/web-vitals-collector.js
-import { collectWebVitals } from './performance/web-vitals-collector.js';
-
-collectWebVitals((metrics) => {
-  console.log('LCP:', metrics.lcp);
-  console.log('FID:', metrics.fid);
-  console.log('CLS:', metrics.cls);
-});
-```
-
-## Development Workflow
-
-### Making Changes
-
-1. **Schema Changes**: Edit `harmony-schemas/src/*.rs`
-2. **Run Codegen**: `cd harmony-schemas && npm run codegen`
-3. **Verify**: Check generated code in `harmony-dev/`
-4. **Test**: Run test suite
-5. **Commit**: Include schema + generated code together
-
-**Rule**: Never edit Rust directly. Always modify schema first.
-
-### Testing Components
-
-**Rule**: All UI components must be tested in Chrome before completion.
-
-Test checklist:
-- [ ] Default state
-- [ ] Hover state
-- [ ] Focus state
-- [ ] Active state
-- [ ] Disabled state
-- [ ] Error states (if applicable)
-- [ ] Loading states (if applicable)
-- [ ] Empty states (if applicable)
-
-### Git Workflow
+Use scaffold CLI:
 
 ```bash
-# Make changes
-git add .
-git commit -m "feat(task-id): description"
-git push origin main
+node tools/component-scaffold/cli.js --name=my-component --type=primitive
 ```
 
-**Rule**: Git push is mandatory before starting new tasks.
+### Testing in Chrome
 
-## Testing
-
-### Unit Tests
-
-```bash
-npm run test:unit
-```
-
-See tests: `tests/unit/`
-
-### Integration Tests
-
-```bash
-npm run test:integration
-```
-
-See tests: `tests/integration/`
-
-### E2E Tests
-
-```bash
-npm run test:e2e
-```
-
-See tests: `tests/e2e/`
+All components MUST be tested in Chrome before completion:
+1. Default state
+2. Hover, focus, active states
+3. Disabled state
+4. Error/loading/empty states (if applicable)
+5. Performance (60fps target)
 
 ### Quality Gates
 
-All tests must pass before merging:
-- Unit tests
-- Integration tests
-- Performance tests
-- Bundle size checks
-- License validation
-
-See CI: `.github/workflows/`
-
-## Deployment
-
-### Build
+Run before committing:
 
 ```bash
-npm run build
+node scripts/quality-gate.js
 ```
 
-Output: `dist/`
+Checks:
+- Linting (ESLint)
+- Type checking
+- Performance budgets
+- Accessibility
 
-### Preview
+## Tools
+
+### Codemod Runner
+
+AST transformation tool for bulk code updates.
+
+**Location**: `tools/codemod-runner/`
+
+**Purpose**: Automate code transformations across the codebase using AST parsing and manipulation.
+
+**Usage**:
 
 ```bash
-npm run preview
+# Add JSDoc comments to all components
+node tools/codemod-runner/cli.js --transform=add-jsdoc --path=components/
+
+# Update event patterns (dry run)
+node tools/codemod-runner/cli.js --transform=update-event-pattern --path=primitives/ --dry-run
+
+# Add performance marks
+node tools/codemod-runner/cli.js --transform=add-performance-marks --path=organisms/
 ```
 
-### Production
+**Options**:
+- `--transform=<name>`: Transform to apply (from transforms/ directory)
+- `--path=<target>`: Target file or directory
+- `--dry-run`: Preview changes without writing
+- `--verbose`: Show detailed output
 
-Deployed automatically via Vercel on push to main.
+**Architecture**:
+- `cli.js`: Command line interface
+- `src/runner.js`: Orchestrates transformation pipeline
+- `src/parser.js`: Parses JavaScript to AST
+- `src/writer.js`: Writes modified AST back to files
+- `src/file-scanner.js`: Recursively finds files to transform
+- `src/transform-loader.js`: Dynamically loads transform modules
+- `transforms/`: Individual transformation implementations
 
-See config: `vercel.json`
+**Creating Custom Transforms**:
 
-### Health Checks
+Create a new file in `tools/codemod-runner/transforms/`:
 
-Health endpoints for monitoring:
+```javascript
+/**
+ * My custom transform
+ * @param {Object} ast - Parsed AST
+ * @param {string} filePath - File being transformed
+ * @returns {Object} Modified AST (or null if no changes)
+ */
+export function transform(ast, filePath) {
+  let code = ast.sourceCode;
+  
+  // Modify code here using regex or AST manipulation
+  code = code.replace(/oldPattern/g, 'newPattern');
+  
+  return {
+    ...ast,
+    sourceCode: code
+  };
+}
+```
 
-- `/health/ready` - Readiness probe
-- `/health/live` - Liveness probe
+**Performance**:
+- Processes up to 4 files concurrently
+- Skips unchanged files automatically
+- Memory efficient for large codebases
 
-See implementation: `health/`
+**Example Transforms**:
+- `example-add-jsdoc.js`: Adds JSDoc comments to functions without them
+- `example-update-event-pattern.js`: Converts CustomEvent to EventBus pattern
+- `example-add-performance-marks.js`: Adds performance.mark() to lifecycle methods
 
-## Additional Documentation
+**See**: `tools/codemod-runner/README.md` for detailed documentation.
 
-### Detailed Guides
+### Component Scaffold CLI
 
-- **Installation**: [`docs/installation.md`](docs/installation.md)
-- **Architecture**: [`docs/architecture.md`](docs/architecture.md)
-- **Graph Model**: [`docs/graph-model.md`](docs/graph-model.md)
+Generates component boilerplate:
 
-### API Reference
+**Location**: `tools/component-scaffold/`
 
-- **EventBus**: `core/event-bus.js`
-- **Graph**: `harmony-graph/src/graph.js`
-- **Components**: `components/`
+```bash
+node tools/component-scaffold/cli.js --name=button --type=primitive
+```
 
-### Examples
+Creates:
+- Component class file
+- Test file
+- Story file
+- Documentation stub
 
-- **Basic Demo**: `demo-components.html`
-- **Advanced Demo**: `demo-advanced.html`
-- **Cascade Demo**: `demo-cascade.html`
+### Schema to Component
+
+Generates components from JSON schemas:
+
+**Location**: `tools/schema-to-component/`
+
+```bash
+node tools/schema-to-component/cli.js --schema=button-schema.json
+```
+
+### Pen to Component
+
+Converts .pen design files to Web Components:
+
+**Location**: `tools/pen-to-component/`
+
+```bash
+node tools/pen-to-component/cli.js --input=design.pen --output=components/
+```
 
 ## Contributing
 
-### Code Style
+1. Create feature branch
+2. Implement changes
+3. Test in Chrome (all states)
+4. Run quality gates
+5. Update this documentation
+6. Submit PR
 
-- Use JSDoc comments for all functions
-- Follow ESLint rules (`.eslintrc.json`)
-- Use Prettier for formatting (`.prettierrc.json`)
+## References
 
-### Documentation
-
-**Rule**: Documentation updates are mandatory for every task.
-
-When you change code:
-1. Update relevant docs in `docs/`
-2. Update this file if needed
-3. Add JSDoc comments to code
-4. Link docs ↔ code (two-way references)
-
-### Getting Help
-
-1. Check documentation first
-2. Use EventBus debugger (`Ctrl+Shift+E`)
-3. Enable graph tracing
-4. Create issue in repository
-
-## License
-
-See LICENSE file in repository.
-
----
-
-**Questions?** Check the detailed guides in `docs/` or create an issue.
-## Storybook Configuration
-
-The Harmony Design System uses Storybook 8 as its component development environment and living documentation.
-
-### Setup
-
-Storybook is configured with:
-- **Vite Builder**: Fast builds and hot module replacement
-- **Web Components Support**: Native custom elements with Shadow DOM
-- **Dark Mode**: Theme switching via ``addon-themes``
-- **Accessibility Testing**: Automated a11y checks via ``addon-a11y``
-- **Performance Monitoring**: Automatic tracking of render times against 16ms budget
-
-### Configuration Files
-
-All Storybook configuration is in the ``.storybook/`` directory:
-
-- **main.js**: Core configuration, story locations, addons, Vite integration
-- **preview.js**: Global decorators, parameters, theme configuration
-- **manager.js**: Storybook UI customization and branding
-- **preview-head.html**: Styles and scripts injected into preview iframe
-- **test-runner.js**: Automated testing configuration
-
-See [.storybook/README.md](./.storybook/README.md) for detailed documentation.
-
-### Performance Monitoring
-
-Storybook automatically monitors component performance:
-
-1. **Render Budget**: Warns if component renders exceed 16ms (60fps requirement)
-2. **Load Budget**: Tracks preview load time against 200ms budget
-3. **Memory Usage**: Components should stay within 50MB WASM heap
-
-Performance warnings appear in the browser console during development.
-
-### Writing Stories
-
-Stories should be placed alongside components:
-
-\`\`\`
-components/
-  my-component/
-    my-component.js          # Component implementation
-    my-component.stories.js  # Storybook stories
-    my-component.test.html   # Browser tests
-\`\`\`
-
-Each story file should export a default object with component metadata and named exports for each variant.
-
-### Dark Mode Support
-
-Components should use CSS custom properties for theming:
-
-\`\`\`css
-:host {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-}
-\`\`\`
-
-Toggle between light and dark themes using the toolbar button in Storybook.
-
-### Testing in Storybook
-
-Run automated tests across all stories:
-
-\`\`\`bash
-npm run test-storybook
-\`\`\`
-
-This validates:
-- Performance budgets (16ms render time)
-- Basic accessibility (missing alt text, labels)
-- Visual regression (if configured)
-
-### Integration with EventBus
-
-Components that publish events work in Storybook through the EventBus decorator. The decorator ensures EventBus is available for isolated component testing.
-
-For components that subscribe to events, use Storybook actions to simulate event publishing.
+- EventBus: `core/event-bus.js`
+- Quality Gates: `scripts/quality-gate.js`
+- Component Patterns: `components/README.md`
+- Performance Monitoring: `performance/README.md`
