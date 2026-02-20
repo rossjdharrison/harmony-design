@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesignsystem.com/schemas/execution-zones.schema.json",
+  "title": "Execution Zones Configuration",
+  "description": "Schema for execution zone routing and affinity configuration",
+  "type": "object",
+  "required": ["version", "zones"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Configuration version (semver)"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of this configuration"
+    },
+    "zones": {
+      "type": "object",
+      "description": "Execution zone definitions",
+      "additionalProperties": {
+        "$ref": "#/definitions/Zone"
+      }
+    },
+    "routing": {
+      "type": "object",
+      "description": "Routing rules for commands and queries",
+      "properties": {
+        "commandPrefix": {
+          "type": "object",
+          "description": "Map command prefixes to zones",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "semanticTypeMapping": {
+          "type": "object",
+          "description": "Map semantic types to zones",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Zone monitoring and debugging configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable zone monitoring"
+        },
+        "logZoneSwitches": {
+          "type": "boolean",
+          "description": "Log when operations switch zones"
+        },
+        "trackLatency": {
+          "type": "boolean",
+          "description": "Track operation latency per zone"
+        },
+        "alertOnTimeout": {
+          "type": "boolean",
+          "description": "Alert when zone operations timeout"
+        },
+        "timeouts": {
+          "type": "object",
+          "description": "Timeout values per zone (milliseconds)",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Zone": {
+      "type": "object",
+      "required": ["description", "priority"],
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable zone description"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Zone priority (0=lowest, 10=highest)"
+        },
+        "memoryBudget": {
+          "type": "string",
+          "pattern": "^\\d+MB$",
+          "description": "Memory budget for this zone"
+        },
+        "renderBudget": {
+          "type": "string",
+          "pattern": "^\\d+ms$",
+          "description": "Render time budget per frame"
+        },
+        "latencyTarget": {
+          "type": "string",
+          "pattern": "^\\d+ms$",
+          "description": "Target latency for operations"
+        },
+        "audioLatency": {
+          "type": "string",
+          "pattern": "^\\d+ms$",
+          "description": "Audio processing latency budget"
+        },
+        "requiredAPIs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required browser APIs for this zone"
+        },
+        "fallbackMode": {
+          "type": "string",
+          "enum": ["graceful", "strict"],
+          "description": "Behavior when zone is unavailable"
+        },
+        "fallbackZone": {
+          "type": "string",
+          "description": "Zone to use when this zone is unavailable"
+        },
+        "features": {
+          "type": "object",
+          "description": "Zone-specific feature flags",
+          "additionalProperties": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

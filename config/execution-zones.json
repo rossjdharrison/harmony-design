@@ -1,0 +1,84 @@
+{
+  "$schema": "./execution-zones.schema.json",
+  "version": "1.0.0",
+  "description": "Execution zone configuration for routing operations to specialized contexts",
+  "zones": {
+    "Default": {
+      "description": "Standard execution context for general operations",
+      "priority": 0,
+      "memoryBudget": "50MB",
+      "renderBudget": "16ms"
+    },
+    "XR": {
+      "description": "WebXR execution context for immersive rendering",
+      "priority": 10,
+      "memoryBudget": "80MB",
+      "renderBudget": "8ms",
+      "latencyTarget": "11ms",
+      "requiredAPIs": ["navigator.xr"],
+      "fallbackMode": "graceful",
+      "fallbackZone": "Default",
+      "features": {
+        "stereoscopicRendering": true,
+        "poseTracking": true,
+        "spatialAudio": true,
+        "handTracking": true,
+        "inputSources": true
+      }
+    },
+    "GPU": {
+      "description": "GPU-accelerated execution context for compute operations",
+      "priority": 8,
+      "memoryBudget": "100MB",
+      "requiredAPIs": ["navigator.gpu"],
+      "fallbackMode": "graceful",
+      "fallbackZone": "WASM"
+    },
+    "WASM": {
+      "description": "WebAssembly execution context for audio processing",
+      "priority": 9,
+      "memoryBudget": "50MB",
+      "audioLatency": "10ms",
+      "requiredAPIs": ["WebAssembly"],
+      "fallbackMode": "strict"
+    },
+    "Audio": {
+      "description": "Dedicated audio processing context",
+      "priority": 9,
+      "memoryBudget": "30MB",
+      "audioLatency": "10ms",
+      "requiredAPIs": ["AudioContext", "AudioWorklet"],
+      "fallbackMode": "graceful",
+      "fallbackZone": "Default"
+    }
+  },
+  "routing": {
+    "commandPrefix": {
+      "XR.": "XR",
+      "GPU.": "GPU",
+      "Audio.": "Audio",
+      "Render.": "Default"
+    },
+    "semanticTypeMapping": {
+      "XRPose": "XR",
+      "XRInputSource": "XR",
+      "XRSession": "XR",
+      "GPUBuffer": "GPU",
+      "AudioBuffer": "Audio",
+      "Scene3D": "Default"
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "logZoneSwitches": true,
+    "trackLatency": true,
+    "alertOnTimeout": true,
+    "timeouts": {
+      "XR": 100,
+      "GPU": 200,
+      "WASM": 150,
+      "Audio": 50,
+      "Default": 500
+    }
+  }
+}

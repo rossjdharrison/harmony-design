@@ -470,3 +470,70 @@ Bridge validation was removed to:
 - Simplify testing and maintenance
 - Enforce proper event-driven architecture
 
+
+
+## Zone Affinity and Execution Routing
+
+Harmony's execution model supports **zone affinity** to route operations to specialized execution contexts. This ensures performance-critical operations (like WebXR rendering) execute in appropriate environments.
+
+### ZoneAffinity.XR
+
+The ``ZoneAffinity.XR`` semantic marker routes operations to WebXR-capable execution zones. This is critical for:
+
+- **Stereoscopic rendering** - Render to left/right eye views in XR animation frames
+- **Pose tracking** - Access 6DOF head and controller tracking data
+- **Spatial audio** - Process audio with head-tracked listener position
+- **Input handling** - Process XR controller and hand tracking events
+
+**Full Specification:** [docs/architecture/zone-affinity-xr-spec.md](docs/architecture/zone-affinity-xr-spec.md)
+
+### Usage Pattern
+
+Commands and queries specify zone affinity to control execution routing:
+
+````javascript
+// Route to XR zone for stereoscopic rendering
+EventBus.processCommand({
+  type: 'XR.StartSession',
+  zoneAffinity: 'ZoneAffinity.XR',
+  payload: {
+    mode: 'immersive-vr',
+    requiredFeatures: ['local-floor']
+  }
+});
+
+// Query XR-specific state
+TypeNavigator.query({
+  semantic_type: 'XRPose',
+  zoneAffinity: 'ZoneAffinity.XR',
+  referenceSpace: 'local-floor'
+});
+````
+
+### Fallback Behavior
+
+When an XR zone is unavailable (WebXR not supported), the system can:
+
+- **Graceful degradation** - Fall back to monoscopic rendering (default)
+- **Strict failure** - Throw error and halt operation
+
+Configure in ``config/execution-zones.json``.
+
+### Performance Targets
+
+XR zones have stricter performance requirements:
+
+- **Motion-to-Photon Latency:** < 20ms (target: 11ms)
+- **Render Budget per Eye:** < 8ms (16ms total @ 60fps stereo)
+- **Memory Budget:** 80MB (50MB standard + 30MB XR-specific)
+
+### Integration
+
+Zone affinity is recognized by:
+
+- **EventBus** - Routes commands to appropriate zones ([core/event-bus.js](core/event-bus.js))
+- **TypeNavigator** - Queries zone-specific state stores ([core/type-navigator.js](core/type-navigator.js))
+- **IRendererBackend** - Checks zone support before execution ([types/renderer-backend.d.ts](types/renderer-backend.d.ts))
+
+See the full specification for error handling, testing requirements, and migration guides.
+
