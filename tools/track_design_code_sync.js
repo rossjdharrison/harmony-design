@@ -10,7 +10,7 @@
  * @module tools/track_design_code_sync
  */
 
-import { TypeNavigator } from '../core/type_navigator.js';
+import { TypeNavigator, isTypeNavigator } from '../core/type_navigator.js';
 
 /**
  * @typedef {Object} DriftReport
@@ -36,8 +36,8 @@ export class DesignCodeSyncTracker {
    * @param {TypeNavigator} typeNavigator - Type navigator instance for querying graph
    */
   constructor(typeNavigator) {
-    if (!(typeNavigator instanceof TypeNavigator)) {
-      throw new Error('DesignCodeSyncTracker requires TypeNavigator instance');
+    if (!isTypeNavigator(typeNavigator)) {
+      throw new Error('DesignCodeSyncTracker requires a TypeNavigator-compatible instance (queryByType, queryEdges, getNode)');
     }
     this.typeNavigator = typeNavigator;
   }
