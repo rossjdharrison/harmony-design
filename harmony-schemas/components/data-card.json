@@ -1,0 +1,66 @@
+{
+  "name": "data-card",
+  "description": "A card component for displaying data with optional header, content, and actions",
+  "properties": [
+    {
+      "name": "title",
+      "type": "string",
+      "default": "",
+      "required": false,
+      "description": "Card title text",
+      "attribute": true
+    },
+    {
+      "name": "subtitle",
+      "type": "string",
+      "default": "",
+      "required": false,
+      "description": "Card subtitle text",
+      "attribute": true
+    },
+    {
+      "name": "elevated",
+      "type": "boolean",
+      "default": false,
+      "required": false,
+      "description": "Whether the card should have elevation shadow",
+      "attribute": true
+    },
+    {
+      "name": "variant",
+      "type": "string",
+      "default": "default",
+      "required": false,
+      "description": "Card variant: default, outlined, filled",
+      "attribute": true
+    }
+  ],
+  "events": [
+    {
+      "name": "card-click",
+      "description": "Fired when the card is clicked",
+      "detail": {
+        "title": "string",
+        "timestamp": "number"
+      }
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for card content"
+    },
+    {
+      "name": "header",
+      "description": "Slot for custom header content"
+    },
+    {
+      "name": "actions",
+      "description": "Slot for action buttons"
+    }
+  ],
+  "styles": {
+    "base": "padding: 1rem; border-radius: 8px; background: var(--surface-color, white);"
+  },
+  "template": "card"
+}

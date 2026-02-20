@@ -1,0 +1,58 @@
+{
+  "name": "status-badge",
+  "description": "A badge component for displaying status information",
+  "properties": [
+    {
+      "name": "status",
+      "type": "string",
+      "default": "default",
+      "required": false,
+      "description": "Status type: success, warning, error, info, default",
+      "attribute": true
+    },
+    {
+      "name": "label",
+      "type": "string",
+      "default": "",
+      "required": false,
+      "description": "Badge label text",
+      "attribute": true
+    },
+    {
+      "name": "size",
+      "type": "string",
+      "default": "medium",
+      "required": false,
+      "description": "Badge size: small, medium, large",
+      "attribute": true
+    },
+    {
+      "name": "pill",
+      "type": "boolean",
+      "default": false,
+      "required": false,
+      "description": "Whether the badge should have pill-shaped borders",
+      "attribute": true
+    }
+  ],
+  "events": [
+    {
+      "name": "badge-click",
+      "description": "Fired when the badge is clicked",
+      "detail": {
+        "status": "string",
+        "label": "string"
+      }
+    }
+  ],
+  "slots": [
+    {
+      "name": "",
+      "description": "Default slot for badge content (overrides label property)"
+    }
+  ],
+  "styles": {
+    "base": "display: inline-flex; align-items: center; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; font-weight: 500;"
+  },
+  "template": "badge"
+}
