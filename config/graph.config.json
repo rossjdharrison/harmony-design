@@ -1,0 +1,8 @@
+{
+  "enableIndexing": true,
+  "maxGraphDepth": 10,
+  "cacheSize": 500,
+  "enableTypeNavigator": true,
+  "validateEdges": true,
+  "serializationFormat": "json"
+}

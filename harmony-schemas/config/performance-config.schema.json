@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/config/performance-config.schema.json",
+  "title": "Performance Configuration",
+  "description": "Configuration schema for Harmony performance budgets and limits",
+  "type": "object",
+  "required": ["renderBudgetMs", "memoryBudgetMB", "loadBudgetMs"],
+  "properties": {
+    "renderBudgetMs": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 16,
+      "default": 16,
+      "description": "Maximum render time per frame in milliseconds (for 60fps)"
+    },
+    "memoryBudgetMB": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 100,
+      "default": 50,
+      "description": "Maximum WASM heap size in megabytes"
+    },
+    "loadBudgetMs": {
+      "type": "number",
+      "minimum": 100,
+      "maximum": 1000,
+      "default": 200,
+      "description": "Maximum initial load time in milliseconds"
+    },
+    "audioLatencyMs": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10,
+      "description": "Maximum audio processing latency in milliseconds"
+    },
+    "enableProfiling": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable performance profiling and metrics collection"
+    },
+    "warningThreshold": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 1.0,
+      "default": 0.8,
+      "description": "Threshold (as fraction of budget) to trigger warnings"
+    }
+  },
+  "additionalProperties": false
+}

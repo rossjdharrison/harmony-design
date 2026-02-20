@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/config/event-bus-config.schema.json",
+  "title": "Event Bus Configuration",
+  "description": "Configuration schema for Harmony EventBus system",
+  "type": "object",
+  "properties": {
+    "enableLogging": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable event bus logging to console"
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": ["error", "warn", "info", "debug"],
+      "default": "info",
+      "description": "Logging verbosity level"
+    },
+    "enableValidation": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable event payload validation"
+    },
+    "maxQueueSize": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 10000,
+      "default": 1000,
+      "description": "Maximum number of queued events before dropping"
+    },
+    "enableMetrics": {
+      "type": "boolean",
+      "default": false,
+      "description": "Enable event bus performance metrics"
+    },
+    "debugShortcut": {
+      "type": "string",
+      "pattern": "^(Ctrl|Alt|Shift)\\+(Ctrl|Alt|Shift)\\+[A-Z]$",
+      "default": "Ctrl+Shift+E",
+      "description": "Keyboard shortcut to open EventBus debugger"
+    }
+  },
+  "additionalProperties": false
+}

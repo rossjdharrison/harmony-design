@@ -1,0 +1,8 @@
+{
+  "useShadowDOM": true,
+  "enableAnimations": true,
+  "animationFPS": 60,
+  "enableA11y": true,
+  "themeMode": "auto",
+  "enableEventPublishing": true
+}

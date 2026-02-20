@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/config/audio-config.schema.json",
+  "title": "Audio Configuration",
+  "description": "Configuration schema for Harmony audio processing settings",
+  "type": "object",
+  "required": ["sampleRate", "bufferSize", "channels"],
+  "properties": {
+    "sampleRate": {
+      "type": "integer",
+      "enum": [44100, 48000, 96000],
+      "description": "Audio sample rate in Hz"
+    },
+    "bufferSize": {
+      "type": "integer",
+      "enum": [128, 256, 512, 1024, 2048],
+      "description": "Audio buffer size in samples"
+    },
+    "channels": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 32,
+      "description": "Number of audio channels"
+    },
+    "latencyHint": {
+      "type": "string",
+      "enum": ["interactive", "balanced", "playback"],
+      "default": "interactive",
+      "description": "Audio latency optimization hint"
+    },
+    "enableGPU": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable GPU acceleration for audio processing"
+    },
+    "maxLatencyMs": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Maximum acceptable audio latency in milliseconds"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/config/graph-config.schema.json",
+  "title": "Graph Configuration",
+  "description": "Configuration schema for Harmony graph engine and intent system",
+  "type": "object",
+  "properties": {
+    "enableIndexing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable cross-graph edge indexing"
+    },
+    "maxGraphDepth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 10,
+      "description": "Maximum depth for graph traversal"
+    },
+    "cacheSize": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 10000,
+      "default": 500,
+      "description": "Number of graph queries to cache"
+    },
+    "enableTypeNavigator": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable TypeNavigator for graph queries"
+    },
+    "validateEdges": {
+      "type": "boolean",
+      "default": true,
+      "description": "Validate edge types and connections"
+    },
+    "serializationFormat": {
+      "type": "string",
+      "enum": ["json", "binary"],
+      "default": "json",
+      "description": "Format for graph serialization to IndexedDB"
+    }
+  },
+  "additionalProperties": false
+}

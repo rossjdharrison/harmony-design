@@ -1,0 +1,8 @@
+{
+  "renderBudgetMs": 16,
+  "memoryBudgetMB": 50,
+  "loadBudgetMs": 200,
+  "audioLatencyMs": 10,
+  "enableProfiling": false,
+  "warningThreshold": 0.8
+}

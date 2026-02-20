@@ -1,0 +1,8 @@
+{
+  "sampleRate": 48000,
+  "bufferSize": 256,
+  "channels": 2,
+  "latencyHint": "interactive",
+  "enableGPU": true,
+  "maxLatencyMs": 10
+}

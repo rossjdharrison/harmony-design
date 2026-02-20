@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/config/component-config.schema.json",
+  "title": "Component Configuration",
+  "description": "Configuration schema for Harmony Web Components",
+  "type": "object",
+  "properties": {
+    "useShadowDOM": {
+      "type": "boolean",
+      "default": true,
+      "description": "Use shadow DOM for component encapsulation"
+    },
+    "enableAnimations": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable component animations"
+    },
+    "animationFPS": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 120,
+      "default": 60,
+      "description": "Target frame rate for animations"
+    },
+    "enableA11y": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable accessibility features"
+    },
+    "themeMode": {
+      "type": "string",
+      "enum": ["light", "dark", "auto"],
+      "default": "auto",
+      "description": "Default theme mode"
+    },
+    "enableEventPublishing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Enable components to publish events to EventBus"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,8 @@
+{
+  "enableLogging": true,
+  "logLevel": "info",
+  "enableValidation": true,
+  "maxQueueSize": 1000,
+  "enableMetrics": false,
+  "debugShortcut": "Ctrl+Shift+E"
+}
