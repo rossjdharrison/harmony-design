@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExecutionContext Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    h1 { color: #333; }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+    .test-result.pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .test-result.fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .test-result.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>ExecutionContext Tests</h1>
+  
+  <div class="test-section">
+    <h2>Test Controls</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Results</h2>
+    <div id="results"></div>
+  </div>
+
+  <script type="module">
+    import { ExecutionContext, ExecutionContextFactory } from './execution-context.js';
+
+    window.ExecutionContext = ExecutionContext;
+    window.ExecutionContextFactory = ExecutionContextFactory;
+
+    let testResults = [];
+
+    function log(message, type = 'info') {
+      const result = { message, type, timestamp: new Date().toISOString() };
+      testResults.push(result);
+      
+      const resultsDiv = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${type}`;
+      resultDiv.textContent = message;
+      resultsDiv.appendChild(resultDiv);
+      
+      console.log(`[${type.toUpperCase()}]`, message);
+    }
+
+    function assert(condition, message) {
+      if (condition) {
+        log(`✓ ${message}`, 'pass');
+      } else {
+        log(`✗ ${message}`, 'fail');
+        throw new Error(`Assertion failed: ${message}`);
+      }
+    }
+
+    async function testBasicExecution() {
+      log('=== Test: Basic Execution ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: { x: 10, y: 20 },
+        allowedEvents: ['test.complete'],
+      });
+
+      const result = await context.execute((ctx) => {
+        const sum = ctx.inputs.x + ctx.inputs.y;
+        ctx.setOutput('sum', sum);
+        ctx.publishEvent('test.complete', { sum });
+      });
+
+      assert(result.success === true, 'Execution should succeed');
+      assert(result.outputs.sum === 30, 'Output sum should be 30');
+      assert(result.events.length === 1, 'Should have one event');
+      assert(result.events[0].type === 'test.complete', 'Event type should be test.complete');
+      assert(result.executionTime > 0, 'Execution time should be recorded');
+    }
+
+    async function testInputImmutability() {
+      log('=== Test: Input Immutability ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: { data: [1, 2, 3] },
+      });
+
+      const result = await context.execute((ctx) => {
+        try {
+          // Attempt to modify inputs (should fail due to freeze)
+          ctx.inputs.data.push(4);
+          ctx.setOutput('modified', true);
+        } catch (error) {
+          ctx.setOutput('modified', false);
+          ctx.setOutput('error', error.message);
+        }
+      });
+
+      assert(result.success === true, 'Execution should succeed');
+      assert(result.outputs.modified === false, 'Inputs should not be modifiable');
+    }
+
+    async function testEventRestriction() {
+      log('=== Test: Event Restriction ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: {},
+        allowedEvents: ['allowed.event'],
+      });
+
+      const result = await context.execute((ctx) => {
+        try {
+          ctx.publishEvent('allowed.event', { data: 'ok' });
+          ctx.setOutput('allowedPublished', true);
+        } catch (error) {
+          ctx.setOutput('allowedPublished', false);
+        }
+
+        try {
+          ctx.publishEvent('forbidden.event', { data: 'bad' });
+          ctx.setOutput('forbiddenPublished', true);
+        } catch (error) {
+          ctx.setOutput('forbiddenPublished', false);
+          ctx.setOutput('error', error.message);
+        }
+      });
+
+      assert(result.success === true, 'Execution should succeed');
+      assert(result.outputs.allowedPublished === true, 'Allowed event should publish');
+      assert(result.outputs.forbiddenPublished === false, 'Forbidden event should not publish');
+      assert(result.events.length === 1, 'Should have one event (allowed only)');
+    }
+
+    async function testExecutionTimeout() {
+      log('=== Test: Execution Timeout ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: {},
+        resourceLimits: {
+          maxExecutionTime: 100, // 100ms timeout
+        },
+      });
+
+      const result = await context.execute(async (ctx) => {
+        // Simulate long-running task
+        await new Promise(resolve => setTimeout(resolve, 200));
+        ctx.setOutput('completed', true);
+      });
+
+      assert(result.success === false, 'Execution should fail due to timeout');
+      assert(result.error.message.includes('timeout'), 'Error should mention timeout');
+    }
+
+    async function testAsyncExecution() {
+      log('=== Test: Async Execution ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: { delay: 50 },
+        allowedEvents: ['async.complete'],
+      });
+
+      const result = await context.execute(async (ctx) => {
+        await new Promise(resolve => setTimeout(resolve, ctx.inputs.delay));
+        ctx.setOutput('delayed', true);
+        ctx.publishEvent('async.complete', { delay: ctx.inputs.delay });
+      });
+
+      assert(result.success === true, 'Async execution should succeed');
+      assert(result.outputs.delayed === true, 'Output should be set after delay');
+      assert(result.executionTime >= 50, 'Execution time should reflect delay');
+    }
+
+    async function testExecuteString() {
+      log('=== Test: Execute String ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: { a: 5, b: 10 },
+      });
+
+      const codeString = `
+        const result = context.inputs.a * context.inputs.b;
+        context.setOutput('product', result);
+      `;
+
+      const result = await context.executeString(codeString);
+
+      assert(result.success === true, 'String execution should succeed');
+      assert(result.outputs.product === 50, 'Product should be calculated correctly');
+    }
+
+    async function testExecuteStringError() {
+      log('=== Test: Execute String Error ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: {},
+      });
+
+      const codeString = `
+        throw new Error('Intentional error');
+      `;
+
+      const result = await context.executeString(codeString);
+
+      assert(result.success === false, 'String execution should fail');
+      assert(result.error.message.includes('Intentional error'), 'Error message should be captured');
+    }
+
+    async function testMemoryEstimation() {
+      log('=== Test: Memory Estimation ===', 'info');
+      
+      const largeData = new Array(1000).fill(0).map((_, i) => ({ id: i, data: 'x'.repeat(100) }));
+      
+      const context = new ExecutionContext({
+        inputs: { largeData },
+      });
+
+      await context.execute((ctx) => {
+        ctx.setOutput('processed', ctx.inputs.largeData.length);
+      });
+
+      const memoryUsage = context.estimateMemoryUsage();
+      
+      assert(memoryUsage > 0, 'Memory usage should be estimated');
+      log(`Memory usage: ${(memoryUsage / 1024).toFixed(2)} KB`, 'info');
+    }
+
+    async function testContextCloning() {
+      log('=== Test: Context Cloning ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: { x: 10 },
+        allowedEvents: ['test.event'],
+      });
+
+      const cloned = context.clone({ y: 20 });
+
+      assert(cloned.inputs.x === 10, 'Original input should be preserved');
+      assert(cloned.inputs.y === 20, 'New input should be added');
+      assert(cloned.allowedEvents.has('test.event'), 'Allowed events should be copied');
+    }
+
+    async function testAudioContextFactory() {
+      log('=== Test: Audio Context Factory ===', 'info');
+      
+      const audioContext = ExecutionContextFactory.createAudioContext({
+        audioBuffer: new Float32Array(1024),
+        sampleRate: 48000,
+      });
+
+      const result = await audioContext.execute((ctx) => {
+        ctx.setOutput('bufferSize', ctx.inputs.audioBuffer.length);
+        ctx.publishEvent('audio.processing.complete', { processed: true });
+      });
+
+      assert(result.success === true, 'Audio context execution should succeed');
+      assert(result.outputs.bufferSize === 1024, 'Buffer size should be accessible');
+      assert(result.events[0].type === 'audio.processing.complete', 'Audio event should be published');
+    }
+
+    async function testNodeContextFactory() {
+      log('=== Test: Node Context Factory ===', 'info');
+      
+      const nodeContext = ExecutionContextFactory.createNodeContext({
+        nodeId: 'test-node',
+        inputValue: 42,
+      });
+
+      const result = await nodeContext.execute((ctx) => {
+        const doubled = ctx.inputs.inputValue * 2;
+        ctx.setOutput('result', doubled);
+        ctx.publishEvent('node.execution.complete', { nodeId: ctx.inputs.nodeId });
+      });
+
+      assert(result.success === true, 'Node context execution should succeed');
+      assert(result.outputs.result === 84, 'Node computation should work');
+    }
+
+    async function testComputeContextFactory() {
+      log('=== Test: Compute Context Factory ===', 'info');
+      
+      const computeContext = ExecutionContextFactory.createComputeContext({
+        matrix: [[1, 2], [3, 4]],
+      });
+
+      const result = await computeContext.execute((ctx) => {
+        const matrix = ctx.inputs.matrix;
+        const sum = matrix.flat().reduce((a, b) => a + b, 0);
+        ctx.setOutput('sum', sum);
+        ctx.publishEvent('compute.complete', { sum });
+      });
+
+      assert(result.success === true, 'Compute context execution should succeed');
+      assert(result.outputs.sum === 10, 'Matrix sum should be calculated');
+    }
+
+    async function testTimeoutApproaching() {
+      log('=== Test: Timeout Approaching Detection ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: {},
+        resourceLimits: {
+          maxExecutionTime: 100,
+        },
+      });
+
+      const result = await context.execute(async (ctx) => {
+        await new Promise(resolve => setTimeout(resolve, 85));
+        ctx.setOutput('timeoutApproaching', ctx.isTimeoutApproaching());
+      });
+
+      assert(result.success === true, 'Execution should succeed');
+      assert(result.outputs.timeoutApproaching === true, 'Should detect timeout approaching');
+    }
+
+    async function testLogging() {
+      log('=== Test: Logging ===', 'info');
+      
+      const context = new ExecutionContext({
+        inputs: {},
+        allowedEvents: ['execution.log'],
+      });
+
+      const result = await context.execute((ctx) => {
+        ctx.log('info', 'Processing started');
+        ctx.log('warn', 'Warning message');
+        ctx.log('error', 'Error message');
+      });
+
+      assert(result.success === true, 'Execution should succeed');
+      assert(result.events.length === 3, 'Should have three log events');
+      assert(result.events[0].payload.level === 'info', 'First log should be info');
+      assert(result.events[1].payload.level === 'warn', 'Second log should be warn');
+      assert(result.events[2].payload.level === 'error', 'Third log should be error');
+    }
+
+    window.runAllTests = async function() {
+      clearResults();
+      log('Starting ExecutionContext tests...', 'info');
+      
+      const tests = [
+        testBasicExecution,
+        testInputImmutability,
+        testEventRestriction,
+        testExecutionTimeout,
+        testAsyncExecution,
+        testExecuteString,
+        testExecuteStringError,
+        testMemoryEstimation,
+        testContextCloning,
+        testAudioContextFactory,
+        testNodeContextFactory,
+        testComputeContextFactory,
+        testTimeoutApproaching,
+        testLogging,
+      ];
+
+      let passed = 0;
+      let failed = 0;
+
+      for (const test of tests) {
+        try {
+          await test();
+          passed++;
+        } catch (error) {
+          failed++;
+          log(`Test failed: ${error.message}`, 'fail');
+        }
+      }
+
+      log(`\n=== Test Summary ===`, 'info');
+      log(`Total: ${tests.length} | Passed: ${passed} | Failed: ${failed}`, 
+          failed === 0 ? 'pass' : 'fail');
+    };
+
+    window.clearResults = function() {
+      testResults = [];
+      document.getElementById('results').innerHTML = '';
+    };
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      setTimeout(runAllTests, 100);
+    });
+  </script>
+</body>
+</html>
