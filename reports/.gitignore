@@ -1,0 +1,7 @@
+# Keep directory structure but ignore generated reports
+*.json
+*.html
+*.xml
+
+# Keep .gitkeep
+!.gitkeep

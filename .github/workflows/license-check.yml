@@ -1,0 +1,105 @@
+name: License Check
+
+on:
+  pull_request:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'security/license-checker.js'
+      - '.github/workflows/license-check.yml'
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+jobs:
+  check-licenses:
+    name: Check Dependency Licenses
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run license checker
+        id: license_check
+        run: |
+          node scripts/check-licenses.js --json reports/licenses.json
+        continue-on-error: true
+
+      - name: Upload license report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: license-report
+          path: reports/licenses.json
+          retention-days: 30
+
+      - name: Comment on PR
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            let report = '';
+            try {
+              const data = JSON.parse(fs.readFileSync('reports/licenses.json', 'utf8'));
+              
+              report = '## ❌ License Check Failed\n\n';
+              
+              if (data.prohibited.length > 0) {
+                report += '### Prohibited Licenses\n';
+                data.prohibited.forEach(dep => {
+                  report += `- **${dep.name}@${dep.version}**: ${Array.isArray(dep.license) ? dep.license.join(' OR ') : dep.license}\n`;
+                });
+                report += '\n';
+              }
+              
+              if (data.unknown.length > 0) {
+                report += '### Unknown/Unlicensed\n';
+                data.unknown.forEach(dep => {
+                  report += `- **${dep.name}@${dep.version}**: ${Array.isArray(dep.license) ? dep.license.join(' OR ') : dep.license}\n`;
+                });
+                report += '\n';
+              }
+              
+              if (data.needsReview.length > 0) {
+                report += '### Needs Review\n';
+                data.needsReview.forEach(dep => {
+                  report += `- **${dep.name}@${dep.version}**: ${Array.isArray(dep.license) ? dep.license.join(' OR ') : dep.license}\n`;
+                });
+                report += '\n';
+              }
+              
+              report += '\nPlease review these dependencies and either:\n';
+              report += '1. Replace with alternatives that have approved licenses\n';
+              report += '2. Add exceptions to `security/license-checker.js` with justification\n';
+              report += '3. Get legal approval for the license\n';
+              
+            } catch (err) {
+              report = '## ❌ License Check Failed\n\nCould not parse license report. Check workflow logs for details.';
+            }
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+      - name: Fail if licenses not approved
+        if: steps.license_check.outcome == 'failure'
+        run: exit 1
