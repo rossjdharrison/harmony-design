@@ -1,0 +1,41 @@
+/**
+ * Focus Trap Component Styles
+ * 
+ * Minimal styling for focus trap component.
+ * Most styling should be on the modal/dialog itself.
+ */
+
+harmony-focus-trap {
+  /* Component uses display: contents, no additional styling needed */
+}
+
+/* Focus visible styles for trapped elements */
+harmony-focus-trap:focus-within [tabindex]:focus-visible,
+harmony-focus-trap:focus-within button:focus-visible,
+harmony-focus-trap:focus-within a:focus-visible,
+harmony-focus-trap:focus-within input:focus-visible,
+harmony-focus-trap:focus-within select:focus-visible,
+harmony-focus-trap:focus-within textarea:focus-visible {
+  outline: 2px solid var(--color-primary, #0066cc);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Skip link for screen readers */
+.focus-trap-skip-link {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  z-index: 999999;
+  padding: 0.5rem 1rem;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #000000);
+  text-decoration: none;
+  border: 2px solid var(--color-primary, #0066cc);
+  border-radius: 4px;
+}
+
+.focus-trap-skip-link:focus {
+  top: 1rem;
+  left: 1rem;
+}
