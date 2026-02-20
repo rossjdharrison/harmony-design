@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unhandled Rejection Tracker Tests</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #555;
+      margin-top: 0;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 4px;
+      margin: 10px 0;
+    }
+    .status.pass {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.fail {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #007bff;
+    }
+    .stat-card h3 {
+      margin: 0 0 5px 0;
+      font-size: 24px;
+      color: #007bff;
+    }
+    .stat-card p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    .rejections-list {
+      max-height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      background: #f8f9fa;
+    }
+    .rejection-item {
+      background: white;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border-left: 4px solid #dc3545;
+    }
+    .rejection-item.handled {
+      border-left-color: #28a745;
+    }
+    .rejection-item pre {
+      margin: 5px 0;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 2px;
+      font-size: 12px;
+      overflow-x: auto;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚨 Unhandled Rejection Tracker Tests</h1>
+
+  <div class="test-section">
+    <h2>Tracker Status</h2>
+    <div id="tracker-status" class="status info">
+      Initializing...
+    </div>
+    <div class="stats" id="stats-container"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test Controls</h2>
+    <div class="controls">
+      <button id="test-error-rejection">Trigger Error Rejection</button>
+      <button id="test-string-rejection">Trigger String Rejection</button>
+      <button id="test-object-rejection">Trigger Object Rejection</button>
+      <button id="test-handled-rejection">Trigger Handled Rejection</button>
+      <button id="test-multiple-rejections">Trigger Multiple Rejections</button>
+      <button id="clear-rejections">Clear Rejections</button>
+      <button id="stop-tracker">Stop Tracker</button>
+      <button id="start-tracker">Start Tracker</button>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Tracked Rejections</h2>
+    <div id="rejections-list" class="rejections-list">
+      No rejections tracked yet.
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Automated Tests</h2>
+    <button id="run-tests">Run All Tests</button>
+    <div id="test-results"></div>
+  </div>
+
+  <script type="module">
+    import { UnhandledRejectionTracker } from './unhandled-rejection-tracker.js';
+
+    // Create tracker instance for testing
+    const tracker = new UnhandledRejectionTracker({
+      enabled: true,
+      logToConsole: true,
+      captureStackTrace: true,
+      maxStoredRejections: 50,
+      onRejection: (event) => {
+        console.log('Custom handler called:', event);
+        updateUI();
+      }
+    });
+
+    tracker.start();
+
+    // UI Update Functions
+    function updateStatus() {
+      const statusEl = document.getElementById('tracker-status');
+      const stats = tracker.getStats();
+      
+      if (tracker.isTracking) {
+        statusEl.className = 'status pass';
+        statusEl.textContent = '✅ Tracker is active and monitoring rejections';
+      } else {
+        statusEl.className = 'status fail';
+        statusEl.textContent = '❌ Tracker is stopped';
+      }
+    }
+
+    function updateStats() {
+      const stats = tracker.getStats();
+      const container = document.getElementById('stats-container');
+      
+      container.innerHTML = `
+        <div class="stat-card">
+          <h3>${stats.total}</h3>
+          <p>Total Rejections</p>
+        </div>
+        <div class="stat-card">
+          <h3>${stats.unhandled}</h3>
+          <p>Unhandled</p>
+        </div>
+        <div class="stat-card">
+          <h3>${stats.handled}</h3>
+          <p>Later Handled</p>
+        </div>
+        <div class="stat-card">
+          <h3>${stats.isTracking ? 'Active' : 'Inactive'}</h3>
+          <p>Tracking Status</p>
+        </div>
+      `;
+    }
+
+    function updateRejectionsList() {
+      const listEl = document.getElementById('rejections-list');
+      const rejections = tracker.getRejections();
+      
+      if (rejections.length === 0) {
+        listEl.innerHTML = 'No rejections tracked yet.';
+        return;
+      }
+
+      listEl.innerHTML = rejections.map((rejection, index) => `
+        <div class="rejection-item ${rejection.handled ? 'handled' : ''}">
+          <strong>#${index + 1}</strong> - ${rejection.handled ? '✅ Handled' : '❌ Unhandled'}
+          <br>
+          <strong>Time:</strong> ${new Date(rejection.timestamp).toLocaleTimeString()}
+          <br>
+          <strong>Reason:</strong> ${formatReason(rejection.reason)}
+          ${rejection.stack ? `<pre>${rejection.stack.split('\n').slice(0, 3).join('\n')}</pre>` : ''}
+        </div>
+      `).reverse().join('');
+    }
+
+    function formatReason(reason) {
+      if (reason instanceof Error) {
+        return `${reason.name}: ${reason.message}`;
+      }
+      if (typeof reason === 'string') {
+        return reason;
+      }
+      if (typeof reason === 'object') {
+        return JSON.stringify(reason);
+      }
+      return String(reason);
+    }
+
+    function updateUI() {
+      updateStatus();
+      updateStats();
+      updateRejectionsList();
+    }
+
+    // Test Functions
+    function triggerErrorRejection() {
+      Promise.reject(new Error('Test error rejection'));
+      setTimeout(updateUI, 100);
+    }
+
+    function triggerStringRejection() {
+      Promise.reject('Test string rejection');
+      setTimeout(updateUI, 100);
+    }
+
+    function triggerObjectRejection() {
+      Promise.reject({ code: 'TEST_ERROR', message: 'Test object rejection' });
+      setTimeout(updateUI, 100);
+    }
+
+    function triggerHandledRejection() {
+      const promise = Promise.reject(new Error('This will be handled'));
+      setTimeout(() => {
+        promise.catch(() => {
+          console.log('Rejection handled after delay');
+          setTimeout(updateUI, 100);
+        });
+      }, 500);
+      setTimeout(updateUI, 100);
+    }
+
+    function triggerMultipleRejections() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          Promise.reject(new Error(`Batch rejection ${i + 1}`));
+          updateUI();
+        }, i * 100);
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('test-error-rejection').addEventListener('click', triggerErrorRejection);
+    document.getElementById('test-string-rejection').addEventListener('click', triggerStringRejection);
+    document.getElementById('test-object-rejection').addEventListener('click', triggerObjectRejection);
+    document.getElementById('test-handled-rejection').addEventListener('click', triggerHandledRejection);
+    document.getElementById('test-multiple-rejections').addEventListener('click', triggerMultipleRejections);
+    
+    document.getElementById('clear-rejections').addEventListener('click', () => {
+      tracker.clearRejections();
+      updateUI();
+    });
+
+    document.getElementById('stop-tracker').addEventListener('click', () => {
+      tracker.stop();
+      updateUI();
+    });
+
+    document.getElementById('start-tracker').addEventListener('click', () => {
+      tracker.start();
+      updateUI();
+    });
+
+    // Automated Tests
+    document.getElementById('run-tests').addEventListener('click', runAutomatedTests);
+
+    async function runAutomatedTests() {
+      const resultsEl = document.getElementById('test-results');
+      resultsEl.innerHTML = '<div class="status info">Running tests...</div>';
+      
+      const results = [];
+
+      // Test 1: Tracker initialization
+      results.push({
+        name: 'Tracker Initialization',
+        pass: tracker.isTracking === true,
+        message: tracker.isTracking ? 'Tracker started successfully' : 'Tracker failed to start'
+      });
+
+      // Test 2: Error rejection tracking
+      tracker.clearRejections();
+      Promise.reject(new Error('Test'));
+      await new Promise(resolve => setTimeout(resolve, 100));
+      results.push({
+        name: 'Error Rejection Tracking',
+        pass: tracker.getRejections().length === 1,
+        message: `Tracked ${tracker.getRejections().length} rejection(s)`
+      });
+
+      // Test 3: Multiple rejections
+      tracker.clearRejections();
+      Promise.reject('Test 1');
+      Promise.reject('Test 2');
+      Promise.reject('Test 3');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      results.push({
+        name: 'Multiple Rejections',
+        pass: tracker.getRejections().length === 3,
+        message: `Tracked ${tracker.getRejections().length} rejection(s)`
+      });
+
+      // Test 4: Stats calculation
+      const stats = tracker.getStats();
+      results.push({
+        name: 'Stats Calculation',
+        pass: stats.total === 3 && stats.unhandled === 3,
+        message: `Total: ${stats.total}, Unhandled: ${stats.unhandled}`
+      });
+
+      // Test 5: Clear rejections
+      tracker.clearRejections();
+      results.push({
+        name: 'Clear Rejections',
+        pass: tracker.getRejections().length === 0,
+        message: `${tracker.getRejections().length} rejections after clear`
+      });
+
+      // Test 6: Stop/Start functionality
+      tracker.stop();
+      const wasTracking = tracker.isTracking;
+      tracker.start();
+      results.push({
+        name: 'Stop/Start Functionality',
+        pass: !wasTracking && tracker.isTracking,
+        message: tracker.isTracking ? 'Tracker restarted successfully' : 'Failed to restart'
+      });
+
+      // Display results
+      const html = results.map(result => `
+        <div class="status ${result.pass ? 'pass' : 'fail'}">
+          <strong>${result.pass ? '✅' : '❌'} ${result.name}</strong><br>
+          ${result.message}
+        </div>
+      `).join('');
+
+      resultsEl.innerHTML = html;
+      updateUI();
+    }
+
+    // Initial UI update
+    updateUI();
+    setInterval(updateUI, 2000); // Update every 2 seconds
+  </script>
+</body>
+</html>
