@@ -1,0 +1,466 @@
+"""
+GraphQL Schema for Harmony Design System Graph Structure
+Provides type-safe queries for nodes, edges, and graph traversal
+"""
+
+# Scalar Types
+scalar DateTime
+scalar JSON
+
+"""
+Node in the graph structure
+Represents any entity in the Harmony system
+"""
+type Node {
+  """Unique identifier for the node"""
+  id: ID!
+  
+  """Type of the node (e.g., 'Component', 'Token', 'Event')"""
+  type: String!
+  
+  """Node metadata and properties"""
+  data: JSON!
+  
+  """Timestamp when node was created"""
+  createdAt: DateTime!
+  
+  """Timestamp when node was last updated"""
+  updatedAt: DateTime!
+  
+  """Version number for optimistic concurrency control"""
+  version: Int!
+  
+  """Outgoing edges from this node"""
+  outgoingEdges(
+    """Filter by edge type"""
+    type: String
+    """Limit number of results"""
+    limit: Int
+    """Offset for pagination"""
+    offset: Int
+  ): [Edge!]!
+  
+  """Incoming edges to this node"""
+  incomingEdges(
+    """Filter by edge type"""
+    type: String
+    """Limit number of results"""
+    limit: Int
+    """Offset for pagination"""
+    offset: Int
+  ): [Edge!]!
+  
+  """Neighbors connected to this node"""
+  neighbors(
+    """Direction: 'outgoing', 'incoming', or 'both'"""
+    direction: Direction = BOTH
+    """Filter by edge type"""
+    edgeType: String
+    """Limit number of results"""
+    limit: Int
+  ): [Node!]!
+}
+
+"""
+Edge connecting two nodes in the graph
+Represents relationships between entities
+"""
+type Edge {
+  """Unique identifier for the edge"""
+  id: ID!
+  
+  """Type of the relationship"""
+  type: String!
+  
+  """Source node ID"""
+  fromId: ID!
+  
+  """Target node ID"""
+  toId: ID!
+  
+  """Source node"""
+  from: Node!
+  
+  """Target node"""
+  to: Node!
+  
+  """Edge metadata and properties"""
+  data: JSON!
+  
+  """Timestamp when edge was created"""
+  createdAt: DateTime!
+  
+  """Weight for weighted graph algorithms"""
+  weight: Float
+}
+
+"""
+Path between two nodes in the graph
+"""
+type Path {
+  """Nodes in the path from source to target"""
+  nodes: [Node!]!
+  
+  """Edges connecting the nodes"""
+  edges: [Edge!]!
+  
+  """Total cost/weight of the path"""
+  cost: Float!
+  
+  """Length of the path (number of edges)"""
+  length: Int!
+}
+
+"""
+Graph snapshot at a specific version
+"""
+type Snapshot {
+  """Unique identifier for the snapshot"""
+  id: ID!
+  
+  """Version number"""
+  version: Int!
+  
+  """Timestamp when snapshot was created"""
+  timestamp: DateTime!
+  
+  """Optional description"""
+  description: String
+  
+  """Number of nodes in this snapshot"""
+  nodeCount: Int!
+  
+  """Number of edges in this snapshot"""
+  edgeCount: Int!
+  
+  """Tags for categorizing snapshots"""
+  tags: [String!]!
+}
+
+"""
+Transaction log entry
+"""
+type Transaction {
+  """Unique identifier for the transaction"""
+  id: ID!
+  
+  """Transaction type: 'mutation', 'rollback', 'merge'"""
+  type: String!
+  
+  """Timestamp when transaction occurred"""
+  timestamp: DateTime!
+  
+  """Operations performed in this transaction"""
+  operations: [Operation!]!
+  
+  """Version after this transaction"""
+  resultingVersion: Int!
+  
+  """Whether transaction was successful"""
+  success: Boolean!
+  
+  """Error message if transaction failed"""
+  error: String
+}
+
+"""
+Individual operation within a transaction
+"""
+type Operation {
+  """Operation type: 'addNode', 'removeNode', 'addEdge', 'removeEdge', 'updateNode'"""
+  type: String!
+  
+  """Entity ID affected by operation"""
+  entityId: ID!
+  
+  """Operation payload"""
+  payload: JSON!
+}
+
+"""
+Graph statistics and metrics
+"""
+type GraphStats {
+  """Total number of nodes"""
+  nodeCount: Int!
+  
+  """Total number of edges"""
+  edgeCount: Int!
+  
+  """Number of connected components"""
+  componentCount: Int!
+  
+  """Average node degree"""
+  averageDegree: Float!
+  
+  """Graph density (actual edges / possible edges)"""
+  density: Float!
+  
+  """Whether graph is cyclic"""
+  isCyclic: Boolean!
+  
+  """Node type distribution"""
+  nodeTypes: [TypeCount!]!
+  
+  """Edge type distribution"""
+  edgeTypes: [TypeCount!]!
+}
+
+"""
+Count of entities by type
+"""
+type TypeCount {
+  """Type name"""
+  type: String!
+  
+  """Number of entities of this type"""
+  count: Int!
+}
+
+"""
+Direction for graph traversal
+"""
+enum Direction {
+  """Follow outgoing edges"""
+  OUTGOING
+  
+  """Follow incoming edges"""
+  INCOMING
+  
+  """Follow edges in both directions"""
+  BOTH
+}
+
+"""
+Sort order for results
+"""
+enum SortOrder {
+  ASC
+  DESC
+}
+
+"""
+Input for node filtering
+"""
+input NodeFilter {
+  """Filter by node type"""
+  type: String
+  
+  """Filter by property values (JSON path queries)"""
+  properties: JSON
+  
+  """Filter by creation date range"""
+  createdAfter: DateTime
+  createdBefore: DateTime
+  
+  """Filter by update date range"""
+  updatedAfter: DateTime
+  updatedBefore: DateTime
+}
+
+"""
+Input for edge filtering
+"""
+input EdgeFilter {
+  """Filter by edge type"""
+  type: String
+  
+  """Filter by source node ID"""
+  fromId: ID
+  
+  """Filter by target node ID"""
+  toId: ID
+  
+  """Filter by weight range"""
+  minWeight: Float
+  maxWeight: Float
+}
+
+"""
+Root query type
+"""
+type Query {
+  """Get a single node by ID"""
+  node(id: ID!): Node
+  
+  """Get multiple nodes by IDs"""
+  nodes(ids: [ID!]!): [Node!]!
+  
+  """Search nodes with filtering"""
+  searchNodes(
+    """Filter criteria"""
+    filter: NodeFilter
+    """Sort by field"""
+    sortBy: String
+    """Sort order"""
+    sortOrder: SortOrder = ASC
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Node!]!
+  
+  """Get a single edge by ID"""
+  edge(id: ID!): Edge
+  
+  """Search edges with filtering"""
+  searchEdges(
+    """Filter criteria"""
+    filter: EdgeFilter
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Edge!]!
+  
+  """Find shortest path between two nodes"""
+  shortestPath(
+    """Source node ID"""
+    fromId: ID!
+    """Target node ID"""
+    toId: ID!
+    """Optional edge type filter"""
+    edgeType: String
+    """Maximum path length to search"""
+    maxDepth: Int = 10
+  ): Path
+  
+  """Find all paths between two nodes"""
+  allPaths(
+    """Source node ID"""
+    fromId: ID!
+    """Target node ID"""
+    toId: ID!
+    """Optional edge type filter"""
+    edgeType: String
+    """Maximum path length to search"""
+    maxDepth: Int = 5
+    """Maximum number of paths to return"""
+    limit: Int = 10
+  ): [Path!]!
+  
+  """Traverse graph from a starting node"""
+  traverse(
+    """Starting node ID"""
+    startId: ID!
+    """Traversal direction"""
+    direction: Direction = OUTGOING
+    """Optional edge type filter"""
+    edgeType: String
+    """Maximum depth to traverse"""
+    maxDepth: Int = 5
+    """Breadth-first (true) or depth-first (false)"""
+    breadthFirst: Boolean = true
+  ): [Node!]!
+  
+  """Get nodes by type"""
+  nodesByType(
+    """Node type"""
+    type: String!
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Node!]!
+  
+  """Get edges by type"""
+  edgesByType(
+    """Edge type"""
+    type: String!
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Edge!]!
+  
+  """Get graph statistics"""
+  stats: GraphStats!
+  
+  """Get current graph version"""
+  currentVersion: Int!
+  
+  """Get snapshot by version"""
+  snapshot(version: Int!): Snapshot
+  
+  """Get all snapshots"""
+  snapshots(
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Snapshot!]!
+  
+  """Get transaction history"""
+  transactions(
+    """Filter by transaction type"""
+    type: String
+    """Filter by date range"""
+    after: DateTime
+    before: DateTime
+    """Limit results"""
+    limit: Int = 100
+    """Offset for pagination"""
+    offset: Int = 0
+  ): [Transaction!]!
+  
+  """Check if path exists between two nodes"""
+  hasPath(
+    """Source node ID"""
+    fromId: ID!
+    """Target node ID"""
+    toId: ID!
+    """Maximum depth to search"""
+    maxDepth: Int = 10
+  ): Boolean!
+  
+  """Find connected component containing a node"""
+  connectedComponent(
+    """Node ID"""
+    nodeId: ID!
+  ): [Node!]!
+  
+  """Detect cycles in the graph"""
+  detectCycles: [[Node!]!]!
+}
+
+"""
+Root mutation type (placeholder for future mutations via EventBus)
+"""
+type Mutation {
+  """
+  Mutations are handled through EventBus commands
+  This type exists for schema completeness
+  """
+  _placeholder: Boolean
+}
+
+"""
+Root subscription type for real-time updates
+"""
+type Subscription {
+  """Subscribe to node changes"""
+  nodeChanged(
+    """Filter by node type"""
+    type: String
+    """Filter by specific node IDs"""
+    nodeIds: [ID!]
+  ): Node!
+  
+  """Subscribe to edge changes"""
+  edgeChanged(
+    """Filter by edge type"""
+    type: String
+  ): Edge!
+  
+  """Subscribe to graph version changes"""
+  versionChanged: Int!
+  
+  """Subscribe to transaction events"""
+  transactionCompleted: Transaction!
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
