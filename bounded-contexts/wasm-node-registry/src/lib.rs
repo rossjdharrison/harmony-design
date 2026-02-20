@@ -1,229 +1,163 @@
-//! WASMNodeRegistry: Registry of node types compiled to WASM functions
-//! 
-//! This bounded context manages a registry of graph node types that have been
-//! compiled to WebAssembly. It provides fast lookup, validation, and metadata
-//! for WASM-based node processors.
+//! WASM Node Registry
 //!
-//! Performance targets:
-//! - Registration: < 1ms per node type
-//! - Lookup: < 0.1ms (O(1) hash lookup)
-//! - Memory: < 5MB for 1000 node types
+//! Registry of node types compiled to WASM for efficient graph operations.
+//! See DESIGN_SYSTEM.md § Graph Engine § Node Registry for architecture details.
+
+mod node_binary_format;
+
+pub use node_binary_format::{NodeBinaryFormat, NodeBuffer, NODE_BINARY_SIZE};
 
 use wasm_bindgen::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Node type metadata describing a WASM-compiled node processor
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct NodeTypeMetadata {
-    /// Unique identifier for the node type (e.g., "audio.gain", "midi.transpose")
-    pub type_id: String,
-    
-    /// Human-readable display name
-    pub display_name: String,
-    
-    /// Category for organization (e.g., "audio", "midi", "control")
-    pub category: String,
-    
-    /// Input port definitions
-    pub inputs: Vec<PortDefinition>,
-    
-    /// Output port definitions
-    pub outputs: Vec<PortDefinition>,
-    
-    /// Parameter definitions
-    pub parameters: Vec<ParameterDefinition>,
-    
-    /// WASM function name for the processor
-    pub wasm_function: String,
-    
-    /// Memory requirements in bytes
-    pub memory_requirement: u32,
-    
-    /// Whether this node can be executed in parallel
-    pub is_parallel_safe: bool,
-    
-    /// Version string for compatibility checking
-    pub version: String,
-}
-
-/// Port definition for inputs/outputs
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PortDefinition {
-    pub name: String,
-    pub data_type: String, // "audio", "midi", "control", "event"
-    pub is_required: bool,
-}
-
-/// Parameter definition
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParameterDefinition {
-    pub name: String,
-    pub data_type: String, // "float", "int", "bool", "string", "enum"
-    pub default_value: String,
-    pub min_value: Option<f64>,
-    pub max_value: Option<f64>,
-    pub enum_values: Option<Vec<String>>,
-}
-
-/// The main registry managing all node types
+/// Node type definition stored in the registry
 #[wasm_bindgen]
-pub struct WASMNodeRegistry {
-    /// HashMap for O(1) lookup by type_id
-    registry: HashMap<String, NodeTypeMetadata>,
-    
-    /// Category index for fast filtering
-    category_index: HashMap<String, Vec<String>>,
-    
-    /// Total memory allocated by registered nodes
-    total_memory: u32,
+#[derive(Clone)]
+pub struct NodeType {
+    id: u32,
+    name: String,
+    version: u32,
 }
 
 #[wasm_bindgen]
-impl WASMNodeRegistry {
-    /// Create a new empty registry
+impl NodeType {
     #[wasm_bindgen(constructor)]
-    pub fn new() -> WASMNodeRegistry {
-        WASMNodeRegistry {
-            registry: HashMap::new(),
-            category_index: HashMap::new(),
-            total_memory: 0,
-        }
+    pub fn new(id: u32, name: String, version: u32) -> NodeType {
+        NodeType { id, name, version }
     }
-    
-    /// Register a new node type
-    /// Returns true if successful, false if type_id already exists
-    #[wasm_bindgen]
-    pub fn register(&mut self, metadata_json: &str) -> Result<bool, JsValue> {
-        let metadata: NodeTypeMetadata = serde_json::from_str(metadata_json)
-            .map_err(|e| JsValue::from_str(&format!("Failed to parse metadata: {}", e)))?;
-        
-        let type_id = metadata.type_id.clone();
-        let category = metadata.category.clone();
-        
-        // Check if already registered
-        if self.registry.contains_key(&type_id) {
-            return Ok(false);
-        }
-        
-        // Update memory tracking
-        self.total_memory += metadata.memory_requirement;
-        
-        // Update category index
-        self.category_index
-            .entry(category)
-            .or_insert_with(Vec::new)
-            .push(type_id.clone());
-        
-        // Register the node type
-        self.registry.insert(type_id, metadata);
-        
-        Ok(true)
+
+    #[wasm_bindgen(getter)]
+    pub fn id(&self) -> u32 {
+        self.id
     }
-    
-    /// Unregister a node type by type_id
-    #[wasm_bindgen]
-    pub fn unregister(&mut self, type_id: &str) -> bool {
-        if let Some(metadata) = self.registry.remove(type_id) {
-            // Update memory tracking
-            self.total_memory = self.total_memory.saturating_sub(metadata.memory_requirement);
-            
-            // Update category index
-            if let Some(type_ids) = self.category_index.get_mut(&metadata.category) {
-                type_ids.retain(|id| id != type_id);
-            }
-            
-            true
-        } else {
-            false
-        }
+
+    #[wasm_bindgen(getter)]
+    pub fn name(&self) -> String {
+        self.name.clone()
     }
-    
-    /// Get metadata for a specific node type
-    #[wasm_bindgen]
-    pub fn get(&self, type_id: &str) -> Result<JsValue, JsValue> {
-        match self.registry.get(type_id) {
-            Some(metadata) => {
-                let json = serde_json::to_string(metadata)
-                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
-                Ok(JsValue::from_str(&json))
-            }
-            None => Err(JsValue::from_str(&format!("Node type '{}' not found", type_id)))
-        }
-    }
-    
-    /// Check if a node type is registered
-    #[wasm_bindgen]
-    pub fn has(&self, type_id: &str) -> bool {
-        self.registry.contains_key(type_id)
-    }
-    
-    /// Get all registered node type IDs
-    #[wasm_bindgen]
-    pub fn list_all(&self) -> Result<JsValue, JsValue> {
-        let type_ids: Vec<&String> = self.registry.keys().collect();
-        let json = serde_json::to_string(&type_ids)
-            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
-        Ok(JsValue::from_str(&json))
-    }
-    
-    /// Get all node types in a specific category
-    #[wasm_bindgen]
-    pub fn list_by_category(&self, category: &str) -> Result<JsValue, JsValue> {
-        match self.category_index.get(category) {
-            Some(type_ids) => {
-                let json = serde_json::to_string(type_ids)
-                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
-                Ok(JsValue::from_str(&json))
-            }
-            None => Ok(JsValue::from_str("[]"))
-        }
-    }
-    
-    /// Get all categories
-    #[wasm_bindgen]
-    pub fn list_categories(&self) -> Result<JsValue, JsValue> {
-        let categories: Vec<&String> = self.category_index.keys().collect();
-        let json = serde_json::to_string(&categories)
-            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
-        Ok(JsValue::from_str(&json))
-    }
-    
-    /// Get total memory requirement for all registered nodes
-    #[wasm_bindgen]
-    pub fn get_total_memory(&self) -> u32 {
-        self.total_memory
-    }
-    
-    /// Get registry statistics
-    #[wasm_bindgen]
-    pub fn get_stats(&self) -> Result<JsValue, JsValue> {
-        let stats = serde_json::json!({
-            "total_nodes": self.registry.len(),
-            "total_categories": self.category_index.len(),
-            "total_memory": self.total_memory,
-            "parallel_safe_count": self.registry.values()
-                .filter(|m| m.is_parallel_safe)
-                .count(),
-        });
-        
-        let json = serde_json::to_string(&stats)
-            .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))?;
-        Ok(JsValue::from_str(&json))
-    }
-    
-    /// Clear all registered node types
-    #[wasm_bindgen]
-    pub fn clear(&mut self) {
-        self.registry.clear();
-        self.category_index.clear();
-        self.total_memory = 0;
+
+    #[wasm_bindgen(getter)]
+    pub fn version(&self) -> u32 {
+        self.version
     }
 }
 
-/// Initialize the WASM module
-#[wasm_bindgen(start)]
-pub fn init() {
-    #[cfg(feature = "console_error_panic_hook")]
-    console_error_panic_hook::set_once();
+/// Registry for managing node types in WASM
+#[wasm_bindgen]
+pub struct NodeRegistry {
+    types: HashMap<u32, NodeType>,
+    name_to_id: HashMap<String, u32>,
+}
+
+#[wasm_bindgen]
+impl NodeRegistry {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> NodeRegistry {
+        NodeRegistry {
+            types: HashMap::new(),
+            name_to_id: HashMap::new(),
+        }
+    }
+
+    /// Registers a new node type
+    pub fn register(&mut self, node_type: NodeType) -> Result<(), JsValue> {
+        let id = node_type.id();
+        let name = node_type.name();
+
+        if self.types.contains_key(&id) {
+            return Err(JsValue::from_str(&format!(
+                "Node type with id {} already registered",
+                id
+            )));
+        }
+
+        self.name_to_id.insert(name.clone(), id);
+        self.types.insert(id, node_type);
+
+        Ok(())
+    }
+
+    /// Retrieves a node type by ID
+    pub fn get_by_id(&self, id: u32) -> Option<NodeType> {
+        self.types.get(&id).cloned()
+    }
+
+    /// Retrieves a node type by name
+    pub fn get_by_name(&self, name: &str) -> Option<NodeType> {
+        self.name_to_id
+            .get(name)
+            .and_then(|id| self.types.get(id))
+            .cloned()
+    }
+
+    /// Returns the number of registered node types
+    pub fn count(&self) -> usize {
+        self.types.len()
+    }
+
+    /// Serializes a node to binary format
+    ///
+    /// Returns a Uint8Array containing the 12-byte binary representation
+    pub fn serialize_node(&self, id: u32, node_type: u32, props_offset: u32) -> Vec<u8> {
+        let node = NodeBinaryFormat::new(id, node_type, props_offset);
+        node.to_bytes().to_vec()
+    }
+
+    /// Deserializes a node from binary format
+    ///
+    /// Returns an array [id, node_type, props_offset]
+    pub fn deserialize_node(&self, bytes: &[u8]) -> Result<Vec<u32>, JsValue> {
+        NodeBinaryFormat::from_bytes(bytes)
+            .map(|node| vec![node.id, node.node_type, node.props_offset])
+            .map_err(|e| JsValue::from_str(e))
+    }
+}
+
+impl Default for NodeRegistry {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_register_and_retrieve() {
+        let mut registry = NodeRegistry::new();
+        let node_type = NodeType::new(1, "TestNode".to_string(), 1);
+
+        registry.register(node_type.clone()).unwrap();
+
+        let retrieved = registry.get_by_id(1).unwrap();
+        assert_eq!(retrieved.id(), 1);
+        assert_eq!(retrieved.name(), "TestNode");
+
+        let retrieved_by_name = registry.get_by_name("TestNode").unwrap();
+        assert_eq!(retrieved_by_name.id(), 1);
+    }
+
+    #[test]
+    fn test_duplicate_registration() {
+        let mut registry = NodeRegistry::new();
+        let node_type1 = NodeType::new(1, "TestNode".to_string(), 1);
+        let node_type2 = NodeType::new(1, "TestNode".to_string(), 2);
+
+        registry.register(node_type1).unwrap();
+        assert!(registry.register(node_type2).is_err());
+    }
+
+    #[test]
+    fn test_serialize_deserialize() {
+        let registry = NodeRegistry::new();
+        let bytes = registry.serialize_node(42, 7, 1024);
+
+        assert_eq!(bytes.len(), 12);
+
+        let result = registry.deserialize_node(&bytes).unwrap();
+        assert_eq!(result[0], 42);
+        assert_eq!(result[1], 7);
+        assert_eq!(result[2], 1024);
+    }
 }
