@@ -104,8 +104,8 @@ function testIndexQueries() {
   console.assert(toComp1.length === 2, 'Should find 2 edges to comp-1');
   
   // Test query by edge type
-  const implements = index.query({ edgeType: 'implements' });
-  console.assert(implements.length === 2, 'Should find 2 implements edges');
+  const implementsEdges = index.query({ edgeType: 'implements' });
+  console.assert(implementsEdges.length === 2, 'Should find 2 implements edges');
   
   // Test query by graph pair
   const domainToIntent = index.query({ 
