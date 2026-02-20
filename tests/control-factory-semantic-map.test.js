@@ -118,7 +118,13 @@ function testCustomRegistration() {
 
 function testElementCreation() {
   console.group('Element Creation');
-  
+
+  if (typeof document === 'undefined') {
+    console.log('⏭ Element creation tests skipped (no DOM in Node.js)');
+    console.groupEnd();
+    return;
+  }
+
   const element = createControlForSemanticType('gain', {
     min: '0',
     max: '1',
@@ -147,7 +153,13 @@ function testElementCreation() {
 
 function testValidation() {
   console.group('Component Registration Validation');
-  
+
+  if (typeof customElements === 'undefined') {
+    console.log('⏭ Validation tests skipped (no customElements in Node.js)');
+    console.groupEnd();
+    return;
+  }
+
   const validation = validateComponentRegistration();
   
   console.assert(
@@ -190,7 +202,9 @@ function testStatistics() {
   console.groupEnd();
 }
 
-// Auto-run tests if loaded directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Auto-run when executed directly — cross-platform path comparison via fileURLToPath.
+import { fileURLToPath } from 'url';
+const __thisFile = fileURLToPath(import.meta.url);
+if (process.argv[1] && (__thisFile === process.argv[1] || __thisFile.replace(/\\/g, '/') === process.argv[1].replace(/\\/g, '/'))) {
   runSemanticMapTests();
 }
