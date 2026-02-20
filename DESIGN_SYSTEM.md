@@ -80,3 +80,43 @@ const result = await pipeline.propagate(edges, states, {
 **Action**: Awaiting valid task assignment with clear requirements
 
 Per Policy 18 (Blocked Task Reporting Protocol), autonomous executor created block report and is ready to proceed once task specification is provided.
+
+
+## Audio Graph Processing
+
+The **AudioGraphProcessor** is a WebAudio worklet that creates and processes audio graphs from harmony-sound topology. It runs in the audio rendering thread and executes nodes in dependency order.
+
+### How It Works
+
+The processor receives graph topology from the SignalGraphBridge (main thread) via MessagePort:
+
+1. **Graph Update**: SignalGraphBridge sends node and edge descriptors
+2. **Topological Sort**: Processor computes execution order using Kahn's algorithm
+3. **Audio Rendering**: Each process() call executes nodes in dependency order
+4. **Output**: Final audio buffer is copied to worklet output
+
+### Supported Node Types
+
+- **oscillator**: Generates waveforms (sine, square, sawtooth, triangle)
+- **gain**: Multiplies input signal by gain factor
+- **filter**: Biquad filter (lowpass, highpass, bandpass, etc.)
+- **mixer**: Sums multiple input signals
+- **output**: Pass-through to worklet output
+
+### Performance
+
+The processor must complete within the audio quantum time (2.9ms @ 44.1kHz for 128 samples). To achieve this:
+
+- Pre-allocated buffers (no allocation in process())
+- Cached execution order (computed once per graph update)
+- Inline node processing (minimal function calls)
+
+### Usage Example
+
+See {@link harmony-web/src/signal-graph-bridge.js} for how to send graph updates to the processor.
+
+### Files
+
+- Implementation: {@link harmony-web/workers/audio-graph-processor.js}
+- Bridge: {@link harmony-web/src/signal-graph-bridge.js}
+
