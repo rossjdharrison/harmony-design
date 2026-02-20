@@ -1,0 +1,22 @@
+{
+  "name": "@harmony-design/harmony-graph",
+  "version": "0.1.0",
+  "description": "Signal graph bridge to WASM-compiled harmony-sound audio processing",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./signal-graph-bridge": "./signal-graph-bridge.js"
+  },
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "harmony-design",
+    "signal-graph",
+    "wasm",
+    "audio-processing"
+  ],
+  "author": "Harmony Design System",
+  "license": "MIT"
+}
