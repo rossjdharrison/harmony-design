@@ -1,39 +1,46 @@
-# E2E Tests for Critical User Workflows
+# E2E Test Suite - User Journey Tests
 
-End-to-end tests validating complete user journeys through the Harmony Design System.
+End-to-end tests for complete user workflows through the Harmony Design System.
 
-## Test Coverage
+## Overview
 
-- **User Authentication Flow**: Login, logout, session management
-- **Component Interaction Flow**: Navigation, form submission, state management
-- **Accessibility Flow**: Keyboard navigation, screen reader announcements
-- **Performance Flow**: Load time, interaction responsiveness, animation smoothness
-- **Error Handling Flow**: Network failures, validation errors, recovery
+These tests verify complete user journeys from start to finish, ensuring all components, bounded contexts, and the EventBus work together correctly.
+
+## Test Categories
+
+1. **Component Interaction Journeys** - User interacts with multiple components in sequence
+2. **Audio Workflow Journeys** - Complete audio processing workflows
+3. **Graph Manipulation Journeys** - Building and modifying audio graphs
+4. **State Persistence Journeys** - Data saves and loads correctly
+5. **Performance Journeys** - System maintains performance under load
 
 ## Running Tests
 
 ```bash
+# Install Playwright (dev dependency only)
+npm install --save-dev @playwright/test
+
 # Run all E2E tests
-python tests/e2e/run_e2e_tests.py
+npm run test:e2e
 
-# Run specific workflow
-python tests/e2e/run_e2e_tests.py --workflow=authentication
+# Run specific journey
+npm run test:e2e -- --grep "Audio Playback"
 
-# Run with Chrome headless
-python tests/e2e/run_e2e_tests.py --headless
+# Run in headed mode (see browser)
+npm run test:e2e -- --headed
 
-# Run with performance profiling
-python tests/e2e/run_e2e_tests.py --profile
+# Debug mode
+npm run test:e2e -- --debug
 ```
 
-## Test Structure
+## Writing New Journey Tests
 
-Each workflow test:
-1. Sets up initial state
-2. Executes user actions
-3. Validates UI updates
-4. Checks EventBus messages
-5. Verifies performance budgets
-6. Cleans up state
+See `journey-template.spec.js` for the standard pattern.
 
-See [DESIGN_SYSTEM.md](../../harmony-design/DESIGN_SYSTEM.md#testing) for testing philosophy.
+## Performance Assertions
+
+All journeys include performance checks:
+- Initial load < 200ms
+- Frame render < 16ms
+- Audio latency < 10ms
+- Memory usage < 50MB
