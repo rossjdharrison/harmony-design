@@ -1,56 +1,54 @@
 # Hooks
 
-Reusable reactive hooks for the Harmony Design System.
+Reusable JavaScript hooks for reactive patterns in Harmony Design System.
 
 ## Available Hooks
 
-### useReducedMotion
+### Container Query Hooks
 
-Respects the `prefers-reduced-motion` media query for accessibility.
+- **`useContainerQuery`** - JavaScript-based container queries with ResizeObserver
+- **`createContainerQueryMatcher`** - Multi-breakpoint container query matching
+- **`createContainerQueryClassApplier`** - Automatic CSS class application based on container size
 
-**Location:** `hooks/use-reduced-motion.js`
+See [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#container-query-hooks) for detailed documentation.
 
-**Usage:**
+## Usage Pattern
+
+All hooks follow the vanilla JS pattern with explicit lifecycle management:
+
 ```javascript
-import { useReducedMotion, getAnimationDuration } from './hooks/use-reduced-motion.js';
+import { useContainerQuery } from './hooks/useContainerQuery.js';
 
-// Create hook instance
-const motionHook = useReducedMotion();
-
-// Check current preference
-if (motionHook.prefersReducedMotion) {
-  element.style.transition = 'none';
-}
+const containerRef = { current: document.querySelector('.container') };
+const query = useContainerQuery(containerRef, { minWidth: 600 });
 
 // Subscribe to changes
-const unsubscribe = motionHook.subscribe((prefersReduced) => {
-  console.log('Motion preference changed:', prefersReduced);
+const unsubscribe = query.subscribe((state) => {
+  console.log('Matches:', state.matches);
+  console.log('Dimensions:', state.dimensions);
 });
 
-// Helper: Get appropriate duration
-const duration = getAnimationDuration(300, 50);
-element.style.transitionDuration = `${duration}ms`;
-
-// Cleanup
+// Cleanup when done
 unsubscribe();
-motionHook.cleanup();
+query.disconnect();
 ```
 
-**Testing:**
-Open `hooks/use-reduced-motion.test.html` in Chrome and use DevTools to emulate motion preferences.
+## Performance
 
-## Architecture
+- Query evaluation: <1ms target
+- ResizeObserver-based (native browser optimization)
+- Optional debouncing for high-frequency updates
+- No framework dependencies
 
-Hooks follow these principles:
+## Testing
 
-1. **Reactive:** Subscribe to changes and get notified
-2. **Cleanup:** Always provide cleanup methods
-3. **Performance:** Minimal overhead, efficient listeners
-4. **Accessibility:** Respect user preferences
-5. **Browser Support:** Graceful fallbacks for older APIs
+Run tests in browser:
+```
+?test=useContainerQuery
+```
 
-## See Also
-
-- [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#accessibility-motion-preferences)
-- [animations/motion-variants.js](../animations/motion-variants.js)
-- [animations/transition-presets.js](../animations/transition-presets.js)
+Or run programmatically:
+```javascript
+import { runAllTests } from './hooks/useContainerQuery.test.js';
+runAllTests();
+```
