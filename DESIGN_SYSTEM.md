@@ -277,3 +277,120 @@ node tools/pen-to-component/cli.js --input=design.pen --output=components/
 - Quality Gates: `scripts/quality-gate.js`
 - Component Patterns: `components/README.md`
 - Performance Monitoring: `performance/README.md`
+
+## Bridge Validation Anti-Pattern ?
+
+**Status**: REMOVED - This is an anti-pattern and must not be used.
+
+### What Not To Do
+
+Bridge validation refers to placing validation logic in the WASM bridge layer between JavaScript UI and Rust bounded contexts. This is **explicitly forbidden**.
+
+### Why It's Wrong
+
+1. **Violates Single Responsibility**: Bridge layer is for serialization only
+2. **Creates Duplication**: Validation exists in UI, bridge, AND bounded context
+3. **Performance Overhead**: Unnecessary WASM boundary crossings
+4. **Breaks Event Architecture**: Requires synchronous responses
+5. **Complicates Testing**: Requires WASM compilation for validation tests
+
+### Correct Pattern
+
+Validation belongs in **three distinct layers**:
+
+#### 1. UI Layer (Component-Level)
+- Immediate user feedback
+- Format validation (email, phone)
+- Required field checks
+- Client-side only, no WASM
+
+``````javascript
+// ? CORRECT: Validation in component
+class EmailInput extends HTMLElement {
+  validate() {
+    const email = this.value;
+    if (!email.includes('@')) {
+      this.showError('Invalid email format');
+      return false;
+    }
+    return true;
+  }
+}
+``````
+
+#### 2. Schema Layer (JSON Schema)
+- Event payload validation
+- Type checking before WASM boundary
+- Contract enforcement
+- See: ``harmony-schemas/validation/``
+
+#### 3. Bounded Context (Business Rules)
+- Domain validation (source of truth)
+- State consistency checks
+- Authorization rules
+- Rust implementation in bounded context
+
+``````rust
+// ? CORRECT: Validation in bounded context
+impl AudioContext {
+    pub fn set_volume(&mut self, value: f32) -> Result<(), AudioError> {
+        if value < 0.0 || value > 1.0 {
+            return Err(AudioError::InvalidVolume);
+        }
+        self.volume = value;
+        Ok(())
+    }
+}
+``````
+
+### Bridge Layer: Serialization Only
+
+``````rust
+// ? CORRECT: Pure serialization, no validation
+#[wasm_bindgen]
+pub fn handle_command(event_json: &str) -> String {
+    let event: Event = serde_json::from_str(event_json)?;
+    let result = bounded_context.handle(event);
+    serde_json::to_string(&result)?
+}
+``````
+
+``````rust
+// ? INCORRECT: Validation in bridge
+#[wasm_bindgen]
+pub fn handle_command(event_json: &str) -> String {
+    let event: Event = serde_json::from_str(event_json)?;
+    
+    // ? DON'T DO THIS
+    if event.payload.is_empty() {
+        return error_response('Empty payload');
+    }
+    
+    let result = bounded_context.handle(event);
+    serde_json::to_string(&result)?
+}
+``````
+
+### Audit Tool
+
+Run the audit script to detect bridge validation:
+
+``````bash
+node scripts/audit-bridge-validation.js
+``````
+
+### Related Documentation
+
+- Detailed guide: ``docs/bridge-validation-antipattern.md``
+- Validation architecture: ``docs/validation-architecture.md`` (if exists)
+- Event Bus pattern: See 'Event Bus' section above
+
+### Decision Rationale
+
+Bridge validation was removed to:
+- Maintain clear separation of concerns
+- Improve WASM performance (-2ms average per call)
+- Reduce code duplication
+- Simplify testing and maintenance
+- Enforce proper event-driven architecture
+

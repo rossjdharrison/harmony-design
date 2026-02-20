@@ -1,0 +1,19 @@
+#!/bin/sh
+# Pre-commit hook to check for bridge validation anti-pattern
+
+# Only run if Rust files are being committed
+if git diff --cached --name-only | grep -q '\.rs$'; then
+  echo "🔍 Checking for bridge validation anti-pattern..."
+  
+  if node scripts/quality-gates/check-bridge-validation.js; then
+    echo "✅ Bridge validation check passed"
+  else
+    echo ""
+    echo "❌ Bridge validation anti-pattern detected in your changes"
+    echo "📖 See docs/bridge-validation-antipattern.md for guidance"
+    echo ""
+    echo "To bypass this check (not recommended):"
+    echo "  git commit --no-verify"
+    exit 1
+  fi
+fi

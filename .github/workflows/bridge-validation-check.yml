@@ -1,0 +1,37 @@
+name: Bridge Validation Check
+
+on:
+  pull_request:
+    paths:
+      - '**/*.rs'
+      - 'harmony-core/**'
+      - 'harmony-schemas/**'
+      - 'bounded-contexts/**'
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  check-bridge-validation:
+    name: Check for Bridge Validation Anti-Pattern
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Run bridge validation check
+        run: node scripts/quality-gates/check-bridge-validation.js
+      
+      - name: Report results
+        if: failure()
+        run: |
+          echo "❌ Bridge validation anti-pattern detected"
+          echo "See docs/bridge-validation-antipattern.md for migration guide"
+          exit 1
