@@ -12,8 +12,8 @@
  * Related: docs/bridge-validation-antipattern.md
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 /**
  * High-confidence validation patterns (definitely anti-patterns)
