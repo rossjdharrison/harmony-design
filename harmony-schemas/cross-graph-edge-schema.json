@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/cross-graph-edge.json",
+  "title": "Cross-Graph Edge",
+  "description": "Schema for edges connecting nodes across different graph types in the Harmony Design System",
+  "type": "object",
+  "required": ["id", "sourceGraph", "sourceNodeId", "targetGraph", "targetNodeId", "edgeType"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the cross-graph edge",
+      "pattern": "^edge-[a-z0-9-]+$",
+      "examples": ["edge-component-to-domain", "edge-intent-to-component"]
+    },
+    "sourceGraph": {
+      "type": "string",
+      "description": "Type of the source graph",
+      "enum": ["component", "intent", "domain"],
+      "examples": ["component", "intent"]
+    },
+    "sourceNodeId": {
+      "type": "string",
+      "description": "ID of the source node within its graph",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["button-primary", "play-audio"]
+    },
+    "targetGraph": {
+      "type": "string",
+      "description": "Type of the target graph",
+      "enum": ["component", "intent", "domain"],
+      "examples": ["domain", "component"]
+    },
+    "targetNodeId": {
+      "type": "string",
+      "description": "ID of the target node within its graph",
+      "pattern": "^[a-z0-9-]+$",
+      "examples": ["audio-playback", "waveform-display"]
+    },
+    "edgeType": {
+      "type": "string",
+      "description": "Semantic type of the cross-graph relationship",
+      "enum": [
+        "implements",
+        "triggers",
+        "depends-on",
+        "provides-data-to",
+        "consumes-data-from",
+        "validates-against",
+        "renders-for",
+        "handles-event-from"
+      ],
+      "examples": ["implements", "triggers", "depends-on"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the edge relationship",
+      "properties": {
+        "weight": {
+          "type": "number",
+          "description": "Numeric weight for graph traversal algorithms",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1.0,
+          "examples": [0.8, 1.0]
+        },
+        "bidirectional": {
+          "type": "boolean",
+          "description": "Whether the edge represents a bidirectional relationship",
+          "default": false,
+          "examples": [false, true]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the edge was created",
+          "examples": ["2025-02-15T10:30:00Z"]
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "User or system that created the edge",
+          "examples": ["system", "user-123"]
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorizing and filtering edges",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "uniqueItems": true,
+          "examples": [["audio", "critical"], ["ui", "reactive"]]
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the relationship",
+          "maxLength": 500,
+          "examples": ["Button component implements the play-audio intent"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Constraints and validation rules for the edge",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether this edge is required for system integrity",
+          "default": false,
+          "examples": [true, false]
+        },
+        "cardinality": {
+          "type": "string",
+          "description": "Cardinality constraint for the relationship",
+          "enum": ["one-to-one", "one-to-many", "many-to-one", "many-to-many"],
+          "default": "many-to-many",
+          "examples": ["one-to-many", "many-to-many"]
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp from which this edge is valid",
+          "examples": ["2025-02-15T00:00:00Z"]
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp until which this edge is valid",
+          "examples": ["2026-02-15T00:00:00Z"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "indexing": {
+      "type": "object",
+      "description": "Indexing configuration for query optimization",
+      "required": ["indexed"],
+      "properties": {
+        "indexed": {
+          "type": "boolean",
+          "description": "Whether this edge is indexed for fast lookups",
+          "default": true,
+          "examples": [true]
+        },
+        "indexKeys": {
+          "type": "array",
+          "description": "Keys to use for indexing this edge",
+          "items": {
+            "type": "string",
+            "enum": [
+              "sourceGraph",
+              "sourceNodeId",
+              "targetGraph",
+              "targetNodeId",
+              "edgeType",
+              "composite-source",
+              "composite-target",
+              "composite-type"
+            ]
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "default": ["composite-source", "composite-target", "edgeType"],
+          "examples": [["composite-source", "composite-target", "edgeType"]]
+        },
+        "priority": {
+          "type": "string",
+          "description": "Query priority for this edge type",
+          "enum": ["low", "medium", "high", "critical"],
+          "default": "medium",
+          "examples": ["high", "critical"]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "id": "edge-button-to-playback",
+      "sourceGraph": "component",
+      "sourceNodeId": "button-primary",
+      "targetGraph": "domain",
+      "targetNodeId": "audio-playback",
+      "edgeType": "triggers",
+      "metadata": {
+        "weight": 1.0,
+        "bidirectional": false,
+        "createdAt": "2025-02-15T10:30:00Z",
+        "createdBy": "system",
+        "tags": ["audio", "ui"],
+        "description": "Primary button triggers audio playback domain logic"
+      },
+      "constraints": {
+        "required": true,
+        "cardinality": "many-to-one"
+      },
+      "indexing": {
+        "indexed": true,
+        "indexKeys": ["composite-source", "edgeType"],
+        "priority": "high"
+      }
+    },
+    {
+      "id": "edge-intent-to-component",
+      "sourceGraph": "intent",
+      "sourceNodeId": "play-audio",
+      "targetGraph": "component",
+      "targetNodeId": "play-button",
+      "edgeType": "implements",
+      "metadata": {
+        "weight": 0.9,
+        "bidirectional": false,
+        "tags": ["implementation"],
+        "description": "Play button component implements play-audio intent"
+      },
+      "indexing": {
+        "indexed": true,
+        "indexKeys": ["composite-target", "edgeType"],
+        "priority": "critical"
+      }
+    }
+  ]
+}

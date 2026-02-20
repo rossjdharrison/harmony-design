@@ -1,0 +1,8 @@
+{
+  "id": "invalid-edge",
+  "sourceGraph": "unknown-graph",
+  "sourceNodeId": "some-node",
+  "targetGraph": "component",
+  "targetNodeId": "some-component",
+  "edgeType": "invalid-type"
+}

@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/cross-graph-edge.schema.json",
+  "title": "Cross-Graph Edge",
+  "description": "Schema for edges connecting nodes across different graph types (Component, Intent, Domain)",
+  "type": "object",
+  "required": ["id", "sourceGraph", "sourceNodeId", "targetGraph", "targetNodeId", "edgeType", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the cross-graph edge",
+      "pattern": "^edge-[a-z0-9-]+$"
+    },
+    "sourceGraph": {
+      "type": "string",
+      "description": "Type of the source graph",
+      "enum": ["component", "intent", "domain"]
+    },
+    "sourceNodeId": {
+      "type": "string",
+      "description": "ID of the source node in the source graph",
+      "minLength": 1
+    },
+    "targetGraph": {
+      "type": "string",
+      "description": "Type of the target graph",
+      "enum": ["component", "intent", "domain"]
+    },
+    "targetNodeId": {
+      "type": "string",
+      "description": "ID of the target node in the target graph",
+      "minLength": 1
+    },
+    "edgeType": {
+      "type": "string",
+      "description": "Type of relationship between nodes",
+      "enum": [
+        "implements",
+        "triggers",
+        "satisfies",
+        "depends-on",
+        "provides",
+        "consumes",
+        "validates",
+        "transforms"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata about the edge",
+      "required": ["createdAt", "indexed"],
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of edge creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last update"
+        },
+        "indexed": {
+          "type": "boolean",
+          "description": "Whether this edge is indexed for fast traversal"
+        },
+        "weight": {
+          "type": "number",
+          "description": "Optional weight for the edge relationship",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "bidirectional": {
+          "type": "boolean",
+          "description": "Whether the edge can be traversed in both directions",
+          "default": false
+        },
+        "tags": {
+          "type": "array",
+          "description": "Optional tags for categorizing the edge",
+          "items": {
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the relationship"
+        }
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Optional constraints on the edge relationship",
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "description": "Whether this edge is required for the source node to be valid"
+        },
+        "exclusive": {
+          "type": "boolean",
+          "description": "Whether this is the only edge of this type allowed from source"
+        },
+        "conditional": {
+          "type": "object",
+          "description": "Conditions under which this edge is active",
+          "properties": {
+            "expression": {
+              "type": "string",
+              "description": "Boolean expression defining when edge is active"
+            },
+            "dependencies": {
+              "type": "array",
+              "description": "Other edges that must exist for this edge to be valid",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,25 @@
+{
+  "id": "edge-waveform-to-audio",
+  "sourceGraph": "component",
+  "sourceNodeId": "waveform-display",
+  "targetGraph": "domain",
+  "targetNodeId": "audio-analysis",
+  "edgeType": "consumes-data-from",
+  "metadata": {
+    "weight": 0.95,
+    "bidirectional": false,
+    "createdAt": "2025-02-15T12:00:00Z",
+    "createdBy": "system",
+    "tags": ["audio", "visualization", "reactive"],
+    "description": "Waveform display component consumes audio analysis data from domain"
+  },
+  "constraints": {
+    "required": true,
+    "cardinality": "many-to-one"
+  },
+  "indexing": {
+    "indexed": true,
+    "indexKeys": ["composite-source", "composite-target", "edgeType"],
+    "priority": "critical"
+  }
+}

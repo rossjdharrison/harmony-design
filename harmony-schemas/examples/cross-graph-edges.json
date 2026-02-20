@@ -1,0 +1,109 @@
+{
+  "description": "Example cross-graph edge definitions demonstrating various relationship types",
+  "edges": [
+    {
+      "id": "edge-play-button-triggers-playback",
+      "sourceGraph": "component",
+      "sourceNodeId": "comp-play-button",
+      "targetGraph": "intent",
+      "targetNodeId": "intent-start-playback",
+      "edgeType": "triggers",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "indexed": true,
+        "bidirectional": false,
+        "description": "Play button component triggers playback intent"
+      }
+    },
+    {
+      "id": "edge-playback-intent-satisfies-domain",
+      "sourceGraph": "intent",
+      "sourceNodeId": "intent-start-playback",
+      "targetGraph": "domain",
+      "targetNodeId": "domain-audio-playback",
+      "edgeType": "satisfies",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "indexed": true,
+        "weight": 1.0,
+        "description": "Playback intent satisfies audio playback domain requirement"
+      }
+    },
+    {
+      "id": "edge-waveform-depends-on-engine",
+      "sourceGraph": "component",
+      "sourceNodeId": "comp-waveform-display",
+      "targetGraph": "domain",
+      "targetNodeId": "domain-audio-engine",
+      "edgeType": "depends-on",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "indexed": true,
+        "bidirectional": false,
+        "tags": ["audio", "visualization"],
+        "description": "Waveform display depends on audio engine domain"
+      },
+      "constraints": {
+        "required": true,
+        "exclusive": false
+      }
+    },
+    {
+      "id": "edge-engine-provides-data",
+      "sourceGraph": "domain",
+      "sourceNodeId": "domain-audio-engine",
+      "targetGraph": "component",
+      "targetNodeId": "comp-waveform-display",
+      "edgeType": "provides",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "updatedAt": "2025-02-15T11:30:00Z",
+        "indexed": true,
+        "weight": 0.95,
+        "bidirectional": false,
+        "description": "Audio engine provides waveform data to display component"
+      },
+      "constraints": {
+        "required": true,
+        "conditional": {
+          "expression": "audioContext.state === 'running'",
+          "dependencies": ["edge-audio-context-initialized"]
+        }
+      }
+    },
+    {
+      "id": "edge-validator-validates-input",
+      "sourceGraph": "component",
+      "sourceNodeId": "comp-input-validator",
+      "targetGraph": "intent",
+      "targetNodeId": "intent-submit-form",
+      "edgeType": "validates",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "indexed": true,
+        "bidirectional": false,
+        "description": "Input validator validates form submission intent"
+      },
+      "constraints": {
+        "required": true,
+        "exclusive": true
+      }
+    },
+    {
+      "id": "edge-processor-transforms-audio",
+      "sourceGraph": "domain",
+      "sourceNodeId": "domain-audio-processor",
+      "targetGraph": "domain",
+      "targetNodeId": "domain-audio-buffer",
+      "edgeType": "transforms",
+      "metadata": {
+        "createdAt": "2025-02-15T10:00:00Z",
+        "indexed": true,
+        "weight": 0.85,
+        "bidirectional": false,
+        "tags": ["audio", "processing", "gpu"],
+        "description": "Audio processor transforms raw audio buffer data"
+      }
+    }
+  ]
+}

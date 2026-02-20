@@ -1,0 +1,8 @@
+{
+  "id": "edge-minimal-example",
+  "sourceGraph": "intent",
+  "sourceNodeId": "stop-audio",
+  "targetGraph": "component",
+  "targetNodeId": "stop-button",
+  "edgeType": "implements"
+}
