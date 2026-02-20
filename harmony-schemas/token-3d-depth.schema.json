@@ -1,0 +1,288 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/token-3d-depth.schema.json",
+  "title": "3D Depth Token Schema",
+  "description": "JSON schema for z-depth tokens extending existing z-index system with 3D spatial depth values for GPU-accelerated rendering",
+  "type": "object",
+  "required": ["version", "tokens"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the token schema"
+    },
+    "tokens": {
+      "type": "object",
+      "description": "Collection of 3D depth tokens organized by semantic purpose",
+      "properties": {
+        "depth": {
+          "type": "object",
+          "description": "3D depth values for spatial positioning in GPU-accelerated scenes",
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/definitions/depthToken"
+            }
+          },
+          "additionalProperties": false
+        },
+        "zIndex": {
+          "type": "object",
+          "description": "Traditional 2D z-index values for DOM stacking context",
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/definitions/zIndexToken"
+            }
+          },
+          "additionalProperties": false
+        },
+        "perspective": {
+          "type": "object",
+          "description": "Perspective distance values for 3D transforms",
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/definitions/perspectiveToken"
+            }
+          },
+          "additionalProperties": false
+        },
+        "translateZ": {
+          "type": "object",
+          "description": "Z-axis translation values for 3D positioning",
+          "patternProperties": {
+            "^[a-z][a-zA-Z0-9]*$": {
+              "$ref": "#/definitions/translateZToken"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadata about the token set",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable name of the token set"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the token set purpose"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author or organization"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "modified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last modification timestamp"
+        }
+      }
+    }
+  },
+  "definitions": {
+    "depthToken": {
+      "type": "object",
+      "description": "3D depth token with normalized depth value and optional GPU shader mapping",
+      "required": ["value", "type"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Normalized depth value (0=near, 1=far) for GPU depth buffer"
+        },
+        "type": {
+          "type": "string",
+          "const": "depth",
+          "description": "Token type identifier"
+        },
+        "semantic": {
+          "type": "string",
+          "enum": [
+            "foreground",
+            "ui",
+            "content",
+            "background",
+            "backdrop",
+            "far"
+          ],
+          "description": "Semantic layer classification"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of usage"
+        },
+        "gpuMapping": {
+          "type": "object",
+          "description": "Optional GPU-specific depth buffer mapping",
+          "properties": {
+            "depthFunc": {
+              "type": "string",
+              "enum": ["LESS", "LEQUAL", "GREATER", "GEQUAL", "EQUAL", "NOTEQUAL", "ALWAYS", "NEVER"],
+              "description": "WebGL depth comparison function"
+            },
+            "depthWrite": {
+              "type": "boolean",
+              "description": "Whether to write to depth buffer"
+            }
+          }
+        },
+        "cssMapping": {
+          "type": "object",
+          "description": "CSS transform mapping for DOM elements",
+          "properties": {
+            "translateZ": {
+              "type": "string",
+              "pattern": "^-?\\d+(\\.\\d+)?(px|em|rem|vh|vw)$",
+              "description": "CSS translateZ value"
+            },
+            "zIndex": {
+              "type": "integer",
+              "description": "Fallback z-index for non-3D contexts"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "zIndexToken": {
+      "type": "object",
+      "description": "Traditional z-index token for 2D stacking context",
+      "required": ["value", "type"],
+      "properties": {
+        "value": {
+          "type": "integer",
+          "minimum": -2147483648,
+          "maximum": 2147483647,
+          "description": "CSS z-index value"
+        },
+        "type": {
+          "type": "string",
+          "const": "zIndex",
+          "description": "Token type identifier"
+        },
+        "semantic": {
+          "type": "string",
+          "enum": [
+            "base",
+            "dropdown",
+            "sticky",
+            "fixed",
+            "modal-backdrop",
+            "modal",
+            "popover",
+            "tooltip",
+            "notification"
+          ],
+          "description": "Semantic stacking layer"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of usage"
+        },
+        "depthEquivalent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Equivalent normalized depth value for 3D contexts"
+        }
+      },
+      "additionalProperties": false
+    },
+    "perspectiveToken": {
+      "type": "object",
+      "description": "Perspective distance token for 3D transform context",
+      "required": ["value", "type", "unit"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Perspective distance value"
+        },
+        "type": {
+          "type": "string",
+          "const": "perspective",
+          "description": "Token type identifier"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["px", "em", "rem", "vh", "vw"],
+          "description": "CSS unit for perspective value"
+        },
+        "semantic": {
+          "type": "string",
+          "enum": [
+            "subtle",
+            "moderate",
+            "dramatic",
+            "extreme"
+          ],
+          "description": "Semantic perspective intensity"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of usage"
+        },
+        "fov": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 180,
+          "description": "Equivalent field of view in degrees for GPU cameras"
+        }
+      },
+      "additionalProperties": false
+    },
+    "translateZToken": {
+      "type": "object",
+      "description": "Z-axis translation token for 3D positioning",
+      "required": ["value", "type", "unit"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Translation distance along Z-axis"
+        },
+        "type": {
+          "type": "string",
+          "const": "translateZ",
+          "description": "Token type identifier"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["px", "em", "rem", "vh", "vw"],
+          "description": "CSS unit for translation value"
+        },
+        "semantic": {
+          "type": "string",
+          "enum": [
+            "lift-subtle",
+            "lift-moderate",
+            "lift-high",
+            "push-subtle",
+            "push-moderate",
+            "push-deep"
+          ],
+          "description": "Semantic translation direction and intensity"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of usage"
+        },
+        "depthValue": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Normalized depth buffer value for GPU rendering"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

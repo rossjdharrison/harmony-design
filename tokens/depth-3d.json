@@ -1,0 +1,247 @@
+{
+  "version": "1.0.0",
+  "tokens": {
+    "depth": {
+      "foreground": {
+        "value": 0.1,
+        "type": "depth",
+        "semantic": "foreground",
+        "description": "Foreground elements closest to camera",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "100px",
+          "zIndex": 1000
+        }
+      },
+      "ui": {
+        "value": 0.2,
+        "type": "depth",
+        "semantic": "ui",
+        "description": "UI controls and interactive elements",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "50px",
+          "zIndex": 500
+        }
+      },
+      "content": {
+        "value": 0.5,
+        "type": "depth",
+        "semantic": "content",
+        "description": "Main content layer at neutral depth",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "0px",
+          "zIndex": 0
+        }
+      },
+      "background": {
+        "value": 0.8,
+        "type": "depth",
+        "semantic": "background",
+        "description": "Background decorative elements",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "-50px",
+          "zIndex": -100
+        }
+      },
+      "backdrop": {
+        "value": 0.9,
+        "type": "depth",
+        "semantic": "backdrop",
+        "description": "Backdrop and environmental elements",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "-100px",
+          "zIndex": -500
+        }
+      },
+      "far": {
+        "value": 1.0,
+        "type": "depth",
+        "semantic": "far",
+        "description": "Far plane elements at maximum depth",
+        "gpuMapping": {
+          "depthFunc": "LESS",
+          "depthWrite": true
+        },
+        "cssMapping": {
+          "translateZ": "-200px",
+          "zIndex": -1000
+        }
+      }
+    },
+    "zIndex": {
+      "base": {
+        "value": 0,
+        "type": "zIndex",
+        "semantic": "base",
+        "description": "Base content layer",
+        "depthEquivalent": 0.5
+      },
+      "dropdown": {
+        "value": 100,
+        "type": "zIndex",
+        "semantic": "dropdown",
+        "description": "Dropdown menus and select options",
+        "depthEquivalent": 0.3
+      },
+      "sticky": {
+        "value": 200,
+        "type": "zIndex",
+        "semantic": "sticky",
+        "description": "Sticky headers and navigation",
+        "depthEquivalent": 0.25
+      },
+      "fixed": {
+        "value": 300,
+        "type": "zIndex",
+        "semantic": "fixed",
+        "description": "Fixed position elements",
+        "depthEquivalent": 0.2
+      },
+      "modalBackdrop": {
+        "value": 400,
+        "type": "zIndex",
+        "semantic": "modal-backdrop",
+        "description": "Modal backdrop overlay",
+        "depthEquivalent": 0.15
+      },
+      "modal": {
+        "value": 500,
+        "type": "zIndex",
+        "semantic": "modal",
+        "description": "Modal dialogs",
+        "depthEquivalent": 0.1
+      },
+      "popover": {
+        "value": 600,
+        "type": "zIndex",
+        "semantic": "popover",
+        "description": "Popovers and context menus",
+        "depthEquivalent": 0.08
+      },
+      "tooltip": {
+        "value": 700,
+        "type": "zIndex",
+        "semantic": "tooltip",
+        "description": "Tooltips and hints",
+        "depthEquivalent": 0.05
+      },
+      "notification": {
+        "value": 800,
+        "type": "zIndex",
+        "semantic": "notification",
+        "description": "Toast notifications and alerts",
+        "depthEquivalent": 0.02
+      }
+    },
+    "perspective": {
+      "subtle": {
+        "value": 2000,
+        "type": "perspective",
+        "unit": "px",
+        "semantic": "subtle",
+        "description": "Subtle 3D perspective for cards and panels",
+        "fov": 28.65
+      },
+      "moderate": {
+        "value": 1000,
+        "type": "perspective",
+        "unit": "px",
+        "semantic": "moderate",
+        "description": "Moderate 3D perspective for interactive elements",
+        "fov": 53.13
+      },
+      "dramatic": {
+        "value": 500,
+        "type": "perspective",
+        "unit": "px",
+        "semantic": "dramatic",
+        "description": "Dramatic 3D perspective for hero sections",
+        "fov": 90
+      },
+      "extreme": {
+        "value": 300,
+        "type": "perspective",
+        "unit": "px",
+        "semantic": "extreme",
+        "description": "Extreme 3D perspective for special effects",
+        "fov": 120
+      }
+    },
+    "translateZ": {
+      "liftSubtle": {
+        "value": 10,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "lift-subtle",
+        "description": "Subtle lift on hover or focus",
+        "depthValue": 0.45
+      },
+      "liftModerate": {
+        "value": 25,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "lift-moderate",
+        "description": "Moderate lift for interactive feedback",
+        "depthValue": 0.35
+      },
+      "liftHigh": {
+        "value": 50,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "lift-high",
+        "description": "High lift for prominent elements",
+        "depthValue": 0.2
+      },
+      "pushSubtle": {
+        "value": -10,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "push-subtle",
+        "description": "Subtle push for pressed state",
+        "depthValue": 0.55
+      },
+      "pushModerate": {
+        "value": -25,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "push-moderate",
+        "description": "Moderate push for depressed elements",
+        "depthValue": 0.65
+      },
+      "pushDeep": {
+        "value": -50,
+        "type": "translateZ",
+        "unit": "px",
+        "semantic": "push-deep",
+        "description": "Deep push for background elements",
+        "depthValue": 0.8
+      }
+    }
+  },
+  "metadata": {
+    "name": "Harmony 3D Depth Tokens",
+    "description": "3D depth and z-index tokens for GPU-accelerated spatial rendering",
+    "author": "Harmony Design System",
+    "created": "2025-02-15T00:00:00Z",
+    "modified": "2025-02-15T00:00:00Z"
+  }
+}
