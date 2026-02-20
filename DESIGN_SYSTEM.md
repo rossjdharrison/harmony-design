@@ -26,6 +26,11 @@ All component implementations must follow the patterns in this guide to ensure c
 
 ## em
 
+## Version History
+
+For detailed version history, breaking changes, and migration guides, see [CHANGELOG.md](./CHANGELOG.md).
+
+
 **Version**: 1.0.0  
 **Last Updated**: 2025-01-09
 
