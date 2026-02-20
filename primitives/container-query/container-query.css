@@ -1,0 +1,211 @@
+/**
+ * Container Query Primitives
+ * 
+ * Provides @container CSS primitives with polyfill strategy for browsers
+ * that don't support native container queries.
+ * 
+ * @see DESIGN_SYSTEM.md#container-query-primitives
+ */
+
+/* ============================================================================
+   Container Types
+   ========================================================================= */
+
+/**
+ * Establishes a container context for size queries
+ * Native: container-type: size
+ */
+.hds-container {
+  container-type: size;
+  container-name: hds-container;
+}
+
+.hds-container-inline {
+  container-type: inline-size;
+  container-name: hds-container-inline;
+}
+
+.hds-container-normal {
+  container-type: normal;
+}
+
+/* Named containers for specific use cases */
+.hds-container--card {
+  container-type: inline-size;
+  container-name: card;
+}
+
+.hds-container--sidebar {
+  container-type: inline-size;
+  container-name: sidebar;
+}
+
+.hds-container--grid-item {
+  container-type: size;
+  container-name: grid-item;
+}
+
+.hds-container--media {
+  container-type: inline-size;
+  container-name: media;
+}
+
+/* ============================================================================
+   Container Query Breakpoints
+   ========================================================================= */
+
+/**
+ * Standard breakpoint classes for polyfill fallback
+ * These are applied via JavaScript when native support is unavailable
+ */
+
+/* Small container (< 320px) */
+.hds-cq-xs { }
+
+/* Medium container (>= 320px) */
+.hds-cq-sm { }
+
+/* Large container (>= 640px) */
+.hds-cq-md { }
+
+/* Extra large container (>= 960px) */
+.hds-cq-lg { }
+
+/* Extra extra large container (>= 1280px) */
+.hds-cq-xl { }
+
+/* ============================================================================
+   Native Container Queries
+   ========================================================================= */
+
+/**
+ * Native @container queries
+ * These will be used when browser support is available
+ */
+
+@container (min-width: 320px) {
+  .hds-cq-sm\@container {
+    display: contents;
+  }
+}
+
+@container (min-width: 640px) {
+  .hds-cq-md\@container {
+    display: contents;
+  }
+}
+
+@container (min-width: 960px) {
+  .hds-cq-lg\@container {
+    display: contents;
+  }
+}
+
+@container (min-width: 1280px) {
+  .hds-cq-xl\@container {
+    display: contents;
+  }
+}
+
+/* Named container queries */
+@container card (min-width: 320px) {
+  .hds-cq-sm\@card {
+    display: contents;
+  }
+}
+
+@container sidebar (min-width: 240px) {
+  .hds-cq-sm\@sidebar {
+    display: contents;
+  }
+}
+
+@container sidebar (min-width: 320px) {
+  .hds-cq-md\@sidebar {
+    display: contents;
+  }
+}
+
+/* ============================================================================
+   Utility Classes for Container Query Contexts
+   ========================================================================= */
+
+/**
+ * Layout utilities that respond to container size
+ */
+
+/* Flexbox direction based on container width */
+@container (max-width: 639px) {
+  .hds-cq-flex-col {
+    flex-direction: column;
+  }
+}
+
+@container (min-width: 640px) {
+  .hds-cq-flex-row {
+    flex-direction: row;
+  }
+}
+
+/* Grid columns based on container width */
+@container (min-width: 320px) {
+  .hds-cq-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 640px) {
+  .hds-cq-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@container (min-width: 960px) {
+  .hds-cq-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Typography scale based on container width */
+@container (max-width: 319px) {
+  .hds-cq-text-responsive {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+@container (min-width: 320px) and (max-width: 639px) {
+  .hds-cq-text-responsive {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+@container (min-width: 640px) {
+  .hds-cq-text-responsive {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+  }
+}
+
+/* Spacing based on container width */
+@container (max-width: 639px) {
+  .hds-cq-spacing-sm {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+}
+
+@container (min-width: 640px) {
+  .hds-cq-spacing-md {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+@container (min-width: 960px) {
+  .hds-cq-spacing-lg {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+}
