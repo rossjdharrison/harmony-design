@@ -1,0 +1,288 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.dev/schemas/graph/component-node.schema.json",
+  "title": "Component Node",
+  "description": "Graph node representing a UI component in the Harmony Design System. Components are reactive, event-driven nodes that render UI elements and respond to state changes.",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "./node-base.schema.json"
+    }
+  ],
+  "properties": {
+    "node_type": {
+      "type": "string",
+      "const": "Component",
+      "description": "Discriminator for Component graph nodes"
+    },
+    "component_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "Unique identifier for this component instance within the graph"
+    },
+    "component_type": {
+      "type": "string",
+      "enum": [
+        "primitive",
+        "molecule",
+        "organism",
+        "template"
+      ],
+      "description": "Atomic design hierarchy level of the component"
+    },
+    "tag_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)+$",
+      "description": "Web Component custom element tag name (must contain hyphen)"
+    },
+    "state": {
+      "type": "object",
+      "description": "Current reactive state of the component",
+      "properties": {
+        "props": {
+          "type": "object",
+          "description": "Component properties (immutable inputs)",
+          "additionalProperties": true
+        },
+        "internal": {
+          "type": "object",
+          "description": "Component internal state (mutable)",
+          "additionalProperties": true
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "created",
+            "connected",
+            "rendered",
+            "updated",
+            "disconnected",
+            "error"
+          ],
+          "description": "Current lifecycle phase of the component"
+        }
+      },
+      "required": ["lifecycle"]
+    },
+    "events": {
+      "type": "object",
+      "description": "Event publishing and subscription configuration",
+      "properties": {
+        "publishes": {
+          "type": "array",
+          "description": "Event types this component can publish",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "type": "string",
+                "description": "Event type identifier"
+              },
+              "payload_schema": {
+                "type": "string",
+                "description": "JSON schema reference for event payload"
+              }
+            },
+            "required": ["event_type"]
+          }
+        },
+        "subscribes": {
+          "type": "array",
+          "description": "Event types this component subscribes to",
+          "items": {
+            "type": "object",
+            "properties": {
+              "event_type": {
+                "type": "string",
+                "description": "Event type identifier"
+              },
+              "handler": {
+                "type": "string",
+                "description": "Method name that handles this event"
+              }
+            },
+            "required": ["event_type", "handler"]
+          }
+        }
+      }
+    },
+    "render_config": {
+      "type": "object",
+      "description": "Rendering configuration and performance hints",
+      "properties": {
+        "shadow_dom": {
+          "type": "boolean",
+          "description": "Whether this component uses shadow DOM (should be true)",
+          "default": true
+        },
+        "render_budget_ms": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 16,
+          "description": "Maximum render time budget in milliseconds (must be ≤16ms for 60fps)",
+          "default": 16
+        },
+        "gpu_accelerated": {
+          "type": "boolean",
+          "description": "Whether this component uses GPU-accelerated rendering",
+          "default": false
+        },
+        "animation_config": {
+          "type": "object",
+          "description": "Animation configuration if component has animations",
+          "properties": {
+            "uses_animations": {
+              "type": "boolean",
+              "description": "Whether component includes animations"
+            },
+            "animation_tokens": {
+              "type": "array",
+              "description": "Animation tokens used by this component",
+              "items": {
+                "type": "string"
+              }
+            },
+            "target_fps": {
+              "type": "number",
+              "enum": [30, 60, 120],
+              "description": "Target frame rate for animations",
+              "default": 60
+            }
+          }
+        }
+      },
+      "required": ["shadow_dom", "render_budget_ms"]
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Component dependencies and connections",
+      "properties": {
+        "child_components": {
+          "type": "array",
+          "description": "Child component node IDs (composition)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "slot_assignments": {
+          "type": "object",
+          "description": "Slot assignments for child components",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Component ID assigned to this slot"
+          }
+        },
+        "design_tokens": {
+          "type": "array",
+          "description": "Design tokens used by this component",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "description": "Accessibility configuration",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "ARIA role"
+        },
+        "aria_attributes": {
+          "type": "object",
+          "description": "ARIA attributes",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "keyboard_navigation": {
+          "type": "boolean",
+          "description": "Whether component supports keyboard navigation",
+          "default": true
+        },
+        "focus_management": {
+          "type": "object",
+          "description": "Focus management configuration",
+          "properties": {
+            "focusable": {
+              "type": "boolean",
+              "description": "Whether component can receive focus"
+            },
+            "focus_trap": {
+              "type": "boolean",
+              "description": "Whether component traps focus (e.g., modals)"
+            }
+          }
+        }
+      }
+    },
+    "performance_metrics": {
+      "type": "object",
+      "description": "Performance tracking metrics",
+      "properties": {
+        "last_render_time_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Last measured render time in milliseconds"
+        },
+        "average_render_time_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Average render time over recent samples"
+        },
+        "render_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of renders"
+        },
+        "memory_usage_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Estimated memory usage in bytes"
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "description": "Component validation state",
+      "properties": {
+        "is_valid": {
+          "type": "boolean",
+          "description": "Whether component is in a valid state"
+        },
+        "errors": {
+          "type": "array",
+          "description": "Validation errors",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "description": "Error code"
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable error message"
+              },
+              "field": {
+                "type": "string",
+                "description": "Field that caused the error"
+              }
+            },
+            "required": ["code", "message"]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "node_type",
+    "component_id",
+    "component_type",
+    "tag_name",
+    "state",
+    "render_config"
+  ],
+  "additionalProperties": false
+}
