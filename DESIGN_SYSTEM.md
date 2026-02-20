@@ -191,3 +191,201 @@ TypeNavigator uses cross-graph edges to:
 4. Validate architectural constraints
 
 The indexed edges enable O(1) lookup performance for common traversal patterns.
+
+### Availability Query Engine
+
+The Availability Query Engine provides specialized queries for checking component and resource availability across the graph system. It wraps the core query engine with availability-specific operations.
+
+**Location:** ``harmony-graph/src/availability-query-engine.ts``
+
+**Purpose:**
+- Check if components are ready to use
+- Verify resource availability before allocation
+- Track dependency availability
+- Support reactive UI updates based on availability
+
+**Availability States:**
+- **Available**: Resource is ready for use
+- **InUse**: Resource is active but can be shared
+- **Busy**: Resource is occupied and cannot be accessed
+- **Unavailable**: Resource has errors or missing dependencies
+- **Unknown**: Resource state cannot be determined
+
+**Key Features:**
+
+1. **Single Node Check**
+   - Fast availability verification (< 1ms target)
+   - Checks node attributes and state
+   - Returns detailed status and reason
+
+2. **Batch Checking**
+   - Efficient multi-node queries (< 10ms for 100 nodes)
+   - Useful for dashboard and list views
+
+3. **Dependency Traversal**
+   - Checks transitive dependencies
+   - Configurable depth limit
+   - Identifies blocking dependencies
+
+4. **Discovery Queries**
+   - Find all available nodes of a type
+   - Useful for resource allocation
+
+5. **Async Waiting**
+   - Poll until resource becomes available
+   - Configurable timeout
+   - Returns promise
+
+**Usage Example:**
+
+``````typescript
+import { createGraphSystem } from 'harmony-graph';
+
+const { availabilityEngine } = createGraphSystem();
+
+// Check single component
+const result = availabilityEngine.checkAvailability('button-primary');
+if (result.status === AvailabilityStatus.Available) {
+  // Use component
+}
+
+// Check with dependencies
+const deepResult = availabilityEngine.checkAvailability('complex-widget', {
+  includeTransitive: true,
+  maxDepth: 3
+});
+
+// Find available components
+const available = availabilityEngine.findAvailable('button');
+
+// Wait for availability
+const ready = await availabilityEngine.waitForAvailability('async-loader', {
+  timeout: 5000
+});
+``````
+
+**Performance Targets:**
+- Single check: < 1ms
+- Batch check (100 nodes): < 10ms
+- Dependency check: < 5ms per level
+
+**Integration with UI:**
+
+Components should query availability before rendering or enabling interactions:
+
+``````javascript
+// In web component
+connectedCallback() {
+  const result = this.availabilityEngine.checkAvailability(this.targetId);
+  this.disabled = result.status !== AvailabilityStatus.Available;
+  this.setAttribute('aria-disabled', this.disabled);
+}
+``````
+
+**See Also:**
+- [Query Engine](file://./harmony-graph/src/query-engine.ts) - Core query functionality
+- [Cross-Graph Index](file://./harmony-graph/src/cross-graph-index.ts) - Cross-graph queries
+- [Graph Engine](file://./harmony-graph/src/graph-engine.ts) - Core graph operations
+
+
+
+## Availability Query Engine
+
+The Availability Query Engine wraps the core query engine to provide specialized availability checking for nodes and edges across the multi-graph system.
+
+### Purpose
+
+Check if nodes and edges are available before using them. This prevents errors from missing, archived, or deleted entities.
+
+### Key Features
+
+- **Single Node Checks**: Verify individual node availability with <1ms latency
+- **Dependency Checking**: Recursively check dependencies up to configurable depth
+- **Batch Operations**: Check multiple entities in parallel for performance
+- **Smart Caching**: Configurable cache duration (default 5 seconds) to reduce queries
+- **Edge Validation**: Automatically checks source and target node availability
+
+### Basic Usage
+
+``````typescript
+import { AvailabilityQueryEngine } from './harmony-graph/src/availability-query-engine.js';
+import { QueryEngine } from './harmony-graph/src/query-engine.js';
+
+const queryEngine = new QueryEngine();
+const availEngine = new AvailabilityQueryEngine(queryEngine);
+
+// Check single node
+const result = await availEngine.checkNodeAvailability('node-123');
+if (result.status.available) {
+  // Safe to use node
+}
+
+// Check with dependencies
+const deepCheck = await availEngine.checkNodeAvailability('node-123', {
+  checkDependencies: true,
+  maxDepth: 3
+});
+
+// Batch check
+const results = await availEngine.checkBatchAvailability([
+  'node-1', 'node-2', 'node-3'
+]);
+``````
+
+### Availability Rules
+
+A node is **unavailable** if:
+- Node not found in graph
+- Marked as `archived: true` in metadata
+- Marked as `deleted: true` in metadata
+- Explicitly set `available: false` in metadata
+- Any required dependency is unavailable (when checking dependencies)
+
+An edge is **unavailable** if:
+- Edge not found in graph
+- Source node is unavailable
+- Target node is unavailable
+
+### Performance Targets
+
+- Single node check: <1ms
+- Dependency tree check (depth 3): <10ms
+- Batch check: <5ms per 100 nodes
+- Cache hit: <0.1ms
+
+### Cache Management
+
+The engine caches availability status to reduce repeated queries:
+
+``````typescript
+// Clear specific node from cache
+availEngine.clearCache('node-123');
+
+// Clear entire cache
+availEngine.clearCache();
+
+// Get cache statistics
+const stats = availEngine.getCacheStats();
+console.log(`Cache has ${stats.size} entries`);
+``````
+
+### Integration with Query Engine
+
+The availability engine wraps the core query engine and uses relative imports only:
+
+``````typescript
+// ? Correct - relative import
+import { QueryEngine } from './query-engine.js';
+
+// ? Wrong - npm import
+import { QueryEngine } from '@harmony/graph';
+``````
+
+### Related Files
+
+- Implementation: {@link file://./harmony-graph/src/availability-query-engine.ts}
+- Tests: {@link file://./harmony-graph/src/availability-query-engine.test.ts}
+- Core Query Engine: {@link file://./harmony-graph/src/query-engine.ts}
+- Type Definitions: {@link file://./harmony-graph/src/types.ts}
+- Package Entry: {@link file://./harmony-graph/src/index.ts}
+
