@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmony Design System - API Reference</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="api-reference-container">
+        <aside class="sidebar">
+            <header class="sidebar-header">
+                <h1>Harmony API</h1>
+                <input type="search" id="api-search" placeholder="Search API..." aria-label="Search API">
+            </header>
+            <nav class="api-nav" id="api-nav">
+                <!-- Navigation will be populated by JavaScript -->
+            </nav>
+        </aside>
+        
+        <main class="content">
+            <header class="content-header">
+                <h1>API Reference</h1>
+                <p class="subtitle">Complete API documentation for Harmony Design System</p>
+            </header>
+            
+            <div id="api-content">
+                <section class="welcome">
+                    <h2>Welcome to Harmony API Reference</h2>
+                    <p>This documentation is automatically generated from JSDoc comments in the source code.</p>
+                    
+                    <div class="quick-links">
+                        <a href="#components" class="quick-link">Components</a>
+                        <a href="#bounded-contexts" class="quick-link">Bounded Contexts</a>
+                        <a href="#utilities" class="quick-link">Utilities</a>
+                        <a href="#types" class="quick-link">Types</a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+    <script type="module" src="api-viewer.js"></script>
+</body>
+</html>

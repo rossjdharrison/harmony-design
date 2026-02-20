@@ -1,0 +1,127 @@
+{
+  "metadata": {
+    "generated": "2025-02-15T12:00:00Z",
+    "version": "1.0.0",
+    "description": "Harmony Design System API Reference"
+  },
+  "components": [
+    {
+      "name": "EventBusComponent",
+      "description": "Debug UI for EventBus that displays real-time event flow and allows manual event triggering.",
+      "source": "components/event-bus-component.js",
+      "properties": [
+        {
+          "name": "visible",
+          "type": "boolean",
+          "description": "Controls visibility of the debug panel"
+        }
+      ],
+      "methods": [
+        {
+          "name": "show",
+          "description": "Shows the EventBus debug panel"
+        },
+        {
+          "name": "hide",
+          "description": "Hides the EventBus debug panel"
+        },
+        {
+          "name": "toggle",
+          "description": "Toggles EventBus debug panel visibility"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Basic Usage",
+          "code": "<event-bus-component></event-bus-component>"
+        }
+      ]
+    }
+  ],
+  "boundedContexts": [
+    {
+      "name": "ComponentLifecycle",
+      "description": "Manages component lifecycle events and state transitions",
+      "source": "bounded-contexts/component-lifecycle/",
+      "methods": [
+        {
+          "name": "mount",
+          "description": "Mounts a component and initializes its state"
+        },
+        {
+          "name": "unmount",
+          "description": "Unmounts a component and cleans up resources"
+        }
+      ]
+    },
+    {
+      "name": "WASMBridge",
+      "description": "Provides interface between JavaScript and WebAssembly modules",
+      "source": "bounded-contexts/wasm-bridge/",
+      "methods": [
+        {
+          "name": "loadModule",
+          "description": "Loads a WASM module and initializes its exports"
+        },
+        {
+          "name": "invoke",
+          "description": "Invokes a WASM function with given parameters"
+        }
+      ]
+    }
+  ],
+  "utilities": [
+    {
+      "name": "TypeNavigator",
+      "description": "Graph-based navigation system for querying typed nodes and edges",
+      "source": "utils/type-navigator.js",
+      "methods": [
+        {
+          "name": "query",
+          "params": [
+            {
+              "name": "selector",
+              "type": "string",
+              "description": "CSS-like selector for graph nodes"
+            }
+          ],
+          "returns": {
+            "type": "Array<Node>",
+            "description": "Matching nodes"
+          },
+          "description": "Query nodes using CSS-like selectors"
+        }
+      ],
+      "examples": [
+        {
+          "title": "Query Components",
+          "code": "const buttons = TypeNavigator.query('[type=\"button\"]');"
+        }
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "EventPayload",
+      "description": "Base interface for all event payloads in the system",
+      "source": "types/events.js",
+      "properties": [
+        {
+          "name": "type",
+          "type": "string",
+          "description": "Event type identifier"
+        },
+        {
+          "name": "timestamp",
+          "type": "number",
+          "description": "Event creation timestamp"
+        },
+        {
+          "name": "source",
+          "type": "string",
+          "description": "Source component or context"
+        }
+      ]
+    }
+  ]
+}
