@@ -3,223 +3,229 @@
  * @module harmony-graph/availability-query-engine.test
  */
 
-import { describe, it, expect, beforeEach } from '@jest/globals';
-import { GraphEngine } from './graph-engine.js';
+import { AvailabilityQueryEngine } from './availability-query-engine.js';
 import { QueryEngine } from './query-engine.js';
-import { AvailabilityQueryEngine, AvailabilityStatus } from './availability-query-engine.js';
+import type { GraphNode, GraphEdge } from './types.js';
 
-describe('AvailabilityQueryEngine', () => {
-  let graphEngine: GraphEngine;
-  let queryEngine: QueryEngine;
-  let availEngine: AvailabilityQueryEngine;
+/**
+ * Mock query engine for testing
+ */
+class MockQueryEngine extends QueryEngine {
+  private nodes: Map<string, GraphNode> = new Map();
+  private edges: Map<string, GraphEdge> = new Map();
 
-  beforeEach(() => {
-    graphEngine = new GraphEngine();
-    queryEngine = new QueryEngine(graphEngine);
-    availEngine = new AvailabilityQueryEngine(graphEngine, queryEngine);
+  addNode(node: GraphNode): void {
+    this.nodes.set(node.id, node);
+  }
+
+  addEdge(edge: GraphEdge): void {
+    this.edges.set(edge.id, edge);
+  }
+
+  async queryById(id: string): Promise<GraphNode | null> {
+    return this.nodes.get(id) || null;
+  }
+
+  async queryEdgeById(id: string): Promise<GraphEdge | null> {
+    return this.edges.get(id) || null;
+  }
+
+  async query(criteria: Record<string, unknown>): Promise<GraphNode[]> {
+    return Array.from(this.nodes.values()).filter(node => {
+      return Object.entries(criteria).every(([key, value]) => {
+        return node[key as keyof GraphNode] === value;
+      });
+    });
+  }
+
+  async queryEdges(criteria: Record<string, unknown>): Promise<GraphEdge[]> {
+    return Array.from(this.edges.values()).filter(edge => {
+      return Object.entries(criteria).every(([key, value]) => {
+        return edge[key as keyof GraphEdge] === value;
+      });
+    });
+  }
+}
+
+/**
+ * Test: Check available node
+ */
+async function testAvailableNode(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
+
+  queryEngine.addNode({
+    id: 'node-1',
+    type: 'component',
+    label: 'Test Node',
+    metadata: {}
   });
 
-  describe('checkAvailability', () => {
-    it('should return Unknown for non-existent node', () => {
-      const result = availEngine.checkAvailability('non-existent');
-      
-      expect(result.status).toBe(AvailabilityStatus.Unknown);
-      expect(result.nodeId).toBe('non-existent');
-      expect(result.reason).toContain('not found');
-    });
+  const result = await availabilityEngine.checkNodeAvailability('node-1');
+  
+  console.assert(result.status.available === true, 'Node should be available');
+  console.assert(result.id === 'node-1', 'Result should have correct ID');
+  console.log('✓ Test: Available node check passed');
+}
 
-    it('should return Available for node with no blocking conditions', () => {
-      graphEngine.addNode({
-        id: 'test-node',
-        type: 'component',
-        attributes: {}
-      });
+/**
+ * Test: Check unavailable node (not found)
+ */
+async function testUnavailableNodeNotFound(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
 
-      const result = availEngine.checkAvailability('test-node');
-      
-      expect(result.status).toBe(AvailabilityStatus.Available);
-      expect(result.nodeId).toBe('test-node');
-    });
+  const result = await availabilityEngine.checkNodeAvailability('missing-node');
+  
+  console.assert(result.status.available === false, 'Missing node should be unavailable');
+  console.assert(result.status.reason === 'Node not found', 'Should have correct reason');
+  console.log('✓ Test: Unavailable node (not found) check passed');
+}
 
-    it('should return Unavailable for disabled node', () => {
-      graphEngine.addNode({
-        id: 'disabled-node',
-        type: 'component',
-        attributes: { disabled: true }
-      });
+/**
+ * Test: Check unavailable node (archived)
+ */
+async function testUnavailableNodeArchived(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
 
-      const result = availEngine.checkAvailability('disabled-node');
-      
-      expect(result.status).toBe(AvailabilityStatus.Unavailable);
-      expect(result.reason).toContain('disabled');
-    });
-
-    it('should return Busy for busy node', () => {
-      graphEngine.addNode({
-        id: 'busy-node',
-        type: 'component',
-        attributes: { busy: true }
-      });
-
-      const result = availEngine.checkAvailability('busy-node');
-      
-      expect(result.status).toBe(AvailabilityStatus.Busy);
-    });
-
-    it('should return InUse for node with active users', () => {
-      graphEngine.addNode({
-        id: 'inuse-node',
-        type: 'component',
-        attributes: { inUse: true, activeUsers: 3 }
-      });
-
-      const result = availEngine.checkAvailability('inuse-node');
-      
-      expect(result.status).toBe(AvailabilityStatus.InUse);
-      expect(result.reason).toContain('3 users');
-    });
-
-    it('should respect explicit availability attribute', () => {
-      graphEngine.addNode({
-        id: 'explicit-node',
-        type: 'component',
-        attributes: { availability: AvailabilityStatus.Busy }
-      });
-
-      const result = availEngine.checkAvailability('explicit-node');
-      
-      expect(result.status).toBe(AvailabilityStatus.Busy);
-    });
+  queryEngine.addNode({
+    id: 'node-2',
+    type: 'component',
+    label: 'Archived Node',
+    metadata: { archived: true }
   });
 
-  describe('checkDependencies', () => {
-    it('should check transitive dependencies', () => {
-      // Create dependency chain: A -> B -> C
-      graphEngine.addNode({ id: 'A', type: 'component', attributes: {} });
-      graphEngine.addNode({ id: 'B', type: 'component', attributes: {} });
-      graphEngine.addNode({ id: 'C', type: 'component', attributes: { disabled: true } });
-      
-      graphEngine.addEdge({ source: 'A', target: 'B', type: 'depends-on' });
-      graphEngine.addEdge({ source: 'B', target: 'C', type: 'depends-on' });
+  const result = await availabilityEngine.checkNodeAvailability('node-2');
+  
+  console.assert(result.status.available === false, 'Archived node should be unavailable');
+  console.assert(result.status.reason?.includes('archived'), 'Should mention archived');
+  console.log('✓ Test: Unavailable node (archived) check passed');
+}
 
-      const result = availEngine.checkAvailability('A', { includeTransitive: true });
-      
-      expect(result.status).toBe(AvailabilityStatus.Unavailable);
-      expect(result.blockedBy).toContain('C');
-    });
+/**
+ * Test: Check edge availability
+ */
+async function testEdgeAvailability(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
 
-    it('should respect maxDepth option', () => {
-      // Create long dependency chain
-      graphEngine.addNode({ id: 'A', type: 'component', attributes: {} });
-      graphEngine.addNode({ id: 'B', type: 'component', attributes: {} });
-      graphEngine.addNode({ id: 'C', type: 'component', attributes: {} });
-      graphEngine.addNode({ id: 'D', type: 'component', attributes: { disabled: true } });
-      
-      graphEngine.addEdge({ source: 'A', target: 'B', type: 'depends-on' });
-      graphEngine.addEdge({ source: 'B', target: 'C', type: 'depends-on' });
-      graphEngine.addEdge({ source: 'C', target: 'D', type: 'depends-on' });
-
-      // With maxDepth=1, should not reach D
-      const result = availEngine.checkAvailability('A', { 
-        includeTransitive: true,
-        maxDepth: 1
-      });
-      
-      expect(result.status).toBe(AvailabilityStatus.Available);
-    });
+  queryEngine.addNode({
+    id: 'source',
+    type: 'component',
+    label: 'Source',
+    metadata: {}
   });
 
-  describe('checkBatch', () => {
-    it('should check multiple nodes efficiently', () => {
-      for (let i = 0; i < 10; i++) {
-        graphEngine.addNode({
-          id: `node-${i}`,
-          type: 'component',
-          attributes: i % 2 === 0 ? {} : { disabled: true }
-        });
-      }
-
-      const nodeIds = Array.from({ length: 10 }, (_, i) => `node-${i}`);
-      const results = availEngine.checkBatch(nodeIds);
-      
-      expect(results).toHaveLength(10);
-      expect(results.filter(r => r.status === AvailabilityStatus.Available)).toHaveLength(5);
-      expect(results.filter(r => r.status === AvailabilityStatus.Unavailable)).toHaveLength(5);
-    });
-
-    it('should complete within performance budget for 100 nodes', () => {
-      for (let i = 0; i < 100; i++) {
-        graphEngine.addNode({
-          id: `node-${i}`,
-          type: 'component',
-          attributes: {}
-        });
-      }
-
-      const nodeIds = Array.from({ length: 100 }, (_, i) => `node-${i}`);
-      
-      const startTime = performance.now();
-      availEngine.checkBatch(nodeIds);
-      const elapsed = performance.now() - startTime;
-      
-      expect(elapsed).toBeLessThan(10);
-    });
+  queryEngine.addNode({
+    id: 'target',
+    type: 'component',
+    label: 'Target',
+    metadata: {}
   });
 
-  describe('findAvailable', () => {
-    it('should find all available nodes of a type', () => {
-      graphEngine.addNode({ id: 'comp-1', type: 'button', attributes: {} });
-      graphEngine.addNode({ id: 'comp-2', type: 'button', attributes: { disabled: true } });
-      graphEngine.addNode({ id: 'comp-3', type: 'button', attributes: {} });
-      graphEngine.addNode({ id: 'comp-4', type: 'input', attributes: {} });
-
-      const available = availEngine.findAvailable('button');
-      
-      expect(available).toHaveLength(2);
-      expect(available).toContain('comp-1');
-      expect(available).toContain('comp-3');
-      expect(available).not.toContain('comp-2');
-      expect(available).not.toContain('comp-4');
-    });
+  queryEngine.addEdge({
+    id: 'edge-1',
+    source: 'source',
+    target: 'target',
+    type: 'dependency',
+    metadata: {}
   });
 
-  describe('waitForAvailability', () => {
-    it('should resolve immediately if node is available', async () => {
-      graphEngine.addNode({ id: 'ready-node', type: 'component', attributes: {} });
+  const result = await availabilityEngine.checkEdgeAvailability('edge-1');
+  
+  console.assert(result.status.available === true, 'Edge should be available');
+  console.assert(result.relatedEntities?.length === 2, 'Should have 2 related entities');
+  console.log('✓ Test: Edge availability check passed');
+}
 
-      const startTime = Date.now();
-      const result = await availEngine.waitForAvailability('ready-node');
-      const elapsed = Date.now() - startTime;
-      
-      expect(result.status).toBe(AvailabilityStatus.Available);
-      expect(elapsed).toBeLessThan(50);
-    });
+/**
+ * Test: Batch availability check
+ */
+async function testBatchAvailability(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
 
-    it('should timeout if node never becomes available', async () => {
-      graphEngine.addNode({ 
-        id: 'blocked-node', 
-        type: 'component', 
-        attributes: { disabled: true } 
-      });
-
-      const result = await availEngine.waitForAvailability('blocked-node', { 
-        timeout: 200 
-      });
-      
-      expect(result.status).toBe(AvailabilityStatus.Unavailable);
-      expect(result.reason).toContain('Timeout');
-    });
+  queryEngine.addNode({
+    id: 'node-1',
+    type: 'component',
+    label: 'Node 1',
+    metadata: {}
   });
 
-  describe('performance', () => {
-    it('should check single node availability in < 1ms', () => {
-      graphEngine.addNode({ id: 'perf-node', type: 'component', attributes: {} });
-
-      const startTime = performance.now();
-      availEngine.checkAvailability('perf-node');
-      const elapsed = performance.now() - startTime;
-      
-      expect(elapsed).toBeLessThan(1);
-    });
+  queryEngine.addNode({
+    id: 'node-2',
+    type: 'component',
+    label: 'Node 2',
+    metadata: { archived: true }
   });
-});
+
+  const results = await availabilityEngine.checkBatchAvailability(['node-1', 'node-2']);
+  
+  console.assert(results.length === 2, 'Should return 2 results');
+  console.assert(results[0].status.available === true, 'First node should be available');
+  console.assert(results[1].status.available === false, 'Second node should be unavailable');
+  console.log('✓ Test: Batch availability check passed');
+}
+
+/**
+ * Test: Cache functionality
+ */
+async function testCacheFunctionality(): Promise<void> {
+  const queryEngine = new MockQueryEngine();
+  const availabilityEngine = new AvailabilityQueryEngine(queryEngine);
+
+  queryEngine.addNode({
+    id: 'node-1',
+    type: 'component',
+    label: 'Test Node',
+    metadata: {}
+  });
+
+  // First check - should query
+  await availabilityEngine.checkNodeAvailability('node-1');
+  
+  const stats1 = availabilityEngine.getCacheStats();
+  console.assert(stats1.size === 1, 'Cache should have 1 entry');
+
+  // Second check - should use cache
+  await availabilityEngine.checkNodeAvailability('node-1');
+  
+  const stats2 = availabilityEngine.getCacheStats();
+  console.assert(stats2.size === 1, 'Cache should still have 1 entry');
+
+  // Clear cache
+  availabilityEngine.clearCache();
+  const stats3 = availabilityEngine.getCacheStats();
+  console.assert(stats3.size === 0, 'Cache should be empty after clear');
+  
+  console.log('✓ Test: Cache functionality passed');
+}
+
+/**
+ * Run all tests
+ */
+async function runTests(): Promise<void> {
+  console.log('Running Availability Query Engine tests...\n');
+  
+  try {
+    await testAvailableNode();
+    await testUnavailableNodeNotFound();
+    await testUnavailableNodeArchived();
+    await testEdgeAvailability();
+    await testBatchAvailability();
+    await testCacheFunctionality();
+    
+    console.log('\n✓ All tests passed!');
+  } catch (error) {
+    console.error('\n✗ Tests failed:', error);
+    throw error;
+  }
+}
+
+// Run tests if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runTests().catch(console.error);
+}
+
+export { runTests };

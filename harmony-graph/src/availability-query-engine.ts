@@ -2,408 +2,460 @@
  * @fileoverview Availability Query Engine Wrapper
  * @module harmony-graph/availability-query-engine
  * 
- * Provides specialized queries for component and resource availability
- * across the graph system. Wraps the core query engine with availability-specific
- * operations that respect bounded context boundaries.
+ * Provides a specialized query engine for checking node and edge availability
+ * across the multi-graph system. Wraps the core query engine with availability-specific
+ * operations.
  * 
- * Vision Alignment: Reactive Component System
- * - Enables reactive availability checks for UI components
- * - Supports dynamic resource allocation queries
- * 
- * @see {@link file://./DESIGN_SYSTEM.md#graph-engine Graph Engine Architecture}
- * @see {@link file://./query-engine.ts Query Engine Core}
- * @see {@link file://./cross-graph-index.ts Cross-Graph Index}
+ * @see {@link file://./DESIGN_SYSTEM.md#Graph-Query-Engine Graph Query Engine}
+ * @see {@link file://./query-engine.ts Core Query Engine}
  */
 
-import type { GraphEngine } from './graph-engine.js';
-import type { QueryEngine } from './query-engine.js';
-import type { NodeId, EdgeType } from './types.js';
+import type { GraphNode, GraphEdge, QueryResult } from './types.js';
+import { QueryEngine } from './query-engine.js';
 
 /**
- * Availability status for a component or resource
+ * Availability status for a node or edge
  */
-export enum AvailabilityStatus {
-  /** Resource is available and ready for use */
-  Available = 'available',
-  /** Resource is currently in use but can be shared */
-  InUse = 'in-use',
-  /** Resource is busy and cannot be accessed */
-  Busy = 'busy',
-  /** Resource is unavailable due to error or missing dependency */
-  Unavailable = 'unavailable',
-  /** Resource availability is unknown or not yet determined */
-  Unknown = 'unknown'
-}
-
-/**
- * Result of an availability query
- */
-export interface AvailabilityResult {
-  /** Node identifier */
-  nodeId: NodeId;
-  /** Current availability status */
-  status: AvailabilityStatus;
-  /** Human-readable reason for the status */
+export interface AvailabilityStatus {
+  /** Whether the entity is available */
+  available: boolean;
+  /** Reason for unavailability (if applicable) */
   reason?: string;
-  /** Timestamp when status was determined (ms since epoch) */
-  timestamp: number;
-  /** List of blocking dependencies if unavailable */
-  blockedBy?: NodeId[];
-  /** Estimated time until available (ms) if status is Busy */
-  estimatedAvailableIn?: number;
+  /** Timestamp of last availability check */
+  checkedAt: number;
+  /** Dependencies that affect availability */
+  dependencies?: string[];
 }
 
 /**
- * Options for availability queries
+ * Availability query result
+ */
+export interface AvailabilityQueryResult {
+  /** Node or edge ID */
+  id: string;
+  /** Availability status */
+  status: AvailabilityStatus;
+  /** Related entities that affect availability */
+  relatedEntities?: Array<{
+    id: string;
+    type: 'node' | 'edge';
+    available: boolean;
+  }>;
+}
+
+/**
+ * Availability query options
  */
 export interface AvailabilityQueryOptions {
-  /** Include transitive dependencies in availability check */
-  includeTransitive?: boolean;
-  /** Maximum depth for transitive dependency traversal */
+  /** Check dependencies recursively */
+  checkDependencies?: boolean;
+  /** Maximum depth for dependency checking */
   maxDepth?: number;
-  /** Edge types to consider as dependencies */
-  dependencyEdgeTypes?: EdgeType[];
-  /** Timeout for query execution (ms) */
-  timeout?: number;
+  /** Cache duration in milliseconds */
+  cacheDuration?: number;
+  /** Include unavailable entities in results */
+  includeUnavailable?: boolean;
 }
 
 /**
  * Availability Query Engine
  * 
- * Wraps the core query engine to provide specialized availability queries.
- * Follows the TypeNavigator-Only Queries policy by delegating to QueryEngine.
+ * Wraps the core query engine to provide availability-specific queries
+ * for nodes and edges across the multi-graph system.
  * 
- * Performance Budget:
- * - Single availability check: < 1ms
- * - Batch availability check (100 nodes): < 10ms
- * - Transitive dependency check: < 5ms per level
+ * Performance targets:
+ * - Single node check: <1ms
+ * - Dependency tree check: <10ms for depth 3
+ * - Batch availability check: <5ms per 100 nodes
  * 
  * @example
  * ```typescript
- * const availEngine = new AvailabilityQueryEngine(graphEngine, queryEngine);
+ * const engine = new AvailabilityQueryEngine(queryEngine);
  * 
- * // Check if a component is available
- * const result = availEngine.checkAvailability('component-123');
- * if (result.status === AvailabilityStatus.Available) {
- *   // Use component
- * }
+ * // Check single node availability
+ * const status = await engine.checkNodeAvailability('node-123');
  * 
- * // Check multiple components
- * const results = availEngine.checkBatch(['comp-1', 'comp-2', 'comp-3']);
+ * // Check with dependencies
+ * const result = await engine.checkNodeAvailability('node-123', {
+ *   checkDependencies: true,
+ *   maxDepth: 3
+ * });
+ * 
+ * // Batch check multiple nodes
+ * const results = await engine.checkBatchAvailability(['node-1', 'node-2']);
  * ```
  */
 export class AvailabilityQueryEngine {
-  private graphEngine: GraphEngine;
   private queryEngine: QueryEngine;
+  private availabilityCache: Map<string, AvailabilityStatus>;
+  private readonly defaultCacheDuration = 5000; // 5 seconds
   
   /**
-   * Create a new Availability Query Engine
+   * Creates a new availability query engine
    * 
-   * @param graphEngine - The graph engine instance
-   * @param queryEngine - The core query engine instance
+   * @param queryEngine - Core query engine instance to wrap
    */
-  constructor(graphEngine: GraphEngine, queryEngine: QueryEngine) {
-    this.graphEngine = graphEngine;
+  constructor(queryEngine: QueryEngine) {
     this.queryEngine = queryEngine;
+    this.availabilityCache = new Map();
   }
 
   /**
-   * Check availability of a single node
+   * Checks availability of a single node
    * 
-   * Delegates to the query engine to retrieve node state and dependencies,
-   * then computes availability based on node attributes and dependency status.
-   * 
-   * @param nodeId - Node to check
+   * @param nodeId - Node identifier
    * @param options - Query options
-   * @returns Availability result
-   * 
-   * @performance Target: < 1ms for single node check
+   * @returns Availability query result
    */
-  checkAvailability(
-    nodeId: NodeId,
+  async checkNodeAvailability(
+    nodeId: string,
     options: AvailabilityQueryOptions = {}
-  ): AvailabilityResult {
-    const startTime = performance.now();
-    const timestamp = Date.now();
+  ): Promise<AvailabilityQueryResult> {
+    const {
+      checkDependencies = false,
+      maxDepth = 3,
+      cacheDuration = this.defaultCacheDuration
+    } = options;
 
-    try {
-      // Query node from graph engine
-      const node = this.queryEngine.getNode(nodeId);
-      
-      if (!node) {
-        return {
-          nodeId,
-          status: AvailabilityStatus.Unknown,
-          reason: 'Node not found in graph',
-          timestamp
-        };
-      }
-
-      // Check node-level availability attributes
-      const nodeStatus = this.getNodeStatus(node);
-      if (nodeStatus !== AvailabilityStatus.Available) {
-        return {
-          nodeId,
-          status: nodeStatus,
-          reason: this.getStatusReason(node, nodeStatus),
-          timestamp
-        };
-      }
-
-      // Check dependencies if requested
-      if (options.includeTransitive) {
-        const depResult = this.checkDependencies(nodeId, options);
-        if (depResult.status !== AvailabilityStatus.Available) {
-          return depResult;
-        }
-      }
-
-      const elapsed = performance.now() - startTime;
-      if (elapsed > 1) {
-        console.warn(`[AvailabilityQueryEngine] Slow availability check: ${elapsed.toFixed(2)}ms for node ${nodeId}`);
-      }
-
+    // Check cache first
+    const cached = this.getCachedStatus(nodeId, cacheDuration);
+    if (cached) {
       return {
-        nodeId,
-        status: AvailabilityStatus.Available,
-        timestamp
-      };
-    } catch (error) {
-      console.error(`[AvailabilityQueryEngine] Error checking availability for ${nodeId}:`, error);
-      return {
-        nodeId,
-        status: AvailabilityStatus.Unavailable,
-        reason: error instanceof Error ? error.message : 'Unknown error',
-        timestamp
+        id: nodeId,
+        status: cached
       };
     }
+
+    // Query the node
+    const nodeResult = await this.queryEngine.queryById(nodeId);
+    
+    if (!nodeResult) {
+      const status: AvailabilityStatus = {
+        available: false,
+        reason: 'Node not found',
+        checkedAt: Date.now()
+      };
+      
+      this.cacheStatus(nodeId, status);
+      
+      return {
+        id: nodeId,
+        status
+      };
+    }
+
+    // Check node-specific availability
+    const status = this.evaluateNodeAvailability(nodeResult);
+    
+    // Check dependencies if requested
+    let relatedEntities: AvailabilityQueryResult['relatedEntities'];
+    if (checkDependencies && maxDepth > 0) {
+      relatedEntities = await this.checkDependencies(
+        nodeId,
+        maxDepth,
+        options
+      );
+      
+      // Update availability based on dependencies
+      if (relatedEntities.some(entity => !entity.available)) {
+        status.available = false;
+        status.reason = 'Unavailable dependencies';
+        status.dependencies = relatedEntities
+          .filter(e => !e.available)
+          .map(e => e.id);
+      }
+    }
+
+    this.cacheStatus(nodeId, status);
+
+    return {
+      id: nodeId,
+      status,
+      relatedEntities
+    };
   }
 
   /**
-   * Check availability of multiple nodes in batch
+   * Checks availability of an edge
    * 
-   * More efficient than calling checkAvailability multiple times.
-   * 
-   * @param nodeIds - Nodes to check
+   * @param edgeId - Edge identifier
    * @param options - Query options
-   * @returns Array of availability results
-   * 
-   * @performance Target: < 10ms for 100 nodes
+   * @returns Availability query result
    */
-  checkBatch(
-    nodeIds: NodeId[],
+  async checkEdgeAvailability(
+    edgeId: string,
     options: AvailabilityQueryOptions = {}
-  ): AvailabilityResult[] {
-    const startTime = performance.now();
+  ): Promise<AvailabilityQueryResult> {
+    const { cacheDuration = this.defaultCacheDuration } = options;
+
+    // Check cache
+    const cached = this.getCachedStatus(edgeId, cacheDuration);
+    if (cached) {
+      return {
+        id: edgeId,
+        status: cached
+      };
+    }
+
+    // Query the edge
+    const edgeResult = await this.queryEngine.queryEdgeById(edgeId);
     
-    const results = nodeIds.map(nodeId => 
-      this.checkAvailability(nodeId, options)
+    if (!edgeResult) {
+      const status: AvailabilityStatus = {
+        available: false,
+        reason: 'Edge not found',
+        checkedAt: Date.now()
+      };
+      
+      this.cacheStatus(edgeId, status);
+      
+      return {
+        id: edgeId,
+        status
+      };
+    }
+
+    // Check source and target node availability
+    const [sourceStatus, targetStatus] = await Promise.all([
+      this.checkNodeAvailability(edgeResult.source, { cacheDuration }),
+      this.checkNodeAvailability(edgeResult.target, { cacheDuration })
+    ]);
+
+    const status: AvailabilityStatus = {
+      available: sourceStatus.status.available && targetStatus.status.available,
+      reason: !sourceStatus.status.available
+        ? `Source node unavailable: ${sourceStatus.status.reason}`
+        : !targetStatus.status.available
+        ? `Target node unavailable: ${targetStatus.status.reason}`
+        : undefined,
+      checkedAt: Date.now(),
+      dependencies: [edgeResult.source, edgeResult.target]
+    };
+
+    this.cacheStatus(edgeId, status);
+
+    return {
+      id: edgeId,
+      status,
+      relatedEntities: [
+        {
+          id: edgeResult.source,
+          type: 'node',
+          available: sourceStatus.status.available
+        },
+        {
+          id: edgeResult.target,
+          type: 'node',
+          available: targetStatus.status.available
+        }
+      ]
+    };
+  }
+
+  /**
+   * Checks availability of multiple entities in batch
+   * 
+   * @param ids - Array of entity identifiers
+   * @param options - Query options
+   * @returns Array of availability query results
+   */
+  async checkBatchAvailability(
+    ids: string[],
+    options: AvailabilityQueryOptions = {}
+  ): Promise<AvailabilityQueryResult[]> {
+    // Process in parallel for performance
+    return Promise.all(
+      ids.map(id => this.checkNodeAvailability(id, options))
+    );
+  }
+
+  /**
+   * Finds all available nodes matching a query
+   * 
+   * @param query - Query criteria
+   * @param options - Query options
+   * @returns Array of available nodes
+   */
+  async findAvailableNodes(
+    query: Record<string, unknown>,
+    options: AvailabilityQueryOptions = {}
+  ): Promise<GraphNode[]> {
+    const results = await this.queryEngine.query(query);
+    
+    if (!results || results.length === 0) {
+      return [];
+    }
+
+    // Check availability for each result
+    const availabilityChecks = await Promise.all(
+      results.map(node => this.checkNodeAvailability(node.id, options))
     );
 
-    const elapsed = performance.now() - startTime;
-    if (elapsed > 10 && nodeIds.length <= 100) {
-      console.warn(`[AvailabilityQueryEngine] Slow batch check: ${elapsed.toFixed(2)}ms for ${nodeIds.length} nodes`);
-    }
-
-    return results;
+    // Filter to only available nodes
+    return results.filter((node, index) => {
+      const check = availabilityChecks[index];
+      return options.includeUnavailable || check.status.available;
+    });
   }
 
   /**
-   * Check dependencies of a node for availability
+   * Clears the availability cache
    * 
-   * Traverses dependency edges to determine if all dependencies are available.
-   * Respects maxDepth to prevent infinite loops in cyclic graphs.
-   * 
-   * @param nodeId - Node whose dependencies to check
-   * @param options - Query options
-   * @param currentDepth - Current traversal depth (internal)
-   * @returns Availability result including blocking dependencies
-   * 
-   * @performance Target: < 5ms per dependency level
+   * @param nodeId - Optional specific node to clear (clears all if not provided)
    */
-  private checkDependencies(
-    nodeId: NodeId,
-    options: AvailabilityQueryOptions,
-    currentDepth: number = 0
-  ): AvailabilityResult {
-    const maxDepth = options.maxDepth ?? 5;
-    const timestamp = Date.now();
+  clearCache(nodeId?: string): void {
+    if (nodeId) {
+      this.availabilityCache.delete(nodeId);
+    } else {
+      this.availabilityCache.clear();
+    }
+  }
 
-    if (currentDepth >= maxDepth) {
+  /**
+   * Gets cache statistics
+   * 
+   * @returns Cache statistics
+   */
+  getCacheStats(): { size: number; entries: number } {
+    return {
+      size: this.availabilityCache.size,
+      entries: this.availabilityCache.size
+    };
+  }
+
+  /**
+   * Evaluates availability of a node based on its properties
+   * 
+   * @param node - Graph node to evaluate
+   * @returns Availability status
+   * @private
+   */
+  private evaluateNodeAvailability(node: GraphNode): AvailabilityStatus {
+    const metadata = node.metadata || {};
+    
+    // Check if explicitly marked as unavailable
+    if (metadata.available === false) {
       return {
-        nodeId,
-        status: AvailabilityStatus.Available,
-        reason: 'Max dependency depth reached',
-        timestamp
+        available: false,
+        reason: metadata.unavailableReason || 'Explicitly marked unavailable',
+        checkedAt: Date.now()
       };
     }
 
-    // Get dependency edges
-    const dependencyTypes = options.dependencyEdgeTypes ?? ['depends-on', 'requires'];
-    const dependencies: NodeId[] = [];
-
-    for (const edgeType of dependencyTypes) {
-      const edges = this.queryEngine.getOutgoingEdges(nodeId, edgeType);
-      dependencies.push(...edges.map(e => e.target));
+    // Check if archived or deleted
+    if (metadata.archived || metadata.deleted) {
+      return {
+        available: false,
+        reason: metadata.archived ? 'Node is archived' : 'Node is deleted',
+        checkedAt: Date.now()
+      };
     }
 
-    // Check each dependency
-    const blockedBy: NodeId[] = [];
-    for (const depId of dependencies) {
-      const depResult = this.checkAvailability(depId, {
-        ...options,
-        maxDepth: maxDepth - currentDepth - 1
+    // Default to available
+    return {
+      available: true,
+      checkedAt: Date.now()
+    };
+  }
+
+  /**
+   * Recursively checks dependencies of a node
+   * 
+   * @param nodeId - Node to check dependencies for
+   * @param maxDepth - Maximum recursion depth
+   * @param options - Query options
+   * @returns Related entities with availability status
+   * @private
+   */
+  private async checkDependencies(
+    nodeId: string,
+    maxDepth: number,
+    options: AvailabilityQueryOptions
+  ): Promise<Array<{ id: string; type: 'node' | 'edge'; available: boolean }>> {
+    if (maxDepth <= 0) {
+      return [];
+    }
+
+    // Get edges from this node
+    const edges = await this.queryEngine.queryEdges({
+      source: nodeId
+    });
+
+    if (!edges || edges.length === 0) {
+      return [];
+    }
+
+    const relatedEntities: Array<{
+      id: string;
+      type: 'node' | 'edge';
+      available: boolean;
+    }> = [];
+
+    // Check each edge and its target
+    for (const edge of edges) {
+      // Check edge availability
+      const edgeStatus = await this.checkEdgeAvailability(edge.id, options);
+      relatedEntities.push({
+        id: edge.id,
+        type: 'edge',
+        available: edgeStatus.status.available
       });
 
-      if (depResult.status !== AvailabilityStatus.Available) {
-        blockedBy.push(depId);
+      // Check target node
+      const targetStatus = await this.checkNodeAvailability(
+        edge.target,
+        { ...options, maxDepth: maxDepth - 1 }
+      );
+      relatedEntities.push({
+        id: edge.target,
+        type: 'node',
+        available: targetStatus.status.available
+      });
+
+      // Add recursive dependencies
+      if (targetStatus.relatedEntities) {
+        relatedEntities.push(...targetStatus.relatedEntities);
       }
     }
 
-    if (blockedBy.length > 0) {
-      return {
-        nodeId,
-        status: AvailabilityStatus.Unavailable,
-        reason: `Blocked by ${blockedBy.length} unavailable dependencies`,
-        timestamp,
-        blockedBy
-      };
-    }
-
-    return {
-      nodeId,
-      status: AvailabilityStatus.Available,
-      timestamp
-    };
+    return relatedEntities;
   }
 
   /**
-   * Get availability status from node attributes
+   * Gets cached availability status if valid
    * 
-   * @param node - Node to inspect
-   * @returns Availability status
+   * @param id - Entity identifier
+   * @param cacheDuration - Cache validity duration in ms
+   * @returns Cached status or null if not found/expired
+   * @private
    */
-  private getNodeStatus(node: any): AvailabilityStatus {
-    // Check for explicit availability attribute
-    if (node.attributes?.availability) {
-      const attrStatus = node.attributes.availability;
-      if (Object.values(AvailabilityStatus).includes(attrStatus)) {
-        return attrStatus as AvailabilityStatus;
-      }
-    }
-
-    // Check for disabled state
-    if (node.attributes?.disabled === true) {
-      return AvailabilityStatus.Unavailable;
-    }
-
-    // Check for error state
-    if (node.attributes?.error || node.attributes?.hasError) {
-      return AvailabilityStatus.Unavailable;
-    }
-
-    // Check for busy/loading state
-    if (node.attributes?.busy === true || node.attributes?.loading === true) {
-      return AvailabilityStatus.Busy;
-    }
-
-    // Check for in-use state
-    if (node.attributes?.inUse === true || node.attributes?.activeUsers > 0) {
-      return AvailabilityStatus.InUse;
-    }
-
-    // Default to available if no blocking conditions
-    return AvailabilityStatus.Available;
-  }
-
-  /**
-   * Get human-readable reason for availability status
-   * 
-   * @param node - Node being checked
-   * @param status - Availability status
-   * @returns Reason string
-   */
-  private getStatusReason(node: any, status: AvailabilityStatus): string {
-    switch (status) {
-      case AvailabilityStatus.Unavailable:
-        if (node.attributes?.disabled) return 'Component is disabled';
-        if (node.attributes?.error) return `Error: ${node.attributes.error}`;
-        return 'Component is unavailable';
-      
-      case AvailabilityStatus.Busy:
-        return node.attributes?.busyReason ?? 'Component is busy';
-      
-      case AvailabilityStatus.InUse:
-        const users = node.attributes?.activeUsers ?? 1;
-        return `In use by ${users} ${users === 1 ? 'user' : 'users'}`;
-      
-      default:
-        return '';
-    }
-  }
-
-  /**
-   * Find all available nodes of a given type
-   * 
-   * Useful for discovering which components/resources are ready to use.
-   * 
-   * @param nodeType - Type of nodes to find
-   * @param options - Query options
-   * @returns Array of available node IDs
-   */
-  findAvailable(
-    nodeType: string,
-    options: AvailabilityQueryOptions = {}
-  ): NodeId[] {
-    // Query all nodes of the given type
-    const nodes = this.queryEngine.getNodesByType(nodeType);
+  private getCachedStatus(
+    id: string,
+    cacheDuration: number
+  ): AvailabilityStatus | null {
+    const cached = this.availabilityCache.get(id);
     
-    // Filter to only available nodes
-    const available: NodeId[] = [];
-    for (const node of nodes) {
-      const result = this.checkAvailability(node.id, options);
-      if (result.status === AvailabilityStatus.Available) {
-        available.push(node.id);
-      }
+    if (!cached) {
+      return null;
     }
 
-    return available;
+    const age = Date.now() - cached.checkedAt;
+    if (age > cacheDuration) {
+      this.availabilityCache.delete(id);
+      return null;
+    }
+
+    return cached;
   }
 
   /**
-   * Wait for a node to become available
+   * Caches availability status
    * 
-   * Polls the node's availability status until it becomes available or timeout.
-   * Returns a promise that resolves when available or rejects on timeout.
-   * 
-   * @param nodeId - Node to wait for
-   * @param options - Query options with timeout
-   * @returns Promise resolving to availability result
+   * @param id - Entity identifier
+   * @param status - Availability status to cache
+   * @private
    */
-  async waitForAvailability(
-    nodeId: NodeId,
-    options: AvailabilityQueryOptions = {}
-  ): Promise<AvailabilityResult> {
-    const timeout = options.timeout ?? 5000;
-    const pollInterval = 100;
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < timeout) {
-      const result = this.checkAvailability(nodeId, options);
-      
-      if (result.status === AvailabilityStatus.Available) {
-        return result;
-      }
-
-      // Wait before next poll
-      await new Promise(resolve => setTimeout(resolve, pollInterval));
-    }
-
-    // Timeout reached
-    const finalResult = this.checkAvailability(nodeId, options);
-    return {
-      ...finalResult,
-      reason: `Timeout waiting for availability: ${finalResult.reason ?? 'unknown'}`
-    };
+  private cacheStatus(id: string, status: AvailabilityStatus): void {
+    this.availabilityCache.set(id, status);
   }
 }
