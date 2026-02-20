@@ -4,208 +4,184 @@ This document describes the Harmony Design System: its concepts, how to work wit
 
 ## Overview
 
-The Harmony Design System is a comprehensive design and development framework for building high-performance audio production interfaces. It combines atomic design principles with real-time performance requirements.
+The Harmony Design System is a component library built with Web Components (Custom Elements with Shadow DOM). It follows atomic design principles and integrates with the EventBus architecture for bounded context communication.
 
-## Core Concepts
+## Core Principles
 
-### Atomic Design Levels
-- **Atoms**: Basic building blocks (buttons, inputs, labels)
-- **Molecules**: Simple component groups (form fields, toolbar items)
-- **Organisms**: Complex interface sections (navigation, panels, mixers)
-- **Templates**: Page-level layouts
-- **Pages**: Specific instances with real content
+1. **Web Standards First**: Uses native Web Components, no framework dependencies
+2. **Performance Budgets**: 16ms render, 50MB memory, 200ms load time
+3. **Event-Driven Architecture**: Components publish events, never call bounded contexts directly
+4. **Shadow DOM Isolation**: All components use shadow DOM for style encapsulation
+5. **Vanilla JavaScript**: No runtime npm dependencies, only build tools
 
-### Performance Targets
-- **Render Budget**: 16ms per frame (60fps)
-- **Memory Budget**: 50MB WASM heap
-- **Load Budget**: 200ms initial load
-- **Audio Latency**: 10ms end-to-end
+## Component Levels
 
-## Transform System
+### Atoms
+Basic building blocks that cannot be broken down further. Examples: buttons, inputs, labels.
 
-The transform system provides type-safe 3D transformations for UI elements and animations.
+### Molecules
+Simple combinations of atoms functioning together. Examples: form fields with labels, search boxes.
 
-### Transform3D Semantic Types
+### Organisms
+Complex components made of molecules and atoms. Examples: navigation bars, forms, cards.
 
-The `del-transform3d-semantic-type-spec.ts` module defines semantic types for 3D transformations:
+### Templates
+Page-level layouts combining organisms, molecules, and atoms.
 
-**Core Types:**
-- `Translate3D`: 3D translation vectors (x, y, z)
-- `Rotate3D`: 3D rotation with axis and angle
-- `Scale3D`: 3D scaling factors
-- `Matrix3D`: 4x4 transformation matrix
-- `Perspective`: Perspective depth setting
-- `TransformOrigin3D`: Transform origin point
+## Component Requirements
 
-**Composite Type:**
-- `Transform3DSpec`: Combines multiple transform operations
-- `AnimatedTransform3D`: Extends Transform3DSpec with animation properties
+All components must satisfy these acceptance criteria:
 
-**Utilities:**
-- `toTransformString()`: Converts spec to CSS transform value
-- `toOriginString()`: Converts origin to CSS transform-origin
-- `identityMatrix()`: Creates identity matrix
-- `validateTransform3D()`: Validates transform specifications
-- `isTransform3DSpec()`: Type guard for Transform3DSpec
+1. **Valid Module Export**: Component exports a class extending HTMLElement
+2. **Browser Rendering**: Renders without errors in Chrome (all states tested)
+3. **No Compilation Errors**: TypeScript/JSDoc types are valid
+4. **Atomic Design Level**: Clearly identified as atom, molecule, or organism
+5. **Value Prop**: Has a `value` property for state management
+6. **Change Handler**: Fires `change` event and supports `onchange` handler
+7. **Placeholder Support**: Has `placeholder` attribute for empty states
 
-**Usage Example:**
-```typescript
-import { Transform3DSpec, toTransformString } from './components/del-transform3d-semantic-type-spec.js';
+## EventBus Integration
 
-const transform: Transform3DSpec = {
-  translate: { x: 100, y: 50, z: 0 },
-  rotate: { x: 0, y: 1, z: 0, angle: 45 },
-  scale: { x: 1.2, y: 1.2, z: 1 }
-};
+Components communicate via the EventBus singleton located at `core/event-bus.js`.
 
-element.style.transform = toTransformString(transform);
+### Publishing Events
+
+```javascript
+import { EventBus } from '../core/event-bus.js';
+
+class MyComponent extends HTMLElement {
+  connectedCallback() {
+    this.eventBus = EventBus.getInstance();
+  }
+
+  handleAction() {
+    this.eventBus.publish({
+      type: 'user:action',
+      source: 'MyComponent',
+      payload: { value: this.value },
+      timestamp: Date.now()
+    });
+  }
+}
 ```
 
-**Performance Notes:**
-- All transform operations are GPU-accelerated via CSS transforms
-- Use `translate3d()` to trigger GPU compositing
-- Matrix calculations must complete within 16ms render budget
-- Prefer composite transforms over individual operations
+### Event Format
 
-**Related Files:**
-- Implementation: [components/del-transform3d-semantic-type-spec.ts](components/del-transform3d-semantic-type-spec.ts)
+All events must follow this structure:
+- `type`: String identifying the event (e.g., 'audiocontext:created')
+- `source`: Component or module name
+- `payload`: Event-specific data
+- `timestamp`: Unix timestamp in milliseconds
 
-## Event System
+## Audio Components
 
-All UI components publish events through the EventBus singleton. Components never call bounded contexts directly.
+### AudioContext Lifecycle Manager
 
-**Pattern:**
-1. User interacts with component
-2. Component publishes event to EventBus
-3. EventBus routes to appropriate bounded context
-4. Bounded context processes and publishes result event
-5. UI components subscribe to result events and update
+**File**: `components/del-audiocontext-lifecycle-managem.js`  
+**Level**: Molecule  
+**Purpose**: Manages AudioContext lifecycle with automatic state transitions and user gesture handling.
 
-**EventBus Singleton:**
-- Lives at `core/event-bus.js`
-- Only one instance across entire runtime
-- Packages re-export from core path
-- Available on every page via Ctrl+Shift+E
+The AudioContext Lifecycle Manager handles creation, state management, and cleanup of Web Audio API AudioContext instances. It follows best practices for context initialization, requiring user gestures for audio playback, and proper resource cleanup.
 
-## Component Architecture
+**Key Features**:
+- Automatic AudioContext creation with configurable sample rate and latency
+- User gesture handling for browser autoplay policies
+- State management (suspended, running, closed, interrupted)
+- EventBus integration for bounded context communication
+- Visual state indicator with toggle controls
 
-### Web Components
-All UI components use Web Components with shadow DOM:
-- Encapsulated styles
-- Custom element registration
-- Lifecycle callbacks
-- Property/attribute reflection
+**Usage**:
+```html
+<audio-context-lifecycle-manager 
+  value="suspended"
+  placeholder="Click to enable audio"
+  sample-rate="48000"
+  latency-hint="interactive">
+</audio-context-lifecycle-manager>
+```
 
-### No Framework Dependencies
-- Vanilla HTML/CSS/JavaScript only
-- No React, Vue, Leptos, or similar frameworks
-- No npm runtime dependencies
-- Web Components standard only
+**Properties**:
+- `value`: Current state ('suspended', 'running', 'closed')
+- `placeholder`: Text shown before context is initialized
+- `disabled`: Disables interaction
+- `sample-rate`: AudioContext sample rate in Hz (optional)
+- `latency-hint`: Latency optimization ('interactive', 'balanced', 'playback')
 
-## Documentation Standards
+**Methods**:
+- `getState()`: Returns current AudioContext state object
+- `context`: Getter for the managed AudioContext instance
 
-### Code Documentation
-- All functions have JSDoc comments
-- Type definitions include descriptions
-- Performance notes where relevant
-- Links to related files
+**Events Published**:
+- `audiocontext:created`: When AudioContext is created
+- `audiocontext:statechange`: When state changes
+- `audiocontext:closed`: When context is closed
+- `audiocontext:error`: When an error occurs
 
-### File References
-- Code files reference relevant DESIGN_SYSTEM.md sections
-- Documentation links to implementation files
-- Two-way references between docs and code
+**Events Fired**:
+- `change`: When value changes (bubbles, composed)
+- `error`: When an error occurs (bubbles, composed)
 
-## Quality Gates
+The component ensures proper cleanup on disconnect and handles AudioContext state transitions according to Web Audio API specifications. It automatically manages the suspended state required by browser autoplay policies and provides user controls to resume audio playback.
 
-All code must pass quality gates before merging:
-- TypeScript compilation
-- Performance budgets
-- Browser rendering tests
-- Event bus validation
+## File Naming Convention
+
+Component files follow this pattern:
+- `del-{component-name}.js` - Deletable/experimental components
+- `cap-{component-name}.js` - Capability components (stable)
+- Standard component names use kebab-case
 
 ## Testing Requirements
 
-### Browser Testing
-All UI components must be tested in Chrome:
-- Default state
-- Hover state
-- Focus state
-- Active state
-- Disabled state
-- Error states (where applicable)
-- Loading states (where applicable)
-- Empty states (where applicable)
+Before marking a task complete:
 
-### Performance Testing
-- 60fps target for animations
-- Chrome DevTools Performance panel
-- Memory profiling for large datasets
+1. **Chrome Testing**: Load component in Chrome browser
+2. **State Testing**: Verify all states (default, hover, focus, active, disabled, error, loading, empty)
+3. **Performance Testing**: Use Chrome DevTools Performance panel, target 60fps
+4. **Event Testing**: Verify EventBus events are published correctly
+5. **Shadow DOM Testing**: Verify styles are encapsulated
 
-## Architecture Boundaries
+## Performance Guidelines
 
-### Rust → WASM
-- Bounded contexts
-- Graph engine
-- Audio processing
+### Render Budget: 16ms
+- Keep DOM operations minimal
+- Use `requestAnimationFrame` for animations
+- Batch DOM updates
+- Avoid layout thrashing
 
-### JavaScript
-- UI rendering
-- DOM manipulation
-- Event handling
+### Memory Budget: 50MB
+- Clean up event listeners on disconnect
+- Release references to large objects
+- Use WeakMap/WeakSet for caches
+- Profile with Chrome DevTools Memory panel
 
-### Python
-- Test servers (pytest)
-- Build scripts
-- Dev tools
-- Prototypes
+### Load Budget: 200ms
+- Lazy load non-critical components
+- Use dynamic imports for large modules
+- Minimize initial bundle size
+- Optimize critical rendering path
 
-**Not for production runtime or core logic**
+### Audio Latency: 10ms
+- Use AudioWorklet for processing
+- Minimize buffer sizes (128-256 samples)
+- Avoid synchronous operations in audio thread
+- Use SharedArrayBuffer for data transfer
 
-## Schema-Driven Development
+## Documentation Standards
 
-1. Navigate to `harmony-schemas`
-2. Modify schema
-3. Run codegen
-4. Verify compilation
-5. Commit schema + generated code together
+Documentation must be:
+1. **B1-level English**: Clear, simple, friendly
+2. **Logically Sectioned**: One concern per section
+3. **Concise**: Code lives in files, docs explain concepts
+4. **Well-Linked**: Relative links to code files
+5. **Minimal Code**: Show usage examples, not implementation
 
-**Never edit Rust directly** - always go through schemas.
+## Related Files
 
-## File Organization
+- EventBus: `core/event-bus.js`
+- Component Examples: `components/`
+- Test Pages: `test-pages/`
+- Schemas: `harmony-schemas/`
 
-### Package Structure
-Each deployable package has:
-- `src/index.js`: Composition root
-- Wires EventBus singleton
-- Registers plugins
-- Exposes public API
+## Questions?
 
-### No Nested Harmony Packages
-All `harmony-*` packages are direct children of repository root.
-No `harmony-*/harmony-*` nesting allowed.
-
-### Orphan Prevention
-All modules must be reachable from composition root via imports.
-Unreachable modules must be removed or connected.
-
-## Git Workflow
-
-### Commit Requirements
-- Push changes before starting new tasks
-- Include generated code with schema changes
-- Update DESIGN_SYSTEM.md in every task
-- Verify with `git status` against remote
-
-### Blocked Tasks
-When task cannot be completed:
-1. Create report in `reports/blocked/{task_id}.md`
-2. Include reason and attempted solutions
-3. Recommend enabling work
-4. Await further instructions
-
-## Cross-References
-
-- Event System: `core/event-bus.js`
-- Transform Types: `components/del-transform3d-semantic-type-spec.ts`
-- Quality Gates: `.github/workflows/`
-- Performance Budgets: `.github/performance-budget.json`
+See the project README.md for setup instructions and contribution guidelines.
