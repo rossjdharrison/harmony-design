@@ -531,3 +531,54 @@ Verify EventBus singleton is properly wired in composition root.
 ---
 
 **Remember:** Documentation is non-optional. Every task completion requires updating this file with proper cross-references and clear explanations.
+## Code-to-Doc Reference Pattern {#code-to-doc-reference-pattern}
+
+Every code file links to relevant documentation sections, and documentation links back to implementation files. This creates bidirectional references that make the system navigable and maintainable.
+
+### Standard Header Format
+
+All JavaScript files include:
+
+```javascript
+/**
+ * @fileoverview Brief description of purpose
+ * @see {@link file://./DESIGN_SYSTEM.md#anchor-name Section Name}
+ * @module path/to/module
+ */
+```
+
+### Multiple References
+
+When a file implements multiple documented patterns:
+
+```javascript
+/**
+ * @fileoverview EventBus singleton - central message routing
+ * @see {@link file://./DESIGN_SYSTEM.md#event-bus Event Bus Architecture}
+ * @see {@link file://./DESIGN_SYSTEM.md#singleton-pattern Singleton Pattern}
+ * @module core/event-bus
+ */
+```
+
+### Reverse References
+
+Documentation sections reference implementations:
+
+```markdown
+## Event Bus Architecture {#event-bus}
+
+**Implementation**: [`core/event-bus.js`](./core/event-bus.js)
+**Tests**: [`tests/unit/event-bus.test.js`](./tests/unit/event-bus.test.js)
+```
+
+### Validation
+
+Run validation script to check compliance:
+
+```bash
+node scripts/validate-code-doc-links.js
+```
+
+**Full specification**: [`docs/code-to-doc-reference-pattern.md`](./docs/code-to-doc-reference-pattern.md)
+**Templates**: [`templates/code-headers/`](./templates/code-headers/)
+**Validation**: [`scripts/validate-code-doc-links.js`](./scripts/validate-code-doc-links.js)

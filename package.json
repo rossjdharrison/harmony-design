@@ -5,6 +5,6 @@
     "description":  "Harmony Design System — vanilla JS, zero dependencies",
     "private":  true,
     "scripts":  {
-
+                    "validate:doc-links":  "node scripts/validate-code-doc-links.js"
                 }
 }
