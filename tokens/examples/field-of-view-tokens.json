@@ -1,0 +1,67 @@
+{
+  "$schema": "../harmony-schemas/schemas/field-of-view-token.schema.json",
+  "camera": {
+    "fov": {
+      "standard": {
+        "$type": "fieldOfView",
+        "value": 60,
+        "description": "Standard perspective camera FOV (60 degrees vertical)"
+      },
+      "wide": {
+        "$type": "fieldOfView",
+        "value": {
+          "degrees": 75,
+          "orientation": "vertical",
+          "aspectRatio": 1.777777
+        },
+        "description": "Wide-angle perspective for 16:9 displays"
+      },
+      "narrow": {
+        "$type": "fieldOfView",
+        "value": 45,
+        "description": "Narrow FOV for telephoto/portrait effect"
+      },
+      "ultrawide": {
+        "$type": "fieldOfView",
+        "value": {
+          "degrees": 90,
+          "orientation": "vertical",
+          "aspectRatio": 1.777777
+        },
+        "description": "Ultra-wide FOV for immersive experiences"
+      },
+      "cinematic": {
+        "$type": "fieldOfView",
+        "value": {
+          "degrees": 50,
+          "orientation": "vertical",
+          "aspectRatio": 2.39
+        },
+        "description": "Cinematic FOV for 2.39:1 aspect ratio"
+      },
+      "vr": {
+        "$type": "fieldOfView",
+        "value": {
+          "degrees": 110,
+          "orientation": "horizontal",
+          "aspectRatio": 1.0
+        },
+        "description": "VR headset field of view (per eye)"
+      }
+    }
+  },
+  "scene": {
+    "perspective": {
+      "default": {
+        "$type": "fieldOfView",
+        "value": "{camera.fov.standard}",
+        "description": "Default scene perspective"
+      },
+      "hero": {
+        "$type": "fieldOfView",
+        "value": "{camera.fov.wide}",
+        "description": "Hero section with dramatic perspective"
+      }
+    }
+  }
+}

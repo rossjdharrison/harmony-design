@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesignsystem.com/schemas/field-of-view-token.schema.json",
+  "title": "Field-of-View Token",
+  "description": "Schema for camera field-of-view and perspective tokens used in 3D rendering contexts",
+  "type": "object",
+  "required": ["$type", "value"],
+  "properties": {
+    "$type": {
+      "type": "string",
+      "const": "fieldOfView",
+      "description": "Token type identifier for field-of-view tokens"
+    },
+    "value": {
+      "oneOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true,
+          "maximum": 180,
+          "exclusiveMaximum": true,
+          "description": "Field of view in degrees (vertical FOV)"
+        },
+        {
+          "type": "object",
+          "required": ["degrees"],
+          "properties": {
+            "degrees": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "maximum": 180,
+              "exclusiveMaximum": true,
+              "description": "Field of view in degrees"
+            },
+            "orientation": {
+              "type": "string",
+              "enum": ["vertical", "horizontal", "diagonal"],
+              "default": "vertical",
+              "description": "Which dimension the FOV measurement applies to"
+            },
+            "aspectRatio": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMinimum": true,
+              "description": "Aspect ratio (width/height) for calculating complementary FOV"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "string",
+          "pattern": "^\\{[^}]+\\}$",
+          "description": "Reference to another field-of-view token"
+        }
+      ]
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of the field-of-view token's purpose"
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Vendor-specific extensions",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "$type": "fieldOfView",
+      "value": 60,
+      "description": "Standard perspective camera FOV"
+    },
+    {
+      "$type": "fieldOfView",
+      "value": {
+        "degrees": 75,
+        "orientation": "vertical",
+        "aspectRatio": 1.777777
+      },
+      "description": "Wide-angle perspective with 16:9 aspect ratio"
+    },
+    {
+      "$type": "fieldOfView",
+      "value": 45,
+      "description": "Narrow FOV for telephoto effect"
+    },
+    {
+      "$type": "fieldOfView",
+      "value": "{camera.fov.default}",
+      "description": "Reference to default camera FOV"
+    }
+  ]
+}
