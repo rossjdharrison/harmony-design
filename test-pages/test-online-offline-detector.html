@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online/Offline Detector Test - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0a0a0a;
+      color: #ffffff;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 2rem;
+    }
+
+    .status-card {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .status-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #666;
+      transition: background 0.3s ease;
+    }
+
+    .status-dot.online {
+      background: #00ff88;
+      box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+    }
+
+    .status-dot.offline {
+      background: #ff4444;
+      box-shadow: 0 0 12px rgba(255, 68, 68, 0.5);
+    }
+
+    .status-text {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+      background: #0f0f0f;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #222;
+    }
+
+    .info-label {
+      color: #888;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #667eea;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .event-log {
+      background: #0f0f0f;
+      border: 1px solid #222;
+      border-radius: 8px;
+      padding: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .event-log h3 {
+      margin-bottom: 1rem;
+      color: #667eea;
+    }
+
+    .event-item {
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: #1a1a1a;
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+    }
+
+    .event-item.online {
+      border-left-color: #00ff88;
+    }
+
+    .event-item.offline {
+      border-left-color: #ff4444;
+    }
+
+    .event-time {
+      color: #888;
+      margin-right: 0.5rem;
+    }
+
+    .event-type {
+      color: #667eea;
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+
+    .instructions {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-top: 2rem;
+    }
+
+    .instructions h3 {
+      color: #667eea;
+      margin-bottom: 1rem;
+    }
+
+    .instructions ol {
+      margin-left: 1.5rem;
+    }
+
+    .instructions li {
+      margin-bottom: 0.5rem;
+      color: #ccc;
+    }
+
+    .instructions code {
+      background: #0f0f0f;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      color: #00ff88;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Online/Offline Detector Test</h1>
+    <p class="subtitle">Monitor network connectivity and test sync triggers</p>
+
+    <div class="status-card">
+      <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <div class="status-text" id="statusText">Initializing...</div>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">Connection Type</div>
+          <div class="info-value" id="effectiveType">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Downlink Speed</div>
+          <div class="info-value" id="downlink">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Round-Trip Time</div>
+          <div class="info-value" id="rtt">-</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Save Data Mode</div>
+          <div class="info-value" id="saveData">-</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="refreshBtn">Refresh State</button>
+        <button id="simulateOfflineBtn">Simulate Offline</button>
+        <button id="simulateOnlineBtn">Simulate Online</button>
+        <button id="clearLogBtn">Clear Log</button>
+      </div>
+    </div>
+
+    <div class="event-log">
+      <h3>Event Log</h3>
+      <div id="eventLog"></div>
+    </div>
+
+    <div class="instructions">
+      <h3>Testing Instructions</h3>
+      <ol>
+        <li>Open Chrome DevTools (F12)</li>
+        <li>Go to <strong>Network</strong> tab</li>
+        <li>Toggle <code>Offline</code> checkbox to simulate network changes</li>
+        <li>Or use <strong>Network throttling</strong> to test different connection types</li>
+        <li>Watch the status indicator and event log update automatically</li>
+        <li>Events are published to EventBus for other components to consume</li>
+      </ol>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeDetector } from '../utils/online-offline-detector.js';
+    import { EventBus } from '../utils/event-bus.js';
+
+    let detector = null;
+    let eventBus = null;
+
+    // DOM elements
+    const statusDot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const effectiveType = document.getElementById('effectiveType');
+    const downlink = document.getElementById('downlink');
+    const rtt = document.getElementById('rtt');
+    const saveData = document.getElementById('saveData');
+    const eventLog = document.getElementById('eventLog');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const simulateOfflineBtn = document.getElementById('simulateOfflineBtn');
+    const simulateOnlineBtn = document.getElementById('simulateOnlineBtn');
+    const clearLogBtn = document.getElementById('clearLogBtn');
+
+    /**
+     * Update UI with current state
+     */
+    function updateUI(state) {
+      // Update status indicator
+      if (state.online) {
+        statusDot.className = 'status-dot online';
+        statusText.textContent = 'Online';
+      } else {
+        statusDot.className = 'status-dot offline';
+        statusText.textContent = 'Offline';
+      }
+
+      // Update info grid
+      effectiveType.textContent = state.effectiveType.toUpperCase();
+      downlink.textContent = state.downlink > 0 ? `${state.downlink.toFixed(1)} Mbps` : 'Unknown';
+      rtt.textContent = state.rtt > 0 ? `${state.rtt} ms` : 'Unknown';
+      saveData.textContent = state.saveData ? 'Enabled' : 'Disabled';
+    }
+
+    /**
+     * Add event to log
+     */
+    function logEvent(type, data) {
+      const eventItem = document.createElement('div');
+      eventItem.className = 'event-item';
+      
+      if (type === 'NetworkOnline') {
+        eventItem.classList.add('online');
+      } else if (type === 'NetworkOffline') {
+        eventItem.classList.add('offline');
+      }
+
+      const time = new Date().toLocaleTimeString();
+      const dataStr = JSON.stringify(data, null, 2);
+
+      eventItem.innerHTML = `
+        <span class="event-time">[${time}]</span>
+        <span class="event-type">${type}</span>
+        <pre style="margin-top: 0.5rem; color: #888;">${dataStr}</pre>
+      `;
+
+      eventLog.insertBefore(eventItem, eventLog.firstChild);
+
+      // Limit log size
+      while (eventLog.children.length > 20) {
+        eventLog.removeChild(eventLog.lastChild);
+      }
+    }
+
+    /**
+     * Initialize the test page
+     */
+    async function initialize() {
+      try {
+        // Initialize EventBus
+        eventBus = EventBus.getInstance();
+
+        // Subscribe to network events
+        eventBus.subscribe('NetworkStateInitialized', (event) => {
+          logEvent('NetworkStateInitialized', event.payload);
+          updateUI(event.payload.state);
+        });
+
+        eventBus.subscribe('NetworkOnline', (event) => {
+          logEvent('NetworkOnline', event.payload);
+          updateUI(event.payload.state);
+        });
+
+        eventBus.subscribe('NetworkOffline', (event) => {
+          logEvent('NetworkOffline', event.payload);
+          updateUI(event.payload.state);
+        });
+
+        eventBus.subscribe('NetworkStateChanged', (event) => {
+          logEvent('NetworkStateChanged', event.payload);
+          updateUI(event.payload.state);
+        });
+
+        eventBus.subscribe('TriggerOfflineSync', (event) => {
+          logEvent('TriggerOfflineSync', event.payload);
+        });
+
+        // Initialize detector
+        detector = await initializeDetector({
+          debounceMs: 500,
+          enableNetworkInfo: true,
+          autoSync: true,
+          syncDelayMs: 1000,
+        });
+
+        console.log('Online/Offline Detector initialized');
+      } catch (error) {
+        console.error('Failed to initialize:', error);
+        statusText.textContent = 'Initialization Failed';
+        logEvent('Error', { message: error.message });
+      }
+    }
+
+    // Button handlers
+    refreshBtn.addEventListener('click', () => {
+      if (detector) {
+        const state = detector.getState();
+        updateUI(state);
+        logEvent('ManualRefresh', { state });
+      }
+    });
+
+    simulateOfflineBtn.addEventListener('click', () => {
+      logEvent('SimulateOffline', { 
+        note: 'This only logs an event. Use Chrome DevTools Network tab to actually go offline.' 
+      });
+    });
+
+    simulateOnlineBtn.addEventListener('click', () => {
+      logEvent('SimulateOnline', { 
+        note: 'This only logs an event. Use Chrome DevTools Network tab to actually go online.' 
+      });
+    });
+
+    clearLogBtn.addEventListener('click', () => {
+      eventLog.innerHTML = '';
+    });
+
+    // Initialize on load
+    initialize();
+  </script>
+</body>
+</html>
