@@ -1,754 +1,533 @@
 # Harmony Design System
 
-**Version**: 1.0.0  
-**Last Updated**: 2025-01-15
-
-Welcome to the Harmony Design System documentation. This guide explains the core concepts, workflows, and implementation patterns for building high-performance audio applications with reactive components.
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Core Concepts](#core-concepts)
-3. [Architecture](#architecture)
-4. [Component System](#component-system)
-5. [Event-Driven Communication](#event-driven-communication)
-6. [Audio Processing](#audio-processing)
-7. [Performance Budgets](#performance-budgets)
-8. [Development Workflows](#development-workflows)
-9. [Testing Guidelines](#testing-guidelines)
-10. [File Organization](#file-organization)
-11. [Implementation Notes](#implementation-notes)
-
----
+**Version:** 1.0.0  
+**Last Updated:** 2025-02-15
 
 ## Overview
 
-Harmony is a **GPU-first, WASM-powered audio design system** built on four foundational pillars:
+Harmony is a high-performance design system for audio-visual applications. It combines:
 
-- **Reactive Component System**: Web Components with shadow DOM and event-driven state
-- **Atomic Design**: Hierarchical composition from primitives to templates
-- **WASM Performance**: Rust-based bounded contexts compiled to WebAssembly
-- **GPU-First Audio**: WebGPU acceleration for audio processing
+- **Reactive Component System** — Web Components with shadow DOM
+- **Atomic Design** — Tokens → Primitives → Molecules → Organisms → Templates
+- **WASM Performance** — Rust-based bounded contexts compiled to WebAssembly
+- **GPU-First Audio** — WebGPU compute shaders for DSP operations
 
-### Design Philosophy
+## Documentation Update Checklist
 
-Harmony prioritizes **performance, modularity, and developer experience**. Every component, module, and pattern is designed to meet strict performance budgets while remaining simple to understand and extend.
+Every task completion MUST update this documentation file. Use this checklist to ensure complete documentation:
 
----
+### Before Starting Implementation
 
-## Core Concepts
+- [ ] Read relevant sections of DESIGN_SYSTEM.md
+- [ ] Identify which section(s) will need updates
+- [ ] Note any new concepts that need documentation
 
-### Bounded Contexts
+### During Implementation
 
-Bounded contexts encapsulate domain logic in **Rust modules compiled to WASM**. They handle:
+- [ ] Keep notes of architectural decisions
+- [ ] Document any deviations from original plan
+- [ ] Track new files created and their purpose
 
-- Audio graph processing (see `harmony-graph-bc/`)
-- Parameter management (see `bounded-contexts/parameter-bc/`)
-- State transitions (see `state-machine/`)
+### Task Completion Checklist
 
-**Key Pattern**: Bounded contexts subscribe to command events and publish result events. They never directly manipulate the DOM.
+- [ ] **Code Implementation Complete** — All files created and tested
+- [ ] **Documentation Updated** — DESIGN_SYSTEM.md reflects new implementation
+- [ ] **Cross-References Added** — Code files link to docs, docs link to code files
+- [ ] **Examples Provided** — Usage examples added where appropriate
+- [ ] **Vision Alignment Noted** — Document how task advances core pillars
+- [ ] **Quality Gates Passed** — All automated checks pass
+- [ ] **Chrome Testing Complete** — UI components tested in browser (if applicable)
+- [ ] **Git Committed** — Changes committed with proper message format
+- [ ] **Git Pushed** — Changes pushed to remote repository
 
-**Example Flow**:
-```
-User clicks Play → UI publishes "PlayCommand" → GraphBC subscribes → Processes → Publishes "PlaybackStarted"
-```
+### Documentation Update Guidelines
 
-See implementation: `bounded-contexts/graph-bc/src/lib.rs`
+When updating DESIGN_SYSTEM.md:
 
-### Semantic Types
+1. **Use B1-level English** — Clear, simple, friendly language
+2. **Be Concise** — Explain concepts, not implementation details
+3. **Link Relatively** — Use relative paths to code files: `../../path/to/file.js`
+4. **Minimal Code** — Show usage patterns, not full implementations
+5. **Logical Sections** — Group related concepts together
+6. **Two-Way References** — Docs point to code, code points to docs
 
-Semantic types define **domain-specific data structures** with validation and serialization:
+### Where to Document Different Changes
 
-- `Scene3D`: 3D scene configuration (see `harmony-schemas/schemas/semantic_types/Scene3D.json`)
-- `Transform3D`: 3D transformation matrices (see `harmony-schemas/schemas/semantic_types/Transform3D.json`)
-- `SpatialInput`: XR/spatial input abstraction (see `docs/specs/SpatialInput.md`)
+| Change Type | Documentation Section |
+|-------------|----------------------|
+| New component | Component Architecture → [Component Type] |
+| New token | Design Tokens → [Token Category] |
+| New bounded context | Bounded Contexts → [Context Name] |
+| EventBus pattern | Event-Driven Architecture |
+| Performance optimization | Performance Budgets |
+| Build process | Development Workflow |
+| Testing approach | Quality Gates |
+| Spatial/XR feature | Spatial Computing |
 
-**Workflow**: Define schema in `harmony-schemas/` → Run codegen → Use generated types in Rust/TypeScript.
+### Example Documentation Entry
 
-See: `harmony-schemas/README.md`
+```markdown
+## Component Architecture
 
-### Design Tokens
+### Button Primitive
 
-Design tokens are **immutable design decisions** stored as JSON schemas:
+Location: `primitives/button/button.js`
 
-- Visual: colors, typography, spacing (see `tokens/visual/`)
-- Spatial: 3D depth, field-of-view (see `tokens/spatial/`)
-- Temporal: animation timing, audio latency (see `tokens/temporal/`)
+A foundational interactive element following atomic design principles.
 
-**Usage**: Import tokens in components via `import tokens from '../../tokens/visual/colors.json'`
+**Usage:**
+\`\`\`html
+<harmony-button variant="primary">Click Me</harmony-button>
+\`\`\`
 
-See: `tokens/README.md`
+**States:** default, hover, focus, active, disabled
 
----
+**Events Published:**
+- `button.clicked` — User activates button
 
-## Architecture
-
-### Technology Stack
-
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| **UI Rendering** | Vanilla HTML/CSS/JS | DOM manipulation, visual components |
-| **Component Model** | Web Components | Encapsulation via shadow DOM |
-| **Business Logic** | Rust → WASM | Bounded contexts, audio processing |
-| **Communication** | EventBus singleton | Decoupled pub/sub messaging |
-| **Audio Engine** | WebGPU + AudioWorklet | GPU-accelerated DSP |
-| **Build Tools** | wasm-pack, esbuild | Compilation and bundling |
-
-**Critical Rule**: UI code is JavaScript. Core logic is Rust. No exceptions without architecture review.
-
-### Package Structure
-
-```
-harmony-design/
-├── components/          # UI components (primitives, molecules, organisms)
-├── bounded-contexts/    # Rust WASM modules (graph-bc, parameter-bc)
-├── harmony-schemas/     # JSON schemas and codegen
-├── tokens/              # Design tokens (visual, spatial, temporal)
-├── core/                # EventBus singleton, TypeNavigator
-├── hooks/               # Reactive state hooks
-├── styles/              # Global CSS and themes
-├── examples/            # Demo applications
-└── DESIGN_SYSTEM.md     # This file
+**Implementation Notes:**
+- Uses shadow DOM for style encapsulation
+- Keyboard accessible (Space/Enter)
+- See code for full API: [button.js](../../primitives/button/button.js)
 ```
 
-See: `package.json` for build scripts
+## Architecture Principles
 
-### Data Flow
+### Reactive Component System
 
-```
-User Interaction → UI Component → EventBus → Bounded Context → State Update → UI Re-render
-```
+All UI components are Web Components using shadow DOM. No frameworks.
 
-**Example**: Slider adjustment
-1. User drags slider (see `components/primitives/slider/slider.js`)
-2. Slider publishes `ParameterChanged` event
-3. EventBus routes to ParameterBC (see `bounded-contexts/parameter-bc/src/lib.rs`)
-4. ParameterBC validates and updates state
-5. ParameterBC publishes `ParameterUpdated` event
-6. UI components subscribed to updates re-render
-
----
-
-## Component System
-
-### Atomic Design Hierarchy
-
-Components follow **atomic design principles**:
-
-1. **Primitives** (`components/primitives/`): Buttons, sliders, knobs
-2. **Molecules** (`components/molecules/`): Parameter groups, control clusters
-3. **Organisms** (`organisms/`): Complete plugin UIs, mixers
-4. **Templates** (`templates/`): Page layouts, application shells
-
-**Naming Convention**: `{level}-{name}.js` (e.g., `primitive-button.js`)
-
-### Web Component Pattern
-
-All components extend `HTMLElement` and use shadow DOM:
-
+**Pattern:**
 ```javascript
-class HarmonyButton extends HTMLElement {
+class HarmonyComponent extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
   }
-  
-  connectedCallback() {
-    this.render();
-    this.attachEventListeners();
-  }
-  
-  render() {
-    this.shadowRoot.innerHTML = `
-      <style>/* scoped styles */</style>
-      <button part="button">${this.textContent}</button>
-    `;
-  }
 }
-
-customElements.define('harmony-button', HarmonyButton);
 ```
 
-See: `components/primitives/button/button.js`
+### Atomic Design
 
-### Component Lifecycle
+**Hierarchy:**
+- **Tokens** — Design values (colors, spacing, typography)
+- **Primitives** — Basic components (button, input, label)
+- **Molecules** — Simple compositions (form field, card header)
+- **Organisms** — Complex sections (navigation, form, player)
+- **Templates** — Page layouts (app-shell, editor-layout)
 
-1. **Construction**: Initialize shadow DOM
-2. **Connection**: Render template, attach listeners
-3. **Attribute Changes**: Re-render on observed attributes
-4. **Disconnection**: Clean up listeners, subscriptions
+### WASM Performance
 
-**Performance Note**: Use `requestAnimationFrame` for visual updates to stay within 16ms budget.
+Bounded contexts written in Rust, compiled to WebAssembly:
 
-### State Management
+- **harmony-graph-bc** — Audio graph engine
+- **harmony-audio-bc** — DSP processing
+- **harmony-project-bc** — Project management
 
-Components use **reactive hooks** for state:
+**Build:** `wasm-pack build --target web`
 
-```javascript
-import { useSignal } from '../../../hooks/use-signal.js';
+### GPU-First Audio
 
-const count = useSignal(0);
-count.subscribe(value => this.render());
-count.set(count.value + 1);
+Audio processing uses WebGPU compute shaders when available, falls back to WASM.
+
+**Performance Targets:**
+- Audio latency: ≤10ms end-to-end
+- Frame budget: ≤16ms (60fps)
+- Memory budget: ≤50MB WASM heap
+- Load time: ≤200ms initial
+
+## Design Tokens
+
+Design tokens are JSON files in `tokens/` directory.
+
+**Categories:**
+- **Color** — Brand colors, semantic colors, alpha variants
+- **Spacing** — Layout spacing scale (4px base)
+- **Typography** — Font families, sizes, weights, line heights
+- **Motion** — Animation durations, easing functions
+- **3D Depth** — Z-depth tokens for spatial layouts
+- **Field-of-View** — Camera FOV tokens for XR
+
+**Schema Location:** `harmony-schemas/schemas/tokens/`
+
+**Usage in CSS:**
+```css
+:root {
+  --color-primary: #0066cc;
+  --spacing-md: 16px;
+}
 ```
 
-See: `hooks/use-signal.js`
+## Component Architecture
 
----
+### Primitives
 
-## Event-Driven Communication
+Location: `primitives/`
+
+Basic building blocks. Each primitive:
+- Lives in its own directory
+- Has a `.js` file (component) and `.css` file (styles)
+- Uses shadow DOM
+- Publishes events, never calls BCs directly
+
+**Testing:** All primitives must be tested in Chrome before completion.
+
+### Molecules
+
+Location: `organisms/` (historical naming)
+
+Compositions of primitives. Follow same patterns as primitives.
+
+### Organisms
+
+Complex components combining multiple molecules and primitives.
+
+### Templates
+
+Page-level layouts. Include:
+- **app-shell** — Main application frame with EventBusComponent
+
+## Bounded Contexts
+
+Rust modules compiled to WASM. Each context:
+- Has a schema in `harmony-schemas/schemas/`
+- Generates TypeScript types via codegen
+- Exposes WASM interface
+- Subscribes to command events
+- Publishes result events
+
+**Contexts:**
+- **GraphEngine** — Audio node graph
+- **AudioProcessor** — DSP operations
+- **ProjectManager** — Project state
+
+**Codegen Pipeline:**
+```
+harmony-schemas → harmony-dev/crates → harmony-dev/workers
+```
+
+**Rule:** Never edit Rust directly. Change schema, run codegen, verify compilation.
+
+## Event-Driven Architecture
 
 ### EventBus Singleton
 
-The EventBus is the **central nervous system** of Harmony. It provides decoupled pub/sub messaging.
+Location: `core/event-bus.js`
 
-**Critical Policy**: Only ONE EventBus instance exists, defined in `core/event-bus.js`.
+**Critical Rules:**
+- Only ONE EventBus instance across entire runtime
+- Singleton originates from `core/event-bus.js`
+- Other packages re-export: `export { EventBus } from "../../core/event-bus.js"`
+- No duplicate implementations permitted
 
-**Location**: `core/event-bus.js`
+**Pattern:**
 
-### Publishing Events
-
+**UI Component publishes:**
 ```javascript
-import { EventBus } from '../core/event-bus.js';
+eventBus.publish('playback.play', { trackId: 123 });
+```
 
-const bus = EventBus.getInstance();
-bus.publish('ParameterChanged', {
-  nodeId: 'osc-1',
-  paramName: 'frequency',
-  value: 440
+**Bounded Context subscribes:**
+```javascript
+eventBus.subscribe('playback.play', (payload) => {
+  // Process command
+  // Publish result
+  eventBus.publish('playback.started', { trackId: 123 });
 });
 ```
 
-### Subscribing to Events
+### EventBusComponent
 
-```javascript
-const subscription = bus.subscribe('ParameterChanged', (payload) => {
-  console.log('Parameter changed:', payload);
-});
+Location: `components/event-bus/event-bus-component.js`
 
-// Clean up
-subscription.unsubscribe();
-```
+Debug UI for EventBus. Must be available on every page.
 
-### ProcessCommand Pattern
+**Activation:** `Ctrl+Shift+E`
 
-Bounded contexts use the **ProcessCommand pattern**:
+**Inclusion:** Add to app-shell template.
 
-```rust
-// In Rust WASM module
-#[wasm_bindgen]
-pub fn process_command(command_type: &str, payload: JsValue) -> Result<JsValue, JsValue> {
-    match command_type {
-        "Play" => handle_play(payload),
-        "Stop" => handle_stop(payload),
-        _ => Err(JsValue::from_str("Unknown command"))
-    }
-}
-```
+### Error Logging
 
-See: `bounded-contexts/graph-bc/src/commands.rs`
+EventBus errors MUST be logged with context:
+- Event type
+- Source
+- Payload
+- Error message
 
-### Event Naming Convention
+## Spatial Computing
 
-- **Commands**: Imperative verbs (e.g., `PlayCommand`, `SetParameterCommand`)
-- **Events**: Past tense (e.g., `PlaybackStarted`, `ParameterUpdated`)
-- **Queries**: Questions (e.g., `GetNodeState`, `QueryAvailablePlugins`)
+### Semantic Types
 
-### EventBus Debugging
+Spatial components use semantic types for factory instantiation:
 
-The EventBus component is available on every page for debugging:
+- **Scene3D** — `semantic_type: "scene_3d"`
+- **Transform3D** — `semantic_type: "transform_3d"`
 
-- **Shortcut**: `Ctrl+Shift+E` to toggle visibility
-- **Location**: Included in `templates/app-shell.html`
-- **Features**: Event log, payload inspection, subscription viewer
+**Control Factory:** Maps semantic_type to component class.
 
-See: `components/organisms/event-bus-debugger/event-bus-debugger.js`
+Location: `core/control-factory.js`
 
----
+### Zone Affinity
 
-## Audio Processing
+XR-specific feature for spatial zones.
 
-### WebGPU Pipeline
+**ZoneAffinity.XR** — Component prefers XR rendering context.
 
-Audio processing uses **WebGPU compute shaders** for maximum performance:
+**Spec:** Document in spatial computing section.
 
-1. **Input**: AudioWorklet reads audio buffer
-2. **Transfer**: SharedArrayBuffer passes data to GPU
-3. **Processing**: WebGPU compute shader applies DSP
-4. **Output**: Results written back via SharedArrayBuffer
-5. **Playback**: AudioWorklet outputs processed audio
+### Spatial Input Abstraction
 
-**Latency Budget**: Maximum 10ms end-to-end.
+Unified input handling for 2D and XR environments.
 
-See: `harmony-graph/src/gpu-processor.js`
+**Primitives:**
+- Mouse/touch → 2D
+- Hand tracking → XR
+- Controllers → XR
 
-### Audio Graph
-
-The audio graph is a **directed acyclic graph (DAG)** of processing nodes:
-
-- **Nodes**: Oscillators, filters, effects (see `harmony-graph/src/nodes/`)
-- **Edges**: Audio connections with gain and routing
-- **Parameters**: Automatable values with smoothing
-
-**Implementation**: Rust in `harmony-graph-bc/src/graph.rs`
-
-### Cross-Graph Edges
-
-Edges between graphs **must be indexed** for efficient lookup:
-
-```rust
-pub struct CrossGraphEdge {
-    pub source_graph_id: GraphId,
-    pub target_graph_id: GraphId,
-    pub source_node_id: NodeId,
-    pub target_node_id: NodeId,
-}
-
-// Indexed in HashMap for O(1) lookup
-```
-
-See: `harmony-graph-bc/src/cross_graph.rs`
-
-### Dual Implementation Requirement
-
-All audio processing functions **must have both WebGPU and WASM implementations**:
-
-- **WebGPU**: For GPU-capable devices (preferred)
-- **WASM**: Fallback for compatibility
-
-**Example**: Convolution reverb has both `gpu-convolution.wgsl` and `wasm-convolution.rs`.
-
-See: `harmony-graph/src/processors/`
-
----
+**Abstraction Layer:** `controls/spatial-input/`
 
 ## Performance Budgets
 
-### Strict Limits
+**Absolute Constraints:**
+- Render: ≤16ms per frame (60fps)
+- Memory: ≤50MB WASM heap
+- Load: ≤200ms initial
+- Audio: ≤10ms end-to-end latency
 
-| Metric | Budget | Measurement |
-|--------|--------|-------------|
-| **Render Time** | 16ms | Chrome DevTools Performance panel |
-| **Memory** | 50MB WASM heap | `performance.memory.usedJSHeapSize` |
-| **Initial Load** | 200ms | Lighthouse Performance score |
-| **Audio Latency** | 10ms | AudioWorklet round-trip time |
-| **Frame Rate** | 60fps | Animations and visual updates |
+**GPU-First Targets:**
+- Audio processing on GPU when available
+- Fallback to WASM
+- SharedArrayBuffer for AudioWorklet ↔ GPU transfer
 
-**Policy**: These budgets are **absolute constraints** and cannot be violated.
+**Monitoring:**
+- Chrome DevTools Performance panel
+- Performance budget CI check (`.github/performance-budget.json`)
 
-### Performance Testing
-
-All animations and complex components must be tested:
-
-1. Open Chrome DevTools → Performance tab
-2. Record interaction (e.g., slider drag, animation)
-3. Verify all frames complete within 16ms
-4. Check for layout thrashing or forced reflows
-
-**Example**: `components/primitives/slider/slider.test.js` includes performance benchmarks.
-
-### GPU-First Targets
-
-- **Buffer Size**: 128 samples (preferred), 256 max
-- **Sample Rate**: 48kHz standard
-- **Channels**: Stereo (2 channels)
-- **Bit Depth**: 32-bit float
-
-See: `harmony-graph/src/audio-context.js`
-
----
-
-## Development Workflows
-
-### Adding a New Component
-
-1. **Design**: Create `.pen` file in `design/` (optional)
-2. **Implement**: Create component in `components/{level}/{name}/`
-3. **Style**: Use design tokens from `tokens/`
-4. **Test**: Write tests in `{name}.test.js`
-5. **Verify**: Test all states in Chrome (default, hover, focus, active, disabled)
-6. **Document**: Update this file with usage examples
-7. **Commit**: Include component, tests, and documentation
-
-**Template**: See `components/primitives/button/` for reference structure.
-
-### Modifying a Schema
-
-1. **Navigate**: `cd harmony-schemas`
-2. **Edit**: Modify schema in `schemas/semantic_types/{Type}.json`
-3. **Codegen**: Run `npm run codegen`
-4. **Verify**: Check generated code in `harmony-dev/crates/` and `harmony-dev/workers/`
-5. **Commit**: Commit schema AND generated code together
-
-**Critical**: CI fails if schema changed but generated code is stale.
-
-See: `harmony-schemas/README.md`
-
-### Building WASM Modules
-
-1. **Navigate**: `cd bounded-contexts/{context-name}`
-2. **Build**: `wasm-pack build --target web`
-3. **Output**: Check `pkg/` directory for `.wasm` and `.js` files
-4. **Import**: Use in JavaScript via `import init, { processCommand } from './pkg/{context}.js'`
-
-**CI Requirement**: `.github/workflows/ci-build.yml` must include `build-wasm` job.
-
-### Testing in Chrome
-
-**Mandatory for all UI components**:
-
-1. Open `examples/{component-name}.html` in Chrome
-2. Test **all states**: default, hover, focus, active, disabled
-3. For complex components: error states, loading states, empty states
-4. Verify **performance**: 60fps for animations
-5. Check **accessibility**: keyboard navigation, screen reader support
-
-**No component is complete without Chrome verification.**
-
-### Creating a Bounded Context
-
-1. **Create**: `mkdir bounded-contexts/{context-name}`
-2. **Initialize**: `cargo init --lib`
-3. **Configure**: Add `wasm-bindgen` and `serde` dependencies
-4. **Implement**: Define commands and state in `src/lib.rs`
-5. **Build**: `wasm-pack build --target web`
-6. **Integrate**: Wire into EventBus in composition root
-
-See: `bounded-contexts/graph-bc/` for reference implementation.
-
----
-
-## Testing Guidelines
-
-### Unit Tests
-
-- **Location**: `{module}.test.js` next to source file
-- **Framework**: Native browser APIs (no Jest, Mocha, etc.)
-- **Pattern**: Arrange, Act, Assert
-
-```javascript
-// slider.test.js
-export function testSliderValue() {
-  const slider = document.createElement('harmony-slider');
-  slider.setAttribute('value', '50');
-  document.body.appendChild(slider);
-  
-  const actual = slider.value;
-  const expected = 50;
-  
-  console.assert(actual === expected, `Expected ${expected}, got ${actual}`);
-  document.body.removeChild(slider);
-}
-```
-
-### Integration Tests
-
-- **Location**: `tests/integration/`
-- **Scope**: Multi-component interactions, EventBus flows
-- **Example**: User clicks button → EventBus → BC → State update → UI re-render
-
-See: `tests/integration/parameter-flow.test.js`
-
-### Performance Tests
-
-- **Requirement**: All animations must target 60fps
-- **Tool**: Chrome DevTools Performance panel
-- **Metrics**: Frame time, scripting time, rendering time
-
-```javascript
-// Performance benchmark example
-const start = performance.now();
-for (let i = 0; i < 1000; i++) {
-  slider.setValue(Math.random() * 100);
-}
-const end = performance.now();
-console.assert(end - start < 16, 'Exceeded 16ms budget');
-```
-
-### Quality Gates
-
-Before merging, all quality gates must pass:
-
-1. **Build**: All TypeScript/Rust compiles without errors
-2. **Tests**: All unit and integration tests pass
-3. **Performance**: Budgets met (16ms render, 50MB memory, 200ms load)
-4. **Linting**: ESLint and Prettier pass
-5. **WASM**: `build-wasm` job succeeds in CI
-
-**CI Pipeline**: `.github/workflows/ci-build.yml`
-
----
-
-## File Organization
-
-### Directory Structure
-
-```
-harmony-design/
-├── components/
-│   ├── primitives/        # Atomic UI elements
-│   │   ├── button/
-│   │   ├── slider/
-│   │   └── knob/
-│   ├── molecules/         # Component compositions
-│   └── organisms/         # Complex UI sections
-├── bounded-contexts/
-│   ├── graph-bc/          # Audio graph processing (Rust)
-│   └── parameter-bc/      # Parameter management (Rust)
-├── harmony-schemas/       # JSON schemas and codegen
-│   ├── schemas/
-│   │   └── semantic_types/
-│   └── codegen/
-├── tokens/
-│   ├── visual/            # Colors, typography, spacing
-│   ├── spatial/           # 3D depth, FOV
-│   └── temporal/          # Animation timing
-├── core/
-│   ├── event-bus.js       # EventBus singleton
-│   └── type-navigator.js  # Type-safe queries
-├── hooks/                 # Reactive state hooks
-├── styles/                # Global CSS
-├── examples/              # Demo applications
-├── tests/                 # Integration tests
-└── DESIGN_SYSTEM.md       # This file
-```
-
-### Naming Conventions
-
-- **Components**: `{level}-{name}.js` (e.g., `primitive-button.js`)
-- **Bounded Contexts**: `{domain}-bc/` (e.g., `graph-bc/`)
-- **Schemas**: `{Type}.json` (e.g., `Scene3D.json`)
-- **Tokens**: `{category}.json` (e.g., `colors.json`)
-- **Tests**: `{module}.test.js`
-
-### Import Paths
-
-Use **relative imports** for local modules:
-
-```javascript
-// Good
-import { EventBus } from '../../core/event-bus.js';
-
-// Bad (no npm dependencies in runtime)
-import { EventBus } from '@harmony/core';
-```
+## Development Workflow
 
 ### Composition Root
 
-Every deployable package must export a **composition root** from `src/index.js`:
+Every deployable package must have `src/index.js` that:
+- Wires EventBus singleton
+- Registers plugins
+- Exposes public API
 
+**Example:**
 ```javascript
 // src/index.js
 import { EventBus } from '../core/event-bus.js';
-import { initGraphBC } from '../bounded-contexts/graph-bc/init.js';
+import { registerComponents } from './components/index.js';
 
-export function initializeHarmony() {
-  const bus = EventBus.getInstance();
-  initGraphBC(bus);
-  return { bus };
+export function initialize() {
+  const eventBus = EventBus.getInstance();
+  registerComponents(eventBus);
+  return { eventBus };
 }
 ```
 
-**Policy**: A package without `src/index.js` is incomplete.
+### Module Reachability
 
----
+All modules must be reachable from composition root via imports. Orphaned modules must be removed or connected.
 
-## Implementation Notes
+### Schema Changes
 
-### TypeNavigator Pattern
+1. Navigate to `harmony-schemas/`
+2. Modify schema file
+3. Run codegen: `npm run codegen`
+4. Verify compilation
+5. Commit schema + generated code together
 
-Use **TypeNavigator** for type-safe queries:
+**CI Requirement:** CI fails if schema changed but generated code is stale.
 
-```javascript
-import { TypeNavigator } from '../core/type-navigator.js';
+### Testing Requirements
 
-const nav = new TypeNavigator(state);
-const frequency = nav.query('nodes.osc-1.parameters.frequency');
-```
+**UI Components:**
+- Test in Chrome before marking complete
+- Verify all states: default, hover, focus, active, disabled
+- Complex components: error, loading, empty states
+- Animations: 60fps target, use Performance panel
 
-**Policy**: TypeNavigator-only queries. No direct object access.
-
-See: `core/type-navigator.js`
-
-### SharedArrayBuffer for Audio
-
-**AudioWorklet ↔ GPU data transfer must use SharedArrayBuffer**:
-
-```javascript
-const sharedBuffer = new SharedArrayBuffer(bufferSize * 4);
-const float32View = new Float32Array(sharedBuffer);
-
-// AudioWorklet writes
-float32View.set(inputBuffer);
-
-// GPU reads
-const gpuBuffer = device.createBuffer({
-  size: sharedBuffer.byteLength,
-  usage: GPUBufferUsage.STORAGE,
-  mappedAtCreation: true
-});
-new Float32Array(gpuBuffer.getMappedRange()).set(float32View);
-```
-
-See: `harmony-graph/src/shared-buffer.js`
-
-### Project Serialization
-
-**All project files must be serializable to JSON** for IndexedDB storage:
-
-```javascript
-const project = {
-  version: '1.0.0',
-  graph: {
-    nodes: [...],
-    edges: [...]
-  },
-  parameters: {...},
-  metadata: {...}
-};
-
-// Save to IndexedDB
-await db.put('projects', project, projectId);
-```
-
-See: `core/project-serializer.js`
-
-### Desktop Wrapper
-
-**Desktop applications must use Tauri**, not Electron:
-
-```toml
-# Cargo.toml
-[dependencies]
-tauri = "1.5"
-```
-
-**Rationale**: Smaller bundle size, better performance, Rust integration.
-
-See: `desktop/tauri.conf.json`
-
-### No Async in Audio Thread
-
-**Audio render thread must be synchronous**:
-
-```javascript
-// AudioWorkletProcessor
-process(inputs, outputs, parameters) {
-  // Good: Synchronous processing
-  for (let i = 0; i < outputs[0][0].length; i++) {
-    outputs[0][0][i] = inputs[0][0][i] * gain;
-  }
-  
-  // Bad: Async operations
-  // await fetch('/data'); // NEVER DO THIS
-  
-  return true;
-}
-```
-
-**Policy**: No async operations in audio render thread. Pre-fetch data in main thread.
-
-### Blocked Task Protocol
-
-If a task cannot be completed:
-
-1. **Create Report**: `reports/blocked/{task_id}.md`
-2. **Include**:
-   - Reason for blockage
-   - Attempted solutions
-   - Recommended enabling work
-3. **Await Instructions** or create enabling task
-
-See: `reports/blocked/` for examples.
-
-### Documentation Updates
-
-**Mandatory**: Every task completion must update this file.
-
-**Pattern**:
-1. Implement feature
-2. Add usage example to relevant section
-3. Link to code files
-4. Commit documentation with code
-
-**Policy**: Task is not complete without documentation update.
+**Bounded Contexts:**
+- Unit tests for Rust code
+- Integration tests for WASM interface
 
 ### Git Workflow
 
-**Push before starting new task**:
+1. Implement feature
+2. Update DESIGN_SYSTEM.md (non-optional)
+3. Commit with format: `feat(task-id): description`
+4. Push to remote (non-optional)
+5. CI must pass all quality gates
 
-```bash
-git add .
-git commit -m "feat(task-id): Description"
-git push origin main
+**Commit Message Format:**
+```
+feat(task-del-button-primitive): Button Primitive: Basic interactive element
+
+- Implements shadow DOM component
+- Publishes button.clicked event
+- Accessible keyboard support
+- Tested in Chrome (all states)
+- Documentation updated in DESIGN_SYSTEM.md
 ```
 
-**Verification**: `git status` must show "Your branch is up to date with 'origin/main'".
+## Quality Gates
 
-**Policy**: Cannot start new task until changes are pushed to remote.
+CI pipeline (`.github/workflows/ci-build.yml`) includes:
 
----
+- **Build Check** — All packages compile
+- **WASM Build** — `wasm-pack build --target web` in harmony-graph-bc
+- **Bridge Validation** — EventBus singleton check
+- **Snapshot Validation** — Component composition validation
+- **Bundle Size** — Performance budget enforcement
+- **License Check** — Dependency license compliance
+- **Duplicate Code Audit** — Code duplication detection
+- **Hardcode Audit** — Magic number detection
 
-## Quick Reference
+**Rule:** Quality gates must pass before proceeding to next task.
 
-### Common Commands
+## Technology Constraints
 
-```bash
-# Build WASM modules
-cd bounded-contexts/graph-bc && wasm-pack build --target web
+### Runtime Dependencies
 
-# Run codegen
-cd harmony-schemas && npm run codegen
+**Allowed:**
+- Vanilla JavaScript (ES modules)
+- Web Components (custom elements)
+- Shadow DOM
+- WebAssembly (Rust → WASM)
+- WebGPU (for audio processing)
 
-# Start dev server
-npm run dev
+**NOT Allowed:**
+- npm packages in runtime code
+- React, Vue, Leptos, or any framework
+- External runtime dependencies
 
-# Run tests
-npm test
+### Build Dependencies
 
-# Check performance
-npm run perf
-```
+**Allowed:**
+- npm packages for build tools
+- Dev servers (Vite, webpack-dev-server)
+- Testing frameworks (Vitest, Playwright)
+- Python for build scripts and test servers
+
+**NOT Allowed:**
+- Python in production runtime
+- Python for core logic or bounded contexts
+
+### Desktop Wrapper
+
+**Must Use:** Tauri
+
+**Not Allowed:** Electron
+
+## Cross-References
 
 ### Key Files
 
-- **EventBus Singleton**: `core/event-bus.js`
-- **Type Navigator**: `core/type-navigator.js`
-- **Schema Definitions**: `harmony-schemas/schemas/semantic_types/`
-- **Design Tokens**: `tokens/`
-- **Component Examples**: `examples/`
+- **EventBus Singleton:** [core/event-bus.js](../../core/event-bus.js)
+- **Control Factory:** [core/control-factory.js](../../core/control-factory.js)
+- **EventBus Component:** [components/event-bus/event-bus-component.js](../../components/event-bus/event-bus-component.js)
+- **App Shell Template:** [templates/app-shell/](../../templates/app-shell/)
+- **Design Tokens:** [tokens/](../../tokens/)
+- **Schemas:** [harmony-schemas/schemas/](../../harmony-schemas/schemas/)
 
-### Performance Checklist
+### Documentation
 
-- [ ] Render time < 16ms
-- [ ] Memory < 50MB
-- [ ] Load time < 200ms
-- [ ] Audio latency < 10ms
-- [ ] Animations at 60fps
+- **This File:** `DESIGN_SYSTEM.md` — Architecture and concepts
+- **README.md** — Project overview and getting started
+- **CHANGELOG.md** — Version history and changes
 
-### Before Committing
+## Vision Alignment
 
-- [ ] All tests pass
-- [ ] WASM builds successfully
-- [ ] Chrome testing complete (all states verified)
-- [ ] Documentation updated
-- [ ] Quality gates pass
-- [ ] No nested harmony-* directories
+Every task should advance one or more core pillars:
+
+1. **Reactive Component System** — Web Components, event-driven architecture
+2. **Atomic Design** — Token-based design system, component hierarchy
+3. **WASM Performance** — Rust bounded contexts, performance optimization
+4. **GPU-First Audio** — WebGPU compute shaders, audio processing
+
+When completing a task, document which pillar(s) it advances and how.
+
+## Common Patterns
+
+### Creating a New Component
+
+1. Create directory: `primitives/my-component/`
+2. Create files: `my-component.js`, `my-component.css`
+3. Implement Web Component with shadow DOM
+4. Publish events for user interactions
+5. Test in Chrome (all states)
+6. Update DESIGN_SYSTEM.md
+7. Commit and push
+
+### Adding a New Bounded Context
+
+1. Create schema in `harmony-schemas/schemas/`
+2. Run codegen: `npm run codegen`
+3. Implement Rust module
+4. Build WASM: `wasm-pack build --target web`
+5. Wire to EventBus in composition root
+6. Update DESIGN_SYSTEM.md
+7. Commit schema + generated code together
+
+### Adding a New Token
+
+1. Create/update JSON in `tokens/`
+2. Create schema in `harmony-schemas/schemas/tokens/`
+3. Update CSS variables
+4. Document in Design Tokens section
+5. Commit and push
+
+## Blocked Task Protocol
+
+If a task cannot be completed:
+
+1. Create report: `reports/blocked/{task_id}.md`
+2. Include:
+   - Reason for blockage
+   - Attempted solutions
+   - Recommended enabling work
+3. Await further instructions OR create enabling task
+
+## Troubleshooting
+
+### EventBus Errors
+
+Check console for:
+- Event type
+- Source component
+- Payload structure
+- Error message
+
+Verify EventBus singleton is properly wired in composition root.
+
+### WASM Build Failures
+
+1. Check schema changes were committed
+2. Run codegen: `npm run codegen`
+3. Verify Rust compilation: `cargo check`
+4. Check wasm-pack version compatibility
+
+### Component Not Rendering
+
+1. Verify custom element is registered
+2. Check shadow DOM attachment
+3. Inspect CSS encapsulation
+4. Use Chrome DevTools Elements panel
+
+### Performance Issues
+
+1. Use Chrome DevTools Performance panel
+2. Check frame timing (target: ≤16ms)
+3. Profile WASM memory usage (target: ≤50MB)
+4. Verify GPU shader usage for audio
+
+## Additional Resources
+
+- **Storybook:** `.storybook/` — Component documentation and testing
+- **Examples:** `examples/` — Usage examples and demos
+- **Test Pages:** `test-pages/` — Integration test pages
+- **Scripts:** `scripts/` — Build and development scripts
 
 ---
 
-## Getting Help
-
-- **Architecture Questions**: Review this file and `harmony-schemas/README.md`
-- **Component Patterns**: See `components/primitives/button/` for reference
-- **EventBus Usage**: Check `core/event-bus.js` and examples
-- **Performance Issues**: Use Chrome DevTools Performance panel
-- **Schema Changes**: Follow workflow in "Modifying a Schema" section
-
----
-
-**Last Updated**: 2025-01-15  
-**Maintainers**: Harmony Design System Team  
-**License**: MIT
+**Remember:** Documentation is non-optional. Every task completion requires updating this file with proper cross-references and clear explanations.
