@@ -1,0 +1,86 @@
+/**
+ * Time Picker Styles
+ * 
+ * Standalone CSS for time picker component styling.
+ * Can be imported separately or used within shadow DOM.
+ */
+
+:root {
+  --time-picker-primary: #0066cc;
+  --time-picker-border: #d1d5db;
+  --time-picker-hover-bg: #f3f4f6;
+  --time-picker-text: #1f2937;
+  --time-picker-text-secondary: #6b7280;
+  --time-picker-disabled-bg: #f9fafb;
+  --time-picker-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --time-picker-focus-ring: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Base container */
+.time-picker-container {
+  display: inline-block;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+
+/* Input display */
+.time-picker-input {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--time-picker-border);
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  user-select: none;
+  transition: all 150ms ease;
+}
+
+.time-picker-input:hover:not(.disabled) {
+  border-color: var(--time-picker-primary);
+}
+
+.time-picker-input:focus-within {
+  outline: none;
+  border-color: var(--time-picker-primary);
+  box-shadow: var(--time-picker-focus-ring);
+}
+
+.time-picker-input.disabled {
+  background: var(--time-picker-disabled-bg);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Performance optimization: GPU acceleration */
+.picker-dropdown {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+  .time-picker-input {
+    border-width: 2px;
+  }
+  
+  .column-item.selected {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .time-picker-input,
+  .column-item,
+  .btn {
+    transition: none;
+  }
+  
+  .column-scroll {
+    scroll-behavior: auto;
+  }
+}
