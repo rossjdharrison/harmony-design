@@ -1,0 +1,68 @@
+name: Duplicate Code Audit
+
+on:
+  schedule:
+    # Run weekly on Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+    inputs:
+      threshold:
+        description: 'Minimum number of duplicates to report'
+        required: false
+        default: '3'
+      minLines:
+        description: 'Minimum lines to consider as duplicate'
+        required: false
+        default: '5'
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Run duplicate code audit
+        run: |
+          node scripts/audit-duplicate-code.js \
+            --threshold=${{ github.event.inputs.threshold || '3' }} \
+            --min-lines=${{ github.event.inputs.minLines || '5' }} \
+            --output=markdown
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v3
+        with:
+          name: duplicate-code-audit-report
+          path: reports/duplicate-code-audit.md
+          retention-days: 90
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('reports/duplicate-code-audit.md', 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Duplicate Code Audit Report\n\n' + report
+            });
+
+      - name: Check for critical duplicates
+        run: |
+          if grep -q "Severity: [5-9][0-9][0-9]" reports/duplicate-code-audit.md; then
+            echo "⚠️ Critical duplicates detected (severity > 500)"
+            echo "Review the audit report and consider refactoring"
+            exit 1
+          fi

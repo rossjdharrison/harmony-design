@@ -1,0 +1,53 @@
+{
+  "patterns": {
+    "eventHandling": {
+      "description": "Common event handling patterns that might be duplicated",
+      "signatures": [
+        "addEventListener",
+        "dispatchEvent",
+        "CustomEvent"
+      ]
+    },
+    "validation": {
+      "description": "Validation logic patterns",
+      "signatures": [
+        "if.*null",
+        "if.*undefined",
+        "typeof.*===",
+        "instanceof"
+      ]
+    },
+    "domManipulation": {
+      "description": "DOM manipulation patterns",
+      "signatures": [
+        "createElement",
+        "appendChild",
+        "querySelector",
+        "setAttribute"
+      ]
+    },
+    "stateManagement": {
+      "description": "State management patterns",
+      "signatures": [
+        "this.state",
+        "setState",
+        "getState"
+      ]
+    },
+    "errorHandling": {
+      "description": "Error handling patterns",
+      "signatures": [
+        "try.*catch",
+        "throw new Error",
+        "console.error"
+      ]
+    }
+  },
+  "excludePatterns": [
+    "test",
+    "spec",
+    "mock",
+    ".test.",
+    ".spec."
+  ]
+}
