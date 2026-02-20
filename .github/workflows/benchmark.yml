@@ -1,0 +1,299 @@
+name: Benchmark CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'performance/**'
+      - 'harmony-graph/**'
+      - 'workers/**'
+      - '.github/workflows/benchmark.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'performance/**'
+      - 'harmony-graph/**'
+      - 'workers/**'
+  workflow_dispatch:
+    inputs:
+      benchmark_suite:
+        description: 'Benchmark suite to run (all, gpu, wasm, audio)'
+        required: false
+        default: 'all'
+
+jobs:
+  # WASM Performance Benchmarks
+  wasm-benchmarks:
+    name: WASM Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            harmony-graph/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build WASM modules
+        run: |
+          cd harmony-graph
+          wasm-pack build --target web --release
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Run WASM benchmarks
+        run: |
+          node performance/benchmarks/wasm-performance.js
+      
+      - name: Check WASM memory budget (50MB max)
+        run: |
+          node performance/benchmarks/wasm-memory-check.js
+      
+      - name: Upload WASM benchmark results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: wasm-benchmark-results
+          path: performance/results/wasm-*.json
+          retention-days: 30
+
+  # GPU Performance Benchmarks
+  gpu-benchmarks:
+    name: GPU Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Chrome for GPU testing
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
+      - name: Run GPU benchmarks
+        run: |
+          node performance/benchmarks/gpu-benchmark-runner.js
+        env:
+          CHROME_BIN: /usr/bin/google-chrome-stable
+      
+      - name: Check render budget (16ms per frame)
+        run: |
+          node performance/benchmarks/render-budget-check.js
+      
+      - name: Upload GPU benchmark results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: gpu-benchmark-results
+          path: performance/results/gpu-*.json
+          retention-days: 30
+
+  # Audio Processing Benchmarks
+  audio-benchmarks:
+    name: Audio Processing Performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      
+      - name: Build audio processing modules
+        run: |
+          if [ -d "harmony-audio" ]; then
+            cd harmony-audio
+            wasm-pack build --target web --release
+          fi
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Run audio latency benchmarks
+        run: |
+          node performance/benchmarks/audio-latency-check.js
+      
+      - name: Check audio latency budget (10ms max)
+        run: |
+          node performance/benchmarks/audio-budget-check.js
+      
+      - name: Upload audio benchmark results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: audio-benchmark-results
+          path: performance/results/audio-*.json
+          retention-days: 30
+
+  # Load Time Benchmarks
+  load-time-benchmarks:
+    name: Initial Load Performance
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          sudo sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list'
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+      
+      - name: Run load time benchmarks
+        run: |
+          node performance/benchmarks/load-time-check.js
+        env:
+          CHROME_BIN: /usr/bin/google-chrome-stable
+      
+      - name: Check load budget (200ms max)
+        run: |
+          node performance/benchmarks/load-budget-check.js
+      
+      - name: Upload load time results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: load-time-results
+          path: performance/results/load-*.json
+          retention-days: 30
+
+  # Aggregate and Report
+  benchmark-report:
+    name: Generate Benchmark Report
+    runs-on: ubuntu-latest
+    needs: [wasm-benchmarks, gpu-benchmarks, audio-benchmarks, load-time-benchmarks]
+    if: always()
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Download all benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          path: performance/results/
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Generate benchmark report
+        run: |
+          node performance/benchmarks/generate-report.js
+      
+      - name: Check performance budgets
+        run: |
+          node performance/benchmarks/budget-gate.js
+      
+      - name: Upload consolidated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-report
+          path: performance/results/benchmark-report.html
+          retention-days: 90
+      
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'performance/results/benchmark-summary.md';
+            
+            if (fs.existsSync(reportPath)) {
+              const report = fs.readFileSync(reportPath, 'utf8');
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: report
+              });
+            }
+      
+      - name: Fail if budgets exceeded
+        run: |
+          node performance/benchmarks/enforce-budgets.js
+
+  # Historical Tracking
+  track-performance:
+    name: Track Performance History
+    runs-on: ubuntu-latest
+    needs: [benchmark-report]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Download benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          name: benchmark-report
+          path: performance/results/
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Update performance history
+        run: |
+          node performance/benchmarks/update-history.js
+      
+      - name: Commit performance history
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add performance/history/
+          git diff --staged --quiet || git commit -m "chore: update performance history [skip ci]"
+          git push

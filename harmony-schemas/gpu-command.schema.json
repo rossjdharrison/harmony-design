@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/gpu-command.schema.json",
+  "title": "GPUCommand",
+  "description": "Command for GPU execution queue",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique command identifier"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Priority level (high=audio, medium=analysis, low=visualization)"
+    },
+    "operation": {
+      "type": "string",
+      "enum": ["process", "analyze", "visualize"],
+      "description": "Type of GPU operation to perform"
+    },
+    "inputBuffer": {
+      "type": "string",
+      "description": "Identifier of input buffer"
+    },
+    "outputBuffer": {
+      "type": "string",
+      "description": "Identifier of output buffer"
+    },
+    "parameters": {
+      "type": "object",
+      "description": "Operation-specific parameters",
+      "additionalProperties": true
+    },
+    "timestamp": {
+      "type": "number",
+      "description": "Unix timestamp when command was created"
+    }
+  },
+  "required": ["id", "priority", "operation", "inputBuffer", "outputBuffer"],
+  "additionalProperties": false
+}

@@ -1,0 +1,352 @@
+name: Benchmark CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'performance/**'
+      - 'harmony-graph/**'
+      - 'harmony-core/**'
+      - 'workers/**'
+      - '.github/workflows/benchmark-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'performance/**'
+      - 'harmony-graph/**'
+      - 'harmony-core/**'
+      - 'workers/**'
+  workflow_dispatch:
+    inputs:
+      benchmark_suite:
+        description: 'Benchmark suite to run (all, render, audio, gpu, wasm)'
+        required: false
+        default: 'all'
+      iterations:
+        description: 'Number of iterations per benchmark'
+        required: false
+        default: '10'
+
+env:
+  NODE_VERSION: '18'
+  RUST_VERSION: 'stable'
+
+jobs:
+  prepare:
+    name: Prepare Benchmark Environment
+    runs-on: ubuntu-latest
+    outputs:
+      benchmark_suite: ${{ steps.set-suite.outputs.suite }}
+      iterations: ${{ steps.set-iterations.outputs.iterations }}
+    steps:
+      - name: Set benchmark suite
+        id: set-suite
+        run: |
+          SUITE="${{ github.event.inputs.benchmark_suite || 'all' }}"
+          echo "suite=$SUITE" >> $GITHUB_OUTPUT
+          echo "Running benchmark suite: $SUITE"
+
+      - name: Set iterations
+        id: set-iterations
+        run: |
+          ITERATIONS="${{ github.event.inputs.iterations || '10' }}"
+          echo "iterations=$ITERATIONS" >> $GITHUB_OUTPUT
+          echo "Iterations per benchmark: $ITERATIONS"
+
+  build-wasm:
+    name: Build WASM Modules
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            harmony-graph/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build harmony-graph WASM
+        working-directory: harmony-graph
+        run: wasm-pack build --target web --out-dir pkg
+
+      - name: Upload WASM artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: wasm-modules
+          path: |
+            harmony-graph/pkg/*.wasm
+            harmony-graph/pkg/*.js
+          retention-days: 1
+
+  benchmark-render:
+    name: Render Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [prepare, build-wasm]
+    if: needs.prepare.outputs.benchmark_suite == 'all' || needs.prepare.outputs.benchmark_suite == 'render'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wasm-modules
+          path: harmony-graph/pkg
+
+      - name: Run render benchmarks
+        run: |
+          node performance/benchmarks/run-render-benchmarks.js \
+            --iterations=${{ needs.prepare.outputs.iterations }} \
+            --output=reports/benchmarks/render-results.json
+
+      - name: Upload render results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: reports/benchmarks/render-results.json
+          retention-days: 7
+
+  benchmark-audio:
+    name: Audio Processing Benchmarks
+    runs-on: ubuntu-latest
+    needs: [prepare, build-wasm]
+    if: needs.prepare.outputs.benchmark_suite == 'all' || needs.prepare.outputs.benchmark_suite == 'audio'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wasm-modules
+          path: harmony-graph/pkg
+
+      - name: Run audio benchmarks
+        run: |
+          node performance/benchmarks/run-audio-benchmarks.js \
+            --iterations=${{ needs.prepare.outputs.iterations }} \
+            --output=reports/benchmarks/audio-results.json
+
+      - name: Upload audio results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: reports/benchmarks/audio-results.json
+          retention-days: 7
+
+  benchmark-gpu:
+    name: GPU Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [prepare, build-wasm]
+    if: needs.prepare.outputs.benchmark_suite == 'all' || needs.prepare.outputs.benchmark_suite == 'gpu'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wasm-modules
+          path: harmony-graph/pkg
+
+      - name: Run GPU benchmarks
+        run: |
+          node performance/benchmarks/run-gpu-benchmarks.js \
+            --iterations=${{ needs.prepare.outputs.iterations }} \
+            --output=reports/benchmarks/gpu-results.json
+
+      - name: Upload GPU results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: reports/benchmarks/gpu-results.json
+          retention-days: 7
+
+  benchmark-wasm:
+    name: WASM Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: [prepare, build-wasm]
+    if: needs.prepare.outputs.benchmark_suite == 'all' || needs.prepare.outputs.benchmark_suite == 'wasm'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download WASM artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: wasm-modules
+          path: harmony-graph/pkg
+
+      - name: Run WASM benchmarks
+        run: |
+          node performance/benchmarks/run-wasm-benchmarks.js \
+            --iterations=${{ needs.prepare.outputs.iterations }} \
+            --output=reports/benchmarks/wasm-results.json
+
+      - name: Upload WASM results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-results
+          path: reports/benchmarks/wasm-results.json
+          retention-days: 7
+
+  aggregate-results:
+    name: Aggregate Benchmark Results
+    runs-on: ubuntu-latest
+    needs: [benchmark-render, benchmark-audio, benchmark-gpu, benchmark-wasm]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download all benchmark results
+        uses: actions/download-artifact@v3
+        with:
+          name: benchmark-results
+          path: reports/benchmarks
+
+      - name: Aggregate results
+        run: |
+          node performance/benchmarks/aggregate-results.js \
+            reports/benchmarks \
+            reports/benchmark-aggregate.json
+
+      - name: Generate report
+        run: |
+          node performance/benchmarks/generate-benchmark-report.js \
+            reports/benchmark-aggregate.json \
+            reports/benchmark-report.md
+
+      - name: Upload aggregated results
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-report
+          path: |
+            reports/benchmark-aggregate.json
+            reports/benchmark-report.md
+          retention-days: 30
+
+      - name: Check performance thresholds
+        id: check-thresholds
+        run: |
+          node performance/benchmarks/check-thresholds.js \
+            reports/benchmark-aggregate.json
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('reports/benchmark-report.md', 'utf8');
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: report
+            });
+
+      - name: Fail if thresholds exceeded
+        if: steps.check-thresholds.outcome == 'failure'
+        run: |
+          echo "Performance thresholds exceeded!"
+          exit 1
+
+  compare-baseline:
+    name: Compare Against Baseline
+    runs-on: ubuntu-latest
+    needs: aggregate-results
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Download current results
+        uses: actions/download-artifact@v3
+        with:
+          name: benchmark-report
+          path: reports/current
+
+      - name: Checkout main branch
+        run: git checkout origin/main -- reports/benchmark-aggregate.json || echo "No baseline found"
+
+      - name: Compare with baseline
+        if: hashFiles('reports/benchmark-aggregate.json') != ''
+        run: |
+          node performance/benchmarks/compare-benchmarks.js \
+            reports/benchmark-aggregate.json \
+            reports/current/benchmark-aggregate.json \
+            reports/benchmark-comparison.md
+
+      - name: Upload comparison
+        if: hashFiles('reports/benchmark-comparison.md') != ''
+        uses: actions/upload-artifact@v3
+        with:
+          name: benchmark-comparison
+          path: reports/benchmark-comparison.md
+          retention-days: 30
+
+      - name: Comment comparison on PR
+        if: hashFiles('reports/benchmark-comparison.md') != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const comparison = fs.readFileSync('reports/benchmark-comparison.md', 'utf8');
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## Benchmark Comparison\n\n' + comparison
+            });

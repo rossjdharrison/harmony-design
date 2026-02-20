@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/gpu-metrics.schema.json",
+  "title": "GPUSyncMetrics",
+  "description": "Performance metrics for GPU synchronization",
+  "type": "object",
+  "properties": {
+    "fenceWaitTimeMs": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Average fence wait time in milliseconds"
+    },
+    "bufferSwapCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of buffer swaps"
+    },
+    "overflowCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of ring buffer overflows"
+    },
+    "timeoutCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of fence timeouts"
+    },
+    "gpuUtilization": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "GPU utilization percentage"
+    },
+    "audioLatencyMs": {
+      "type": "number",
+      "minimum": 0,
+      "description": "End-to-end audio latency in milliseconds"
+    },
+    "commandsExecuted": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Number of commands executed"
+    },
+    "avgCommandTimeMs": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Average command execution time in milliseconds"
+    }
+  },
+  "required": [
+    "fenceWaitTimeMs",
+    "bufferSwapCount",
+    "overflowCount",
+    "timeoutCount",
+    "gpuUtilization",
+    "audioLatencyMs",
+    "commandsExecuted",
+    "avgCommandTimeMs"
+  ],
+  "additionalProperties": false
+}

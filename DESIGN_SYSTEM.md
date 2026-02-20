@@ -389,3 +389,36 @@ import { QueryEngine } from '@harmony/graph';
 - Type Definitions: {@link file://./harmony-graph/src/types.ts}
 - Package Entry: {@link file://./harmony-graph/src/index.ts}
 
+
+## Benchmark CI Pipeline
+
+The benchmark CI workflow (`.github/workflows/benchmark.yml`) continuously monitors performance against our absolute constraints.
+
+### Performance Budgets Enforced
+
+1. **Render Budget**: 16ms per frame (60fps) - checked via GPU benchmarks
+2. **Memory Budget**: 50MB WASM heap - checked via WASM memory profiling
+3. **Load Budget**: 200ms initial load - checked via Chrome load time tests
+4. **Audio Latency**: 10ms end-to-end - checked via audio processing benchmarks
+
+### Workflow Jobs
+
+- `wasm-benchmarks` - Builds WASM modules and measures memory usage
+- `gpu-benchmarks` - Tests render performance with Chrome headless
+- `audio-benchmarks` - Measures audio processing latency
+- `load-time-benchmarks` - Tests initial page load performance
+- `benchmark-report` - Aggregates results and generates reports
+- `track-performance` - Records historical performance data (main branch only)
+
+### Budget Enforcement
+
+The pipeline fails if any budget is exceeded. This is a hard gate - no exceptions.
+
+See `performance/benchmarks/budget-gate.js` for enforcement logic.
+
+### Viewing Results
+
+Benchmark results are uploaded as CI artifacts and retained for 30 days. Historical data is committed to `performance/history/` on main branch.
+
+For local benchmarks, see `performance/README.md`.
+

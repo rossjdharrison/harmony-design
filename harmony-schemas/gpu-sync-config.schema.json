@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.io/schemas/gpu-sync-config.schema.json",
+  "title": "GPUSyncConfig",
+  "description": "Configuration for GPU synchronization patterns",
+  "type": "object",
+  "properties": {
+    "bufferMode": {
+      "type": "string",
+      "enum": ["double", "ring", "triple"],
+      "description": "Buffer mode for GPU-Audio synchronization"
+    },
+    "bufferSizeBytes": {
+      "type": "integer",
+      "minimum": 4096,
+      "maximum": 1048576,
+      "description": "Size of each buffer in bytes (must be power of 2)"
+    },
+    "fenceTimeoutMs": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5,
+      "description": "Maximum time to wait for fence in milliseconds"
+    },
+    "priorityLevels": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 5,
+      "default": 3,
+      "description": "Number of priority levels for command queue"
+    },
+    "enableMetrics": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to enable performance monitoring"
+    }
+  },
+  "required": ["bufferMode", "bufferSizeBytes"],
+  "additionalProperties": false
+}
