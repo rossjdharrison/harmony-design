@@ -1,0 +1,180 @@
+/**
+ * Safe Area Insets Styles
+ * 
+ * Provides CSS utilities for handling safe areas on devices with notches
+ * and home indicators (iOS, Android).
+ * 
+ * Related: DESIGN_SYSTEM.md § Safe Area Insets
+ */
+
+/* Define CSS custom properties with fallbacks */
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
+/* Utility classes for safe area padding */
+.safe-area-padding {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-area-padding-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-area-padding-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-area-padding-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-area-padding-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+/* Utility classes for safe area margin */
+.safe-area-margin {
+  margin-top: var(--safe-area-inset-top);
+  margin-right: var(--safe-area-inset-right);
+  margin-bottom: var(--safe-area-inset-bottom);
+  margin-left: var(--safe-area-inset-left);
+}
+
+.safe-area-margin-top {
+  margin-top: var(--safe-area-inset-top);
+}
+
+.safe-area-margin-right {
+  margin-right: var(--safe-area-inset-right);
+}
+
+.safe-area-margin-bottom {
+  margin-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-area-margin-left {
+  margin-left: var(--safe-area-inset-left);
+}
+
+/* Full-screen container that respects safe areas */
+.safe-area-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+/* Header with safe area top */
+.safe-area-header {
+  padding-top: calc(1rem + var(--safe-area-inset-top));
+  padding-right: calc(1rem + var(--safe-area-inset-right));
+  padding-left: calc(1rem + var(--safe-area-inset-left));
+}
+
+/* Footer with safe area bottom */
+.safe-area-footer {
+  padding-bottom: calc(1rem + var(--safe-area-inset-bottom));
+  padding-right: calc(1rem + var(--safe-area-inset-right));
+  padding-left: calc(1rem + var(--safe-area-inset-left));
+}
+
+/* Fixed header that respects safe area */
+.fixed-header-safe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: var(--safe-area-inset-top);
+  z-index: 1000;
+}
+
+/* Fixed footer that respects safe area */
+.fixed-footer-safe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+  z-index: 1000;
+}
+
+/* Bottom navigation with safe area */
+.bottom-nav-safe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* Floating action button with safe area */
+.fab-safe {
+  position: fixed;
+  bottom: calc(1rem + var(--safe-area-inset-bottom));
+  right: calc(1rem + var(--safe-area-inset-right));
+}
+
+/* Modal/Dialog with safe area */
+.modal-safe {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+/* Fullscreen content that extends under safe areas */
+.fullscreen-bleed {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+/* Content within fullscreen that respects safe areas */
+.fullscreen-safe-content {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* iOS-specific adjustments */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific styles */
+  .ios-safe-area-bottom {
+    padding-bottom: max(var(--safe-area-inset-bottom), 20px);
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (orientation: landscape) {
+  .landscape-safe-sides {
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+  }
+}
+
+/* Portrait orientation adjustments */
+@media (orientation: portrait) {
+  .portrait-safe-vertical {
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
+}
