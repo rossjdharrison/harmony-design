@@ -1,0 +1,210 @@
+/**
+ * Touch-Friendly Component Variants
+ * Provides CSS custom properties and utility classes for touch-optimized components
+ * Minimum touch target: 44px (WCAG 2.5.5 Level AAA)
+ * @see DESIGN_SYSTEM.md#touch-friendly-variants
+ */
+
+:root {
+  /* Touch Target Sizes */
+  --touch-target-minimum: 44px;
+  --touch-target-comfortable: 48px;
+  --touch-target-spacious: 56px;
+  
+  /* Pointer Target Sizes */
+  --pointer-target-minimum: 32px;
+  --pointer-target-comfortable: 36px;
+  --pointer-target-spacious: 40px;
+  
+  /* Touch Spacing */
+  --touch-spacing-minimum: 8px;
+  --touch-spacing-comfortable: 12px;
+  --touch-spacing-spacious: 16px;
+  
+  /* Pointer Spacing */
+  --pointer-spacing-minimum: 4px;
+  --pointer-spacing-comfortable: 8px;
+  --pointer-spacing-spacious: 12px;
+  
+  /* Font Sizes for Touch */
+  --touch-font-minimum: 16px;
+  --touch-font-comfortable: 18px;
+  --touch-font-spacious: 20px;
+  
+  /* Default to pointer targets */
+  --target-size: var(--pointer-target-comfortable);
+  --target-spacing: var(--pointer-spacing-comfortable);
+  --target-font-size: 16px;
+}
+
+/* Touch device detection via media query */
+@media (pointer: coarse) {
+  :root {
+    --target-size: var(--touch-target-comfortable);
+    --target-spacing: var(--touch-spacing-comfortable);
+    --target-font-size: var(--touch-font-comfortable);
+  }
+}
+
+/* Fine pointer devices (mouse, stylus) */
+@media (pointer: fine) {
+  :root {
+    --target-size: var(--pointer-target-comfortable);
+    --target-spacing: var(--pointer-spacing-comfortable);
+    --target-font-size: 16px;
+  }
+}
+
+/* Touch-friendly utility classes */
+.touch-target {
+  min-width: var(--target-size);
+  min-height: var(--target-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.touch-target-minimum {
+  min-width: var(--touch-target-minimum);
+  min-height: var(--touch-target-minimum);
+}
+
+.touch-target-comfortable {
+  min-width: var(--touch-target-comfortable);
+  min-height: var(--touch-target-comfortable);
+}
+
+.touch-target-spacious {
+  min-width: var(--touch-target-spacious);
+  min-height: var(--touch-target-spacious);
+}
+
+/* Touch-friendly spacing */
+.touch-spacing {
+  gap: var(--target-spacing);
+}
+
+.touch-spacing-minimum {
+  gap: var(--touch-spacing-minimum);
+}
+
+.touch-spacing-comfortable {
+  gap: var(--touch-spacing-comfortable);
+}
+
+.touch-spacing-spacious {
+  gap: var(--touch-spacing-spacious);
+}
+
+/* Touch-friendly font sizes */
+.touch-font {
+  font-size: var(--target-font-size);
+}
+
+/* Increase padding for touch targets */
+.touch-padding {
+  padding: calc(var(--target-spacing) * 1.5);
+}
+
+/* Touch-friendly button base */
+.touch-button {
+  min-width: var(--target-size);
+  min-height: var(--target-size);
+  padding: var(--target-spacing) calc(var(--target-spacing) * 2);
+  font-size: var(--target-font-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--target-spacing);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-friendly icon button */
+.touch-icon-button {
+  width: var(--target-size);
+  height: var(--target-size);
+  min-width: var(--target-size);
+  min-height: var(--target-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch-friendly list items */
+.touch-list-item {
+  min-height: var(--target-size);
+  padding: var(--target-spacing);
+  display: flex;
+  align-items: center;
+  gap: var(--target-spacing);
+}
+
+/* Touch-friendly input fields */
+.touch-input {
+  min-height: var(--target-size);
+  padding: var(--target-spacing);
+  font-size: var(--target-font-size);
+}
+
+/* Touch-friendly checkbox/radio */
+.touch-checkbox,
+.touch-radio {
+  width: var(--touch-target-minimum);
+  height: var(--touch-target-minimum);
+  min-width: var(--touch-target-minimum);
+  min-height: var(--touch-target-minimum);
+}
+
+/* Touch-friendly toggle/switch */
+.touch-toggle {
+  min-width: calc(var(--target-size) * 1.5);
+  min-height: var(--target-size);
+}
+
+/* Hover states only for pointer devices */
+@media (hover: hover) {
+  .touch-button:hover,
+  .touch-icon-button:hover,
+  .touch-list-item:hover {
+    opacity: 0.8;
+  }
+}
+
+/* Active/pressed states for all devices */
+.touch-button:active,
+.touch-icon-button:active,
+.touch-list-item:active {
+  opacity: 0.6;
+  transform: scale(0.98);
+}
+
+/* Focus visible for keyboard navigation */
+.touch-button:focus-visible,
+.touch-icon-button:focus-visible,
+.touch-list-item:focus-visible,
+.touch-input:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection on touch */
+.touch-target,
+.touch-button,
+.touch-icon-button,
+.touch-list-item {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs */
+.touch-input {
+  -webkit-user-select: text;
+  user-select: text;
+}

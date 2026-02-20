@@ -1,0 +1,37 @@
+{
+  "$schema": "../harmony-schemas/tokens.schema.json",
+  "touch": {
+    "target": {
+      "minimum": "44px",
+      "comfortable": "48px",
+      "spacious": "56px"
+    },
+    "spacing": {
+      "minimum": "8px",
+      "comfortable": "12px",
+      "spacious": "16px"
+    },
+    "fontSize": {
+      "minimum": "16px",
+      "comfortable": "18px",
+      "spacious": "20px"
+    }
+  },
+  "pointer": {
+    "target": {
+      "minimum": "32px",
+      "comfortable": "36px",
+      "spacious": "40px"
+    },
+    "spacing": {
+      "minimum": "4px",
+      "comfortable": "8px",
+      "spacious": "12px"
+    },
+    "fontSize": {
+      "minimum": "14px",
+      "comfortable": "16px",
+      "spacious": "18px"
+    }
+  }
+}
