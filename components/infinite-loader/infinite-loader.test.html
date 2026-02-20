@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinite Loader - Test Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      color: #1a1a1a;
+    }
+
+    .test-section {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .test-section h2 {
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+      color: #2c3e50;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .info {
+      padding: 0.75rem;
+      background: #ecf0f1;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .scroll-container {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+    }
+
+    .item {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      transition: background 0.2s;
+    }
+
+    .item:hover {
+      background: #f8f9fa;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .loader-custom {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .events-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .event-entry {
+      margin-bottom: 0.5rem;
+      padding: 0.25rem;
+      border-left: 2px solid #3498db;
+      padding-left: 0.5rem;
+    }
+
+    .event-time {
+      color: #858585;
+    }
+
+    .event-type {
+      color: #4ec9b0;
+    }
+
+    .event-data {
+      color: #ce9178;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔄 Infinite Loader Component Tests</h1>
+
+    <!-- Test 1: Basic Infinite Scroll -->
+    <div class="test-section">
+      <h2>Test 1: Basic Infinite Scroll (Down)</h2>
+      <div class="info">
+        Scroll down to load more items. Default threshold: 0.1, debounce: 300ms
+      </div>
+      <div class="controls">
+        <button id="reset1">Reset</button>
+        <button id="complete1">Mark Complete</button>
+        <button id="toggle-disable1">Toggle Disabled</button>
+      </div>
+      <div class="scroll-container">
+        <infinite-loader id="loader1" threshold="0.1" debounce="300">
+          <div slot="content" id="content1">
+            <!-- Items will be added here -->
+          </div>
+          <div slot="loader">
+            <div class="loader-custom">
+              <div class="spinner"></div>
+            </div>
+          </div>
+          <div slot="end">
+            <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+              🎉 All items loaded!
+            </div>
+          </div>
+        </infinite-loader>
+      </div>
+    </div>
+
+    <!-- Test 2: Bidirectional Loading -->
+    <div class="test-section">
+      <h2>Test 2: Bidirectional Loading</h2>
+      <div class="info">
+        Scroll to top or bottom to load more items in either direction
+      </div>
+      <div class="controls">
+        <button id="reset2">Reset</button>
+      </div>
+      <div class="scroll-container">
+        <infinite-loader id="loader2" direction="both" threshold="0.2" root-margin="100px">
+          <div slot="content" id="content2">
+            <!-- Items will be added here -->
+          </div>
+          <div slot="loader">Loading more items...</div>
+          <div slot="end">End of content</div>
+        </infinite-loader>
+      </div>
+    </div>
+
+    <!-- Test 3: Custom Threshold & Root Margin -->
+    <div class="test-section">
+      <h2>Test 3: Custom Threshold (0.5) & Root Margin (200px)</h2>
+      <div class="info">
+        Higher threshold means sentinel must be more visible before triggering
+      </div>
+      <div class="controls">
+        <button id="reset3">Reset</button>
+      </div>
+      <div class="scroll-container">
+        <infinite-loader id="loader3" threshold="0.5" root-margin="200px" debounce="500">
+          <div slot="content" id="content3">
+            <!-- Items will be added here -->
+          </div>
+          <div slot="loader">
+            <div style="text-align: center; padding: 1rem;">⏳ Loading...</div>
+          </div>
+          <div slot="end">
+            <div style="text-align: center; padding: 1rem;">✅ Complete</div>
+          </div>
+        </infinite-loader>
+      </div>
+    </div>
+
+    <!-- Events Log -->
+    <div class="test-section">
+      <h2>📡 Events Log</h2>
+      <div class="controls">
+        <button id="clear-log">Clear Log</button>
+        <button id="toggle-debug">Toggle Debug Mode</button>
+      </div>
+      <div id="events-log" class="events-log"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import InfiniteLoaderComponent from './infinite-loader.js';
+
+    // Enable debug mode
+    window.DEBUG_EVENTS = true;
+
+    // Events log
+    const eventsLog = document.getElementById('events-log');
+    let eventCount = 0;
+
+    function logEvent(type, detail) {
+      eventCount++;
+      const entry = document.createElement('div');
+      entry.className = 'event-entry';
+      const time = new Date().toLocaleTimeString();
+      entry.innerHTML = `
+        <span class="event-time">[${time}]</span>
+        <span class="event-type">${type}</span>
+        <span class="event-data">${JSON.stringify(detail)}</span>
+      `;
+      eventsLog.insertBefore(entry, eventsLog.firstChild);
+      
+      // Keep only last 50 events
+      while (eventsLog.children.length > 50) {
+        eventsLog.removeChild(eventsLog.lastChild);
+      }
+    }
+
+    // Test 1: Basic Infinite Scroll
+    const loader1 = document.getElementById('loader1');
+    const content1 = document.getElementById('content1');
+    let itemCount1 = 0;
+    const maxItems1 = 100;
+
+    function addItems1(count = 20) {
+      for (let i = 0; i < count; i++) {
+        if (itemCount1 >= maxItems1) {
+          loader1.finishLoading(false);
+          return;
+        }
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = `Item ${++itemCount1}`;
+        content1.appendChild(item);
+      }
+      loader1.finishLoading(itemCount1 < maxItems1);
+    }
+
+    // Initialize with first batch
+    addItems1(20);
+
+    loader1.addEventListener('infinite-loader:load-more', (e) => {
+      logEvent('load-more (Test 1)', e.detail);
+      loader1.loading = true;
+      
+      // Simulate API delay
+      setTimeout(() => {
+        addItems1(20);
+      }, 1000);
+    });
+
+    loader1.addEventListener('infinite-loader:sentinel-visible', (e) => {
+      logEvent('sentinel-visible (Test 1)', e.detail);
+    });
+
+    document.getElementById('reset1').addEventListener('click', () => {
+      content1.innerHTML = '';
+      itemCount1 = 0;
+      loader1.reset();
+      addItems1(20);
+      logEvent('reset', { test: 1 });
+    });
+
+    document.getElementById('complete1').addEventListener('click', () => {
+      loader1.complete();
+      logEvent('complete', { test: 1 });
+    });
+
+    document.getElementById('toggle-disable1').addEventListener('click', () => {
+      if (loader1.hasAttribute('disabled')) {
+        loader1.removeAttribute('disabled');
+        logEvent('enabled', { test: 1 });
+      } else {
+        loader1.setAttribute('disabled', '');
+        logEvent('disabled', { test: 1 });
+      }
+    });
+
+    // Test 2: Bidirectional Loading
+    const loader2 = document.getElementById('loader2');
+    const content2 = document.getElementById('content2');
+    let itemCount2 = 50;
+
+    function addItems2(direction, count = 10) {
+      for (let i = 0; i < count; i++) {
+        const item = document.createElement('div');
+        item.className = 'item';
+        if (direction === 'up') {
+          item.textContent = `Item ${--itemCount2}`;
+          content2.insertBefore(item, content2.firstChild);
+        } else {
+          item.textContent = `Item ${++itemCount2}`;
+          content2.appendChild(item);
+        }
+      }
+      loader2.finishLoading(true);
+    }
+
+    // Initialize
+    for (let i = 40; i <= 60; i++) {
+      const item = document.createElement('div');
+      item.className = 'item';
+      item.textContent = `Item ${i}`;
+      content2.appendChild(item);
+    }
+
+    loader2.addEventListener('infinite-loader:load-more', (e) => {
+      logEvent('load-more (Test 2)', e.detail);
+      loader2.loading = true;
+      
+      setTimeout(() => {
+        addItems2(e.detail.direction, 10);
+      }, 800);
+    });
+
+    document.getElementById('reset2').addEventListener('click', () => {
+      content2.innerHTML = '';
+      itemCount2 = 50;
+      loader2.reset();
+      for (let i = 40; i <= 60; i++) {
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = `Item ${i}`;
+        content2.appendChild(item);
+      }
+    });
+
+    // Test 3: Custom Threshold
+    const loader3 = document.getElementById('loader3');
+    const content3 = document.getElementById('content3');
+    let itemCount3 = 0;
+
+    function addItems3(count = 15) {
+      for (let i = 0; i < count; i++) {
+        if (itemCount3 >= 60) {
+          loader3.finishLoading(false);
+          return;
+        }
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.textContent = `Item ${++itemCount3} (threshold: 0.5)`;
+        content3.appendChild(item);
+      }
+      loader3.finishLoading(itemCount3 < 60);
+    }
+
+    addItems3(15);
+
+    loader3.addEventListener('infinite-loader:load-more', (e) => {
+      logEvent('load-more (Test 3)', e.detail);
+      loader3.loading = true;
+      
+      setTimeout(() => {
+        addItems3(15);
+      }, 1500);
+    });
+
+    document.getElementById('reset3').addEventListener('click', () => {
+      content3.innerHTML = '';
+      itemCount3 = 0;
+      loader3.reset();
+      addItems3(15);
+    });
+
+    // Event log controls
+    document.getElementById('clear-log').addEventListener('click', () => {
+      eventsLog.innerHTML = '';
+      eventCount = 0;
+    });
+
+    document.getElementById('toggle-debug').addEventListener('click', () => {
+      window.DEBUG_EVENTS = !window.DEBUG_EVENTS;
+      logEvent('debug-mode', { enabled: window.DEBUG_EVENTS });
+    });
+
+    // Log initial state
+    logEvent('page-loaded', { 
+      tests: 3,
+      debugMode: window.DEBUG_EVENTS 
+    });
+  </script>
+</body>
+</html>
