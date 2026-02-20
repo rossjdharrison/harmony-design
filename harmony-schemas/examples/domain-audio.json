@@ -1,0 +1,72 @@
+{
+  "id": "domain:audio",
+  "type": "domain",
+  "name": "Audio Processing Domain",
+  "namespace": "audio",
+  "description": "Handles all audio processing, playback, and routing. Implements real-time audio graph management with GPU acceleration and WASM processing.",
+  "boundedContext": "audio-bc",
+  "responsibilities": [
+    "Audio graph management and node lifecycle",
+    "Real-time audio processing with <10ms latency",
+    "Audio routing and mixing operations",
+    "Effect processing and signal chain management",
+    "WebAudio API integration and fallback"
+  ],
+  "interfaces": {
+    "commands": [
+      "Play",
+      "Pause",
+      "Stop",
+      "SetVolume",
+      "SetPan",
+      "AddEffect",
+      "RemoveEffect",
+      "ConnectNodes",
+      "DisconnectNodes"
+    ],
+    "events": [
+      "PlaybackStarted",
+      "PlaybackPaused",
+      "PlaybackStopped",
+      "VolumeChanged",
+      "PanChanged",
+      "EffectAdded",
+      "EffectRemoved",
+      "AudioError"
+    ],
+    "queries": [
+      "getPlaybackState",
+      "getAudioGraph",
+      "getNodeState",
+      "getEffectChain",
+      "getPerformanceMetrics"
+    ]
+  },
+  "dependencies": [
+    "domain:graph"
+  ],
+  "implementation": {
+    "language": "rust",
+    "target": "wasm",
+    "path": "bounded-contexts/audio-bc"
+  },
+  "performance": {
+    "budget": {
+      "memory": "20MB",
+      "latency": "10ms"
+    },
+    "critical": true
+  },
+  "metadata": {
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-03-15T12:00:00Z",
+    "version": "1.0.0",
+    "owner": "Audio Team",
+    "tags": [
+      "audio",
+      "real-time",
+      "wasm",
+      "gpu-accelerated"
+    ]
+  }
+}

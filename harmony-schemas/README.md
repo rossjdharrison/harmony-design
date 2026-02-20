@@ -1,140 +1,146 @@
 # Harmony Schemas
 
-JSON Schema definitions for the Harmony Design System graph nodes and data structures.
+JSON Schema definitions for Harmony Design System graph nodes.
 
 ## Overview
 
-This package contains JSON Schema definitions that validate the structure of nodes in the Harmony graph engine. These schemas ensure data consistency across the system and enable type-safe serialization to IndexedDB.
+This package contains JSON Schema definitions that describe the structure and validation rules for nodes in the Harmony graph database. These schemas are used for:
+
+- **Validation**: Ensuring data integrity at runtime and build time
+- **Code Generation**: Generating TypeScript types and Rust structs
+- **Documentation**: Providing machine-readable API contracts
+- **Tooling**: Enabling IDE autocomplete and validation
 
 ## Schemas
 
-### Graph Node Schemas
+### Component Schema (`schemas/component.schema.json`)
 
-- **`component-node.schema.json`** - Component graph nodes representing UI elements
-- **`intent-node.schema.json`** - Intent graph nodes representing user goals and actions
-- **`domain-node.schema.json`** - Domain graph nodes representing bounded contexts and logical groupings
+Defines the structure of Component nodes in the graph. Components are reusable UI elements that follow atomic design principles.
 
-### Usage
+**Key Properties:**
+- `id`: Unique kebab-case identifier
+- `name`: Human-readable name
+- `type`: Must be "component"
+- `category`: Atomic design level (atom, molecule, organism, template, page)
+- `props`: Array of component properties with types and defaults
+- `events`: Array of events the component can emit
+- `slots`: Named slots for content projection
+- `styles`: CSS custom properties and theming tokens
 
-Each schema can be used for:
-1. **Validation** - Validate node data before insertion into the graph
-2. **Documentation** - Self-documenting structure for developers
-3. **Code Generation** - Generate TypeScript types and Rust structs
-4. **Serialization** - Ensure consistent JSON format for IndexedDB storage
+### Intent Schema (`schemas/intent.schema.json`)
 
-## Schema Structure
+Defines the structure of Intent nodes in the graph. Intents represent user actions or system commands that flow through the EventBus.
 
-All node schemas follow a common pattern:
+**Key Properties:**
+- `id`: Unique kebab-case identifier
+- `name`: Human-readable name
+- `type`: Must be "intent"
+- `category`: Intent classification (user, system, navigation, data)
+- `payload`: JSON Schema for the intent's data payload
+- `source`: Component or domain that typically emits this intent
+- `handlers`: Bounded contexts that handle this intent
 
-```json
-{
-  "id": "unique-node-identifier",
-  "type": "node-type",
-  "name": "Human Readable Name",
-  "metadata": { ... },
-  ...
+### Domain Schema (`schemas/domain.schema.json`)
+
+Defines the structure of Domain nodes in the graph. Domains represent bounded contexts or logical groupings of components and intents.
+
+**Key Properties:**
+- `id`: Unique kebab-case identifier
+- `name`: Human-readable name
+- `type`: Must be "domain"
+- `description`: Purpose and scope of the domain
+- `status`: Lifecycle status (draft, active, deprecated, archived)
+- `components`: Array of component IDs belonging to this domain
+- `intents`: Array of intent IDs belonging to this domain
+- `dependencies`: Array of domain IDs this domain depends on
+- `metadata`: Additional tags, documentation links, timestamps
+
+## Validation Examples
+
+Each schema has a corresponding validation example in the `examples/` directory:
+
+- `examples/validate-component.js` - Component validation examples
+- `examples/validate-intent.js` - Intent validation examples
+- `examples/validate-domain.js` - Domain validation examples
+
+Run examples:
+
+```bash
+node examples/validate-component.js
+node examples/validate-intent.js
+node examples/validate-domain.js
+```
+
+## Usage
+
+### In JavaScript/TypeScript
+
+```javascript
+import { readFileSync } from 'fs';
+import Ajv from 'ajv';
+
+const schema = JSON.parse(readFileSync('./schemas/domain.schema.json'));
+const ajv = new Ajv();
+const validate = ajv.compile(schema);
+
+const domain = {
+  id: 'audio-processing',
+  name: 'Audio Processing',
+  type: 'domain'
+};
+
+if (validate(domain)) {
+  console.log('Valid domain!');
+} else {
+  console.error('Validation errors:', validate.errors);
 }
 ```
 
-### Component Node
+### In Rust (via codegen)
 
-Represents UI components in the design system.
+The schemas are used to generate Rust types in the `harmony-graph` crate:
 
-**Key Properties:**
-- `id` - Pattern: `component:{name}`
-- `type` - Always `"component"`
-- `category` - Atomic design level (atom, molecule, organism, template, page)
-- `implementation` - Path to component file
-- `states` - Available component states
-- `events` - Events the component publishes
-
-### Intent Node
-
-Represents user intents and interaction goals.
-
-**Key Properties:**
-- `id` - Pattern: `intent:{name}`
-- `type` - Always `"intent"`
-- `category` - Intent type (user-action, system-event, navigation, audio-control, etc.)
-- `trigger` - What triggers this intent
-- `command` - EventBus command to publish
-- `context` - Required context data
-
-### Domain Node
-
-Represents bounded contexts and architectural domains.
-
-**Key Properties:**
-- `id` - Pattern: `domain:{name}`
-- `type` - Always `"domain"`
-- `namespace` - Domain namespace identifier
-- `boundedContext` - Reference to BC implementation
-- `responsibilities` - List of domain responsibilities
-- `interfaces` - Commands, events, and queries
-- `dependencies` - Other domains this depends on
-- `implementation` - Language, target, and path
-- `performance` - Memory and latency budgets
-
-## Code Generation
-
-Schemas are used to generate:
-- **TypeScript types** - For web components and UI code
-- **Rust structs** - For WASM bounded contexts
-- **Validation functions** - Runtime validation helpers
-
-### Codegen Pipeline
-
-```
-harmony-schemas → harmony-dev/crates → harmony-dev/workers
+```bash
+cd ../harmony-graph
+cargo run --bin codegen
 ```
 
-**Important:** When modifying schemas, always run the codegen pipeline and commit the generated code together with schema changes. CI will fail if schemas change but generated code is stale.
+This generates strongly-typed Rust structs from the JSON schemas.
 
-## Validation
+## Schema Design Principles
 
-Schemas use JSON Schema Draft 7 standard with additional constraints:
+1. **Strict by Default**: Use `additionalProperties: false` to prevent typos
+2. **Clear Constraints**: Use `pattern`, `minLength`, `maxLength` for validation
+3. **Self-Documenting**: Every property has a `description`
+4. **Version Controlled**: Schemas follow semantic versioning
+5. **Cross-Referenced**: Schemas link to each other via ID patterns
 
-- **Pattern matching** - IDs, namespaces, and event names must follow naming conventions
-- **String lengths** - Descriptions and names have max lengths for performance
-- **Required fields** - Core properties are mandatory
-- **Enum constraints** - Categories and types use fixed vocabularies
-- **Additional properties** - Disabled to prevent schema drift
+## Development
 
-## Cross-References
+This is a **dev-time package**. The schemas and validation tools are used during development and build processes, not in production runtime.
 
-Schemas support cross-references between nodes:
+### Dependencies
 
-- **Component → Intent** - Components trigger intents via events
-- **Intent → Domain** - Intents route to domain commands
-- **Domain → Domain** - Domains can depend on other domains
+- `ajv`: JSON Schema validator (dev dependency)
+- `ajv-formats`: Additional format validators (dev dependency)
 
-All cross-graph edges must be indexed (Policy #22).
+### Adding a New Schema
 
-## Performance Considerations
+1. Create `schemas/your-schema.schema.json`
+2. Follow the existing patterns (required fields, strict validation)
+3. Create `examples/validate-your-schema.js` with test cases
+4. Update this README
+5. Run codegen to generate types
 
-- Schemas are designed for fast validation (<1ms per node)
-- Maximum node size: ~10KB serialized JSON
-- IndexedDB storage uses schema-validated JSON
-- No nested objects deeper than 4 levels
+## Integration
 
-## Related Documentation
+These schemas integrate with:
 
-- [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#graph-engine) - Graph engine architecture
-- [harmony-graph/README.md](../harmony-graph/README.md) - Graph implementation
-- [bounded-contexts/](../bounded-contexts/) - Domain implementations
+- **harmony-graph**: Rust graph database (via codegen)
+- **harmony-core**: Runtime validation utilities
+- **harmony-web**: Build-time validation
+- **CI Pipeline**: Schema validation on every commit
 
-## Contributing
+## Reference
 
-When adding new schemas:
-
-1. Follow the existing naming pattern: `{node-type}-node.schema.json`
-2. Include all required fields: `id`, `type`, `name`
-3. Add pattern validation for identifiers
-4. Document all properties with descriptions
-5. Update this README with the new schema
-6. Run codegen pipeline and commit generated code
-7. Update DESIGN_SYSTEM.md with usage examples
-
-## License
-
-Part of the Harmony Design System.
+See `DESIGN_SYSTEM.md § Graph Schema System` for architectural context.

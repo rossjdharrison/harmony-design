@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesignsystem.com/schemas/domain-node.schema.json",
+  "title": "Domain Node",
+  "description": "Schema for Domain graph nodes in the Harmony Design System. Domains represent bounded contexts or logical groupings of functionality within the system architecture.",
+  "type": "object",
+  "required": ["id", "type", "name", "namespace"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the domain node",
+      "pattern": "^domain:[a-z0-9-]+$"
+    },
+    "type": {
+      "type": "string",
+      "const": "domain",
+      "description": "Node type discriminator"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the domain",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "namespace": {
+      "type": "string",
+      "description": "Namespace identifier for the domain (e.g., 'audio', 'graph', 'ui')",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the domain's purpose and responsibilities",
+      "maxLength": 1000
+    },
+    "boundedContext": {
+      "type": "string",
+      "description": "Reference to the bounded context implementation (if applicable)",
+      "pattern": "^[a-z][a-z0-9-]*-bc$"
+    },
+    "responsibilities": {
+      "type": "array",
+      "description": "List of key responsibilities this domain handles",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "interfaces": {
+      "type": "object",
+      "description": "Public interfaces exposed by this domain",
+      "properties": {
+        "commands": {
+          "type": "array",
+          "description": "Command events this domain subscribes to",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][a-zA-Z0-9]*$"
+          }
+        },
+        "events": {
+          "type": "array",
+          "description": "Result events this domain publishes",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][a-zA-Z0-9]*$"
+          }
+        },
+        "queries": {
+          "type": "array",
+          "description": "Query operations exposed via TypeNavigator",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-zA-Z0-9]*$"
+          }
+        }
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Other domains this domain depends on",
+      "items": {
+        "type": "string",
+        "pattern": "^domain:[a-z0-9-]+$"
+      }
+    },
+    "implementation": {
+      "type": "object",
+      "description": "Implementation details for the domain",
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["rust", "javascript", "typescript"],
+          "description": "Primary implementation language"
+        },
+        "target": {
+          "type": "string",
+          "enum": ["wasm", "web", "hybrid"],
+          "description": "Deployment target for the domain"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative path to the implementation directory",
+          "pattern": "^[a-z0-9-/]+$"
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance constraints and budgets for this domain",
+      "properties": {
+        "budget": {
+          "type": "object",
+          "properties": {
+            "memory": {
+              "type": "string",
+              "description": "Memory budget (e.g., '10MB', '50MB')",
+              "pattern": "^[0-9]+(KB|MB)$"
+            },
+            "latency": {
+              "type": "string",
+              "description": "Maximum latency budget (e.g., '10ms', '100ms')",
+              "pattern": "^[0-9]+(ms|s)$"
+            }
+          }
+        },
+        "critical": {
+          "type": "boolean",
+          "description": "Whether this domain is on the critical render/audio path",
+          "default": false
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for the domain node",
+      "properties": {
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Last update timestamp"
+        },
+        "version": {
+          "type": "string",
+          "description": "Semantic version of the domain",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Team or individual responsible for this domain",
+          "maxLength": 100
+        },
+        "tags": {
+          "type": "array",
+          "description": "Searchable tags for categorization",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$"
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

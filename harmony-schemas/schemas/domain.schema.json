@@ -1,0 +1,117 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.system/schemas/domain.schema.json",
+  "title": "Domain",
+  "description": "Schema for Domain graph nodes in the Harmony Design System. Domains represent bounded contexts or logical groupings of components and intents.",
+  "type": "object",
+  "required": ["id", "name", "type"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the domain",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 2,
+      "maxLength": 64
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name of the domain",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "type": {
+      "type": "string",
+      "const": "domain",
+      "description": "Node type discriminator"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description of the domain's purpose and scope",
+      "maxLength": 1024
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the domain",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-z0-9-]+)?$",
+      "default": "1.0.0"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["draft", "active", "deprecated", "archived"],
+      "description": "Current lifecycle status of the domain",
+      "default": "draft"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Team or individual responsible for this domain",
+      "maxLength": 128
+    },
+    "components": {
+      "type": "array",
+      "description": "Component IDs that belong to this domain",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "intents": {
+      "type": "array",
+      "description": "Intent IDs that belong to this domain",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "dependencies": {
+      "type": "array",
+      "description": "Domain IDs that this domain depends on",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata for the domain",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "description": "Tags for categorization and search",
+          "items": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "uniqueItems": true
+        },
+        "documentation": {
+          "type": "string",
+          "description": "URL or path to detailed documentation",
+          "maxLength": 512
+        },
+        "repository": {
+          "type": "string",
+          "description": "URL to source code repository",
+          "maxLength": 512
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of domain creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of last update"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

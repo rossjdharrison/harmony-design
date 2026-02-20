@@ -1,0 +1,68 @@
+{
+  "id": "domain:graph",
+  "type": "domain",
+  "name": "Graph Engine Domain",
+  "namespace": "graph",
+  "description": "Core graph engine for managing nodes, edges, and queries. Provides TypeNavigator interface and handles graph persistence to IndexedDB.",
+  "boundedContext": "graph-bc",
+  "responsibilities": [
+    "Graph node and edge management",
+    "TypeNavigator query execution",
+    "Graph traversal and pathfinding",
+    "IndexedDB persistence and serialization",
+    "Cross-graph edge indexing"
+  ],
+  "interfaces": {
+    "commands": [
+      "AddNode",
+      "RemoveNode",
+      "AddEdge",
+      "RemoveEdge",
+      "UpdateNode",
+      "SaveGraph",
+      "LoadGraph"
+    ],
+    "events": [
+      "NodeAdded",
+      "NodeRemoved",
+      "EdgeAdded",
+      "EdgeRemoved",
+      "NodeUpdated",
+      "GraphSaved",
+      "GraphLoaded"
+    ],
+    "queries": [
+      "findNodeById",
+      "findNodesByType",
+      "findEdgesByType",
+      "traverseGraph",
+      "getConnectedNodes",
+      "validateGraph"
+    ]
+  },
+  "dependencies": [],
+  "implementation": {
+    "language": "rust",
+    "target": "wasm",
+    "path": "bounded-contexts/graph-bc"
+  },
+  "performance": {
+    "budget": {
+      "memory": "30MB",
+      "latency": "50ms"
+    },
+    "critical": false
+  },
+  "metadata": {
+    "created": "2024-01-01T00:00:00Z",
+    "updated": "2024-03-15T12:00:00Z",
+    "version": "1.0.0",
+    "owner": "Core Team",
+    "tags": [
+      "graph",
+      "persistence",
+      "indexeddb",
+      "wasm"
+    ]
+  }
+}
