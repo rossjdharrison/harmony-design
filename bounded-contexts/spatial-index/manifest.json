@@ -1,0 +1,35 @@
+{
+  "name": "spatial-index",
+  "version": "0.1.0",
+  "description": "Spatial index for nodes with coordinates using quadtree",
+  "type": "bounded-context",
+  "language": "rust",
+  "build": {
+    "command": "cargo build --release --target wasm32-unknown-unknown",
+    "output": "target/wasm32-unknown-unknown/release/spatial_index.wasm"
+  },
+  "exports": {
+    "SpatialIndex": {
+      "constructor": ["min_x: f64", "min_y: f64", "max_x: f64", "max_y: f64", "capacity: usize"],
+      "methods": {
+        "insert": ["id: String", "x: f64", "y: f64", "metadata_json: String"],
+        "query_range": ["min_x: f64", "min_y: f64", "max_x: f64", "max_y: f64"],
+        "query_radius": ["center_x: f64", "center_y: f64", "radius: f64"],
+        "query_nearest": ["x: f64", "y: f64", "k: usize"],
+        "get_position": ["id: String"],
+        "size": [],
+        "clear": []
+      }
+    }
+  },
+  "memory": {
+    "budget_mb": 10,
+    "notes": "Quadtree structure with configurable capacity per node"
+  },
+  "performance": {
+    "insert": "O(log n) average case",
+    "query_range": "O(log n + k) where k is result count",
+    "query_radius": "O(log n + k) where k is result count",
+    "query_nearest": "O(n log n) for sorting, can be optimized"
+  }
+}
