@@ -170,20 +170,23 @@ export class FileSystemStore {
     };
 
     // Create backup of existing snapshot if it exists
-    const snapshotPath = this.path.join(this.snapshotsPath, `${snapshotId}.json`);
+    let snapshotPath = this.path.join(this.snapshotsPath, `${snapshotId}.json`);
     await this._createBackup(snapshotPath);
 
     // Serialize and optionally compress
     let data = JSON.stringify(snapshotData, null, 2);
-    
+    let isCompressed = false;
+
     if (this.config.compress && this.zlib) {
-      data = await this._compress(data);
+      data = await this._compress(data);  // returns a Buffer
       snapshotPath = snapshotPath + '.gz';
+      isCompressed = true;
     }
 
-    // Atomic write using temp file + rename
+    // Atomic write using temp file + rename.
+    // Omit encoding for compressed (Buffer) data so bytes aren't mangled.
     const tempPath = snapshotPath + '.tmp';
-    await this.fs.writeFile(tempPath, data, 'utf8');
+    await this.fs.writeFile(tempPath, data, isCompressed ? undefined : 'utf8');
     await this.fs.rename(tempPath, snapshotPath);
 
     // Rotate old backups
@@ -216,10 +219,12 @@ export class FileSystemStore {
     }
 
     try {
-      let data = await this.fs.readFile(snapshotPath, 'utf8');
-      
+      // Read as Buffer when compressed so gunzip receives raw bytes;
+      // read as utf8 string otherwise so JSON.parse works directly.
+      let data = await this.fs.readFile(snapshotPath, compressed ? undefined : 'utf8');
+
       if (compressed && this.zlib) {
-        data = await this._decompress(data);
+        data = await this._decompress(data);  // Buffer → utf8 string
       }
 
       return JSON.parse(data);
