@@ -1,0 +1,95 @@
+<!--
+  Storybook Preview Head
+  
+  Custom head content injected into the preview iframe.
+  Loads design tokens and global styles for component stories.
+  
+  @see DESIGN_SYSTEM.md#storybook-configuration
+-->
+
+<!-- Design Tokens -->
+<link rel="stylesheet" href="../styles/tokens.css">
+<link rel="stylesheet" href="../styles/global.css">
+
+<!-- Performance Monitoring -->
+<script>
+  // Mark Storybook preview load time
+  performance.mark('storybook-preview-start');
+  
+  window.addEventListener('load', () => {
+    performance.mark('storybook-preview-loaded');
+    performance.measure(
+      'storybook-preview-load',
+      'storybook-preview-start',
+      'storybook-preview-loaded'
+    );
+    
+    const measure = performance.getEntriesByName('storybook-preview-load')[0];
+    console.log(`📊 Storybook Preview Load Time: ${measure.duration.toFixed(2)}ms`);
+    
+    // Warn if exceeds 200ms budget
+    if (measure.duration > 200) {
+      console.warn(`⚠️ Load Budget Exceeded: ${measure.duration.toFixed(2)}ms (budget: 200ms)`);
+    }
+  });
+</script>
+
+<!-- Enable SharedArrayBuffer for WASM audio processing -->
+<meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+<meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+
+<!-- Dark Mode Support -->
+<style>
+  /* Light theme (default) */
+  .light-theme {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f9fafb;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --border-color: #e5e7eb;
+    --accent-color: #6366f1;
+  }
+  
+  /* Dark theme */
+  .dark-theme {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #262626;
+    --text-primary: #f5f5f5;
+    --text-secondary: #a3a3a3;
+    --border-color: #404040;
+    --accent-color: #818cf8;
+  }
+  
+  /* Apply theme to body */
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+  
+  /* Performance budget indicator */
+  .performance-warning {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: monospace;
+    z-index: 10000;
+    animation: slideIn 0.3s ease;
+  }
+  
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+</style>

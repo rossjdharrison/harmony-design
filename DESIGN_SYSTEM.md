@@ -441,3 +441,84 @@ See LICENSE file in repository.
 ---
 
 **Questions?** Check the detailed guides in `docs/` or create an issue.
+## Storybook Configuration
+
+The Harmony Design System uses Storybook 8 as its component development environment and living documentation.
+
+### Setup
+
+Storybook is configured with:
+- **Vite Builder**: Fast builds and hot module replacement
+- **Web Components Support**: Native custom elements with Shadow DOM
+- **Dark Mode**: Theme switching via ``addon-themes``
+- **Accessibility Testing**: Automated a11y checks via ``addon-a11y``
+- **Performance Monitoring**: Automatic tracking of render times against 16ms budget
+
+### Configuration Files
+
+All Storybook configuration is in the ``.storybook/`` directory:
+
+- **main.js**: Core configuration, story locations, addons, Vite integration
+- **preview.js**: Global decorators, parameters, theme configuration
+- **manager.js**: Storybook UI customization and branding
+- **preview-head.html**: Styles and scripts injected into preview iframe
+- **test-runner.js**: Automated testing configuration
+
+See [.storybook/README.md](./.storybook/README.md) for detailed documentation.
+
+### Performance Monitoring
+
+Storybook automatically monitors component performance:
+
+1. **Render Budget**: Warns if component renders exceed 16ms (60fps requirement)
+2. **Load Budget**: Tracks preview load time against 200ms budget
+3. **Memory Usage**: Components should stay within 50MB WASM heap
+
+Performance warnings appear in the browser console during development.
+
+### Writing Stories
+
+Stories should be placed alongside components:
+
+\`\`\`
+components/
+  my-component/
+    my-component.js          # Component implementation
+    my-component.stories.js  # Storybook stories
+    my-component.test.html   # Browser tests
+\`\`\`
+
+Each story file should export a default object with component metadata and named exports for each variant.
+
+### Dark Mode Support
+
+Components should use CSS custom properties for theming:
+
+\`\`\`css
+:host {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+\`\`\`
+
+Toggle between light and dark themes using the toolbar button in Storybook.
+
+### Testing in Storybook
+
+Run automated tests across all stories:
+
+\`\`\`bash
+npm run test-storybook
+\`\`\`
+
+This validates:
+- Performance budgets (16ms render time)
+- Basic accessibility (missing alt text, labels)
+- Visual regression (if configured)
+
+### Integration with EventBus
+
+Components that publish events work in Storybook through the EventBus decorator. The decorator ensures EventBus is available for isolated component testing.
+
+For components that subscribe to events, use Storybook actions to simulate event publishing.
