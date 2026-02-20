@@ -1,156 +1,140 @@
 # Harmony Schemas
 
-JSON schemas and validation utilities for the Harmony Design System.
+JSON Schema definitions for the Harmony Design System graph nodes and data structures.
 
 ## Overview
 
-This directory contains JSON Schema definitions for validating design tokens and other configuration files used throughout the Harmony Design System.
+This package contains JSON Schema definitions that validate the structure of nodes in the Harmony graph engine. These schemas ensure data consistency across the system and enable type-safe serialization to IndexedDB.
 
-**Related Documentation:** See [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) § Design Tokens
+## Schemas
 
-## Token Schema
+### Graph Node Schemas
 
-The `token-schema.json` file defines the structure for design token files:
+- **`component-node.schema.json`** - Component graph nodes representing UI elements
+- **`intent-node.schema.json`** - Intent graph nodes representing user goals and actions
+- **`domain-node.schema.json`** - Domain graph nodes representing bounded contexts and logical groupings
 
-- **Color Tokens** - Color values with WCAG contrast information
-- **Spacing Tokens** - Spacing values based on a grid system
-- **Typography Tokens** - Font families, sizes, weights, and text styles
-- **Generic Tokens** - Extensible format for custom token types
+### Usage
 
-### Token File Structure
+Each schema can be used for:
+1. **Validation** - Validate node data before insertion into the graph
+2. **Documentation** - Self-documenting structure for developers
+3. **Code Generation** - Generate TypeScript types and Rust structs
+4. **Serialization** - Ensure consistent JSON format for IndexedDB storage
 
-All token files must include:
+## Schema Structure
+
+All node schemas follow a common pattern:
 
 ```json
 {
-  "$schema": "../harmony-schemas/token-schema.json",
-  "type": "color|spacing|typography|...",
-  "version": "1.0.0",
-  "tokens": {
-    "token-name": {
-      "value": "...",
-      "description": "Human-readable description",
-      "category": "..."
-    }
-  },
-  "metadata": {
-    "author": "...",
-    "lastModified": "...",
-    "source": "..."
-  }
+  "id": "unique-node-identifier",
+  "type": "node-type",
+  "name": "Human Readable Name",
+  "metadata": { ... },
+  ...
 }
 ```
+
+### Component Node
+
+Represents UI components in the design system.
+
+**Key Properties:**
+- `id` - Pattern: `component:{name}`
+- `type` - Always `"component"`
+- `category` - Atomic design level (atom, molecule, organism, template, page)
+- `implementation` - Path to component file
+- `states` - Available component states
+- `events` - Events the component publishes
+
+### Intent Node
+
+Represents user intents and interaction goals.
+
+**Key Properties:**
+- `id` - Pattern: `intent:{name}`
+- `type` - Always `"intent"`
+- `category` - Intent type (user-action, system-event, navigation, audio-control, etc.)
+- `trigger` - What triggers this intent
+- `command` - EventBus command to publish
+- `context` - Required context data
+
+### Domain Node
+
+Represents bounded contexts and architectural domains.
+
+**Key Properties:**
+- `id` - Pattern: `domain:{name}`
+- `type` - Always `"domain"`
+- `namespace` - Domain namespace identifier
+- `boundedContext` - Reference to BC implementation
+- `responsibilities` - List of domain responsibilities
+- `interfaces` - Commands, events, and queries
+- `dependencies` - Other domains this depends on
+- `implementation` - Language, target, and path
+- `performance` - Memory and latency budgets
+
+## Code Generation
+
+Schemas are used to generate:
+- **TypeScript types** - For web components and UI code
+- **Rust structs** - For WASM bounded contexts
+- **Validation functions** - Runtime validation helpers
+
+### Codegen Pipeline
+
+```
+harmony-schemas → harmony-dev/crates → harmony-dev/workers
+```
+
+**Important:** When modifying schemas, always run the codegen pipeline and commit the generated code together with schema changes. CI will fail if schemas change but generated code is stale.
 
 ## Validation
 
-### CLI Usage
+Schemas use JSON Schema Draft 7 standard with additional constraints:
 
-Validate a single token file:
+- **Pattern matching** - IDs, namespaces, and event names must follow naming conventions
+- **String lengths** - Descriptions and names have max lengths for performance
+- **Required fields** - Core properties are mandatory
+- **Enum constraints** - Categories and types use fixed vocabularies
+- **Additional properties** - Disabled to prevent schema drift
 
-```bash
-node validate-tokens.js ../tokens/colors.json
-```
+## Cross-References
 
-Validate all token files in a directory:
+Schemas support cross-references between nodes:
 
-```bash
-node validate-tokens.js ../tokens
-```
+- **Component → Intent** - Components trigger intents via events
+- **Intent → Domain** - Intents route to domain commands
+- **Domain → Domain** - Domains can depend on other domains
 
-### Programmatic Usage
-
-```javascript
-import { validateTokenFile, validateTokenDirectory } from './validate-tokens.js';
-
-// Validate single file
-const result = validateTokenFile('./tokens/colors.json');
-if (!result.valid) {
-  console.error('Validation errors:', result.errors);
-}
-
-// Validate directory
-const dirResults = validateTokenDirectory('./tokens');
-console.log(`${dirResults.validFiles}/${dirResults.totalFiles} files valid`);
-```
-
-## Example Files
-
-- `tokens/colors.example.json` - Example color token file
-- `tokens/spacing.example.json` - Example spacing token file
-
-These files demonstrate proper token structure and can be used as templates.
-
-## Schema Features
-
-### Color Tokens
-
-- Supports hex, rgb, rgba, hsl, hsla, and CSS variable formats
-- Includes WCAG contrast ratio validation
-- Categories: primary, secondary, accent, neutral, semantic, surface, text, border, state
-
-### Spacing Tokens
-
-- Supports px, rem, em, %, and CSS variable formats
-- Optional `baseUnit` property for grid systems
-- Categories: micro, small, medium, large, macro, layout, component
-
-### Typography Tokens
-
-- Supports string values, numeric values, or composite objects
-- Categories: fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, textStyle
-
-### Deprecation Support
-
-All token types support deprecation:
-
-```json
-{
-  "old-token": {
-    "value": "...",
-    "deprecated": true,
-    "replaceWith": "new-token"
-  }
-}
-```
-
-## Integration
-
-### Build Process
-
-Token validation should be integrated into the build process:
-
-```json
-{
-  "scripts": {
-    "prebuild": "cd harmony-schemas && npm run validate:tokens"
-  }
-}
-```
-
-### CI/CD
-
-Add token validation to CI pipeline to catch invalid tokens before merge.
-
-### Dev Tools
-
-The validation utility can be used in dev tools to provide real-time feedback when editing token files.
-
-## Token Naming Conventions
-
-- Use kebab-case for token names: `primary-500`, `space-4`
-- Start with lowercase letter
-- Only alphanumeric characters and hyphens
-- Be descriptive and consistent
+All cross-graph edges must be indexed (Policy #22).
 
 ## Performance Considerations
 
-- Token validation runs at build time only (not runtime)
-- Validation uses Ajv (fastest JSON Schema validator)
-- No impact on runtime performance or bundle size
+- Schemas are designed for fast validation (<1ms per node)
+- Maximum node size: ~10KB serialized JSON
+- IndexedDB storage uses schema-validated JSON
+- No nested objects deeper than 4 levels
 
-## Future Enhancements
+## Related Documentation
 
-- [ ] Shadow token validation (tokens referencing other tokens)
-- [ ] Token transformation validation (light/dark mode)
-- [ ] Figma sync validation
-- [ ] Token usage tracking and reporting
+- [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md#graph-engine) - Graph engine architecture
+- [harmony-graph/README.md](../harmony-graph/README.md) - Graph implementation
+- [bounded-contexts/](../bounded-contexts/) - Domain implementations
+
+## Contributing
+
+When adding new schemas:
+
+1. Follow the existing naming pattern: `{node-type}-node.schema.json`
+2. Include all required fields: `id`, `type`, `name`
+3. Add pattern validation for identifiers
+4. Document all properties with descriptions
+5. Update this README with the new schema
+6. Run codegen pipeline and commit generated code
+7. Update DESIGN_SYSTEM.md with usage examples
+
+## License
+
+Part of the Harmony Design System.
