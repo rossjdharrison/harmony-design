@@ -1,0 +1,18 @@
+{
+  "name": "eslint-plugin-harmony-deprecation",
+  "version": "1.0.0",
+  "description": "ESLint plugin for Harmony Design System deprecation warnings",
+  "main": "index.js",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "harmony",
+    "deprecation",
+    "design-system"
+  ],
+  "author": "Harmony Design System",
+  "license": "MIT",
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  }
+}
