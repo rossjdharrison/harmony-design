@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skeleton UI - Harmony Design System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      padding: 40px 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #666;
+      margin-bottom: 3rem;
+    }
+
+    .section {
+      background: white;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: #333;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 0.5rem;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-top: 1.5rem;
+    }
+
+    .demo-item {
+      padding: 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .demo-item h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: #555;
+      font-weight: 600;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .theme-toggle {
+      background: #6c757d;
+    }
+
+    .theme-toggle:hover {
+      background: #545b62;
+    }
+
+    .dark-theme {
+      background: #1a1a1a;
+      color: #e0e0e0;
+    }
+
+    .dark-theme .section {
+      background: #2a2a2a;
+      color: #e0e0e0;
+    }
+
+    .dark-theme h1,
+    .dark-theme h2,
+    .dark-theme h3 {
+      color: #e0e0e0;
+    }
+
+    .dark-theme .demo-item {
+      background: #1a1a1a;
+      border-color: #3a3a3a;
+    }
+
+    .performance-info {
+      background: #e7f3ff;
+      padding: 1rem;
+      border-radius: 6px;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #0056b3;
+    }
+
+    .dark-theme .performance-info {
+      background: #1a2a3a;
+      color: #6ab0ff;
+    }
+
+    .content-loaded {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .real-content {
+      display: none;
+    }
+
+    .real-content.visible {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🦴 Skeleton UI</h1>
+    <p class="subtitle">Loading placeholders with shimmer animation - GPU accelerated for 60fps performance</p>
+
+    <div class="controls">
+      <button id="loadBtn">Simulate Load (2s)</button>
+      <button id="toggleAnimBtn">Toggle Animation</button>
+      <button class="theme-toggle" id="themeBtn">Toggle Theme</button>
+    </div>
+
+    <!-- Basic Variants -->
+    <div class="section">
+      <h2>Basic Variants</h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <h3>Text Skeleton</h3>
+          <harmony-skeleton variant="text" width="100%"></harmony-skeleton>
+          <br>
+          <harmony-skeleton variant="text" width="80%"></harmony-skeleton>
+          <br>
+          <harmony-skeleton variant="text" width="60%"></harmony-skeleton>
+        </div>
+
+        <div class="demo-item">
+          <h3>Circle Skeleton</h3>
+          <harmony-skeleton variant="circle" size="64px"></harmony-skeleton>
+        </div>
+
+        <div class="demo-item">
+          <h3>Rectangle Skeleton</h3>
+          <harmony-skeleton variant="rect" width="100%" height="120px"></harmony-skeleton>
+        </div>
+
+        <div class="demo-item">
+          <h3>Avatar Skeleton</h3>
+          <harmony-skeleton variant="avatar" size="48px"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Multiple Lines -->
+    <div class="section">
+      <h2>Multiple Lines (Count Property)</h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <h3>Paragraph Skeleton (3 lines)</h3>
+          <harmony-skeleton variant="text" count="3"></harmony-skeleton>
+        </div>
+
+        <div class="demo-item">
+          <h3>Paragraph Skeleton (5 lines)</h3>
+          <harmony-skeleton variant="text" count="5"></harmony-skeleton>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skeleton Groups -->
+    <div class="section">
+      <h2>Skeleton Groups (Composite Layouts)</h2>
+      <div class="demo-grid">
+        <div class="demo-item">
+          <h3>Card Layout</h3>
+          <harmony-skeleton-group layout="card"></harmony-skeleton-group>
+        </div>
+
+        <div class="demo-item">
+          <h3>Profile Layout</h3>
+          <harmony-skeleton-group layout="profile"></harmony-skeleton-group>
+        </div>
+      </div>
+
+      <div class="demo-item" style="margin-top: 2rem;">
+        <h3>List Layout (5 items)</h3>
+        <harmony-skeleton-group layout="list" items="5"></harmony-skeleton-group>
+      </div>
+
+      <div class="demo-item" style="margin-top: 2rem;">
+        <h3>Article Layout</h3>
+        <harmony-skeleton-group layout="article"></harmony-skeleton-group>
+      </div>
+
+      <div class="demo-item" style="margin-top: 2rem;">
+        <h3>Table Layout (4 rows)</h3>
+        <harmony-skeleton-group layout="table" items="4"></harmony-skeleton-group>
+      </div>
+    </div>
+
+    <!-- Real-world Example -->
+    <div class="section">
+      <h2>Real-world Example: Content Loading</h2>
+      <div id="contentArea">
+        <harmony-skeleton-group layout="card"></harmony-skeleton-group>
+      </div>
+      <div id="realContent" class="real-content">
+        <div class="content-loaded" style="display: flex; flex-direction: column; gap: 16px;">
+          <img src="data:image/svg+xml,%3Csvg width='400' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='400' height='200' fill='%234CAF50'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='24' font-family='Arial'%3EContent Loaded!%3C/text%3E%3C/svg%3E" alt="Loaded content" style="width: 100%; border-radius: 8px;">
+          <h3 style="font-size: 1.5rem;">Amazing Content Title</h3>
+          <p>This is the real content that appears after loading. The skeleton provided visual feedback while this content was being fetched from the server.</p>
+          <p>Notice how the skeleton matched the layout of the actual content, providing a smooth transition and better user experience.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Performance Info -->
+    <div class="section">
+      <h2>Performance Characteristics</h2>
+      <div class="performance-info">
+        <strong>✓ GPU Accelerated:</strong> Uses CSS transforms for shimmer animation<br>
+        <strong>✓ 60fps Target:</strong> No JavaScript animation loops<br>
+        <strong>✓ Minimal DOM:</strong> Efficient shadow DOM structure<br>
+        <strong>✓ Accessibility:</strong> ARIA labels and reduced motion support<br>
+        <strong>✓ Theme Support:</strong> Light and dark themes<br>
+        <strong>✓ Customizable:</strong> Width, height, count, variant properties
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { HarmonySkeleton } from '../components/skeleton/skeleton.js';
+    import { HarmonySkeletonGroup } from '../components/skeleton/skeleton-group.js';
+
+    let isAnimated = true;
+    let isDark = false;
+
+    // Toggle animation
+    document.getElementById('toggleAnimBtn').addEventListener('click', () => {
+      isAnimated = !isAnimated;
+      document.querySelectorAll('harmony-skeleton, harmony-skeleton-group').forEach(el => {
+        el.setAttribute('animated', isAnimated ? 'true' : 'false');
+      });
+    });
+
+    // Toggle theme
+    document.getElementById('themeBtn').addEventListener('click', () => {
+      isDark = !isDark;
+      document.body.classList.toggle('dark-theme', isDark);
+      const theme = isDark ? 'dark' : 'light';
+      document.querySelectorAll('harmony-skeleton, harmony-skeleton-group').forEach(el => {
+        el.setAttribute('theme', theme);
+      });
+    });
+
+    // Simulate content loading
+    document.getElementById('loadBtn').addEventListener('click', () => {
+      const contentArea = document.getElementById('contentArea');
+      const realContent = document.getElementById('realContent');
+      
+      // Show skeleton
+      contentArea.innerHTML = '<harmony-skeleton-group layout="card"></harmony-skeleton-group>';
+      realContent.classList.remove('visible');
+      
+      // Simulate 2 second load
+      setTimeout(() => {
+        contentArea.innerHTML = '';
+        realContent.classList.add('visible');
+      }, 2000);
+    });
+
+    // Performance monitoring
+    if (window.performance && window.performance.memory) {
+      setInterval(() => {
+        const memory = window.performance.memory;
+        console.log('Memory Usage:', {
+          used: (memory.usedJSHeapSize / 1048576).toFixed(2) + ' MB',
+          total: (memory.totalJSHeapSize / 1048576).toFixed(2) + ' MB'
+        });
+      }, 5000);
+    }
+
+    // Frame rate monitoring
+    let lastTime = performance.now();
+    let frames = 0;
+    function measureFPS() {
+      frames++;
+      const currentTime = performance.now();
+      if (currentTime >= lastTime + 1000) {
+        console.log('FPS:', frames);
+        frames = 0;
+        lastTime = currentTime;
+      }
+      requestAnimationFrame(measureFPS);
+    }
+    measureFPS();
+  </script>
+</body>
+</html>
