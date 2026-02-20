@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SandboxedExecutor Tests</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      background: #f5f5f5;
+    }
+    .test-suite {
+      background: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-case {
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      border-left: 4px solid #ccc;
+      background: #fafafa;
+    }
+    .test-case.pass {
+      border-left-color: #22c55e;
+      background: #f0fdf4;
+    }
+    .test-case.fail {
+      border-left-color: #ef4444;
+      background: #fef2f2;
+    }
+    .test-case.running {
+      border-left-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .stat-card {
+      background: #f9fafb;
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid #e5e7eb;
+    }
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #1f2937;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+    pre {
+      background: #1f2937;
+      color: #f9fafb;
+      padding: 1rem;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 0.875rem;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔒 SandboxedExecutor Tests</h1>
+  <p>Testing isolated code execution in sandboxed realms</p>
+
+  <div class="test-suite">
+    <h2>Test Suite</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <div id="test-results"></div>
+  </div>
+
+  <div class="test-suite">
+    <h2>Executor Statistics</h2>
+    <div id="stats" class="stats"></div>
+  </div>
+
+  <div class="test-suite">
+    <h2>Performance Metrics</h2>
+    <div id="performance"></div>
+  </div>
+
+  <script type="module">
+    import { SandboxedExecutor, createDefaultExecutor } from './sandboxed-executor.js';
+
+    const results = [];
+    let executor;
+
+    function logTest(name, status, details = '') {
+      const result = { name, status, details, timestamp: Date.now() };
+      results.push(result);
+      
+      const testDiv = document.createElement('div');
+      testDiv.className = `test-case ${status}`;
+      testDiv.innerHTML = `
+        <strong>${status === 'pass' ? '✓' : status === 'fail' ? '✗' : '⟳'} ${name}</strong>
+        ${details ? `<div style="margin-top: 0.5rem; color: #6b7280;">${details}</div>` : ''}
+      `;
+      
+      document.getElementById('test-results').appendChild(testDiv);
+    }
+
+    function updateStats() {
+      const stats = executor.getStats();
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${stats.realmSupported ? 'Yes' : 'No'}</div>
+          <div class="stat-label">ShadowRealm Support</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.totalExecutions}</div>
+          <div class="stat-label">Total Executions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.activeExecutions}</div>
+          <div class="stat-label">Active Executions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${stats.config.timeout}ms</div>
+          <div class="stat-label">Timeout</div>
+        </div>
+      `;
+    }
+
+    async function testBasicExecution() {
+      const codeBundle = {
+        code: 'return 42;',
+        hash: 'test-hash-1',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (result.success && result.value === 42) {
+        logTest('Basic Execution', 'pass', `Returned: ${result.value}, Time: ${result.executionTime.toFixed(2)}ms`);
+      } else {
+        logTest('Basic Execution', 'fail', `Expected 42, got ${result.value}`);
+      }
+    }
+
+    async function testContextPassing() {
+      const codeBundle = {
+        code: 'return context.x + context.y;',
+        hash: 'test-hash-2',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle, { x: 10, y: 32 });
+      
+      if (result.success && result.value === 42) {
+        logTest('Context Passing', 'pass', `Correctly used context values`);
+      } else {
+        logTest('Context Passing', 'fail', `Expected 42, got ${result.value}`);
+      }
+    }
+
+    async function testMathOperations() {
+      const codeBundle = {
+        code: `
+          const result = Math.sqrt(16) + Math.pow(2, 3);
+          return result;
+        `,
+        hash: 'test-hash-3',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (result.success && result.value === 12) {
+        logTest('Math Operations', 'pass', `Math API accessible in sandbox`);
+      } else {
+        logTest('Math Operations', 'fail', `Expected 12, got ${result.value}`);
+      }
+    }
+
+    async function testArrayOperations() {
+      const codeBundle = {
+        code: `
+          const arr = [1, 2, 3, 4, 5];
+          return arr.reduce((sum, n) => sum + n, 0);
+        `,
+        hash: 'test-hash-4',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (result.success && result.value === 15) {
+        logTest('Array Operations', 'pass', `Array methods work correctly`);
+      } else {
+        logTest('Array Operations', 'fail', `Expected 15, got ${result.value}`);
+      }
+    }
+
+    async function testErrorHandling() {
+      const codeBundle = {
+        code: 'throw new Error("Test error");',
+        hash: 'test-hash-5',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (!result.success && result.error.includes('Test error')) {
+        logTest('Error Handling', 'pass', `Errors properly caught and returned`);
+      } else {
+        logTest('Error Handling', 'fail', `Error not properly handled`);
+      }
+    }
+
+    async function testTimeout() {
+      const shortTimeoutExecutor = new SandboxedExecutor({ timeout: 100 });
+      
+      const codeBundle = {
+        code: `
+          const start = Date.now();
+          while (Date.now() - start < 500) {
+            // Busy wait
+          }
+          return 'completed';
+        `,
+        hash: 'test-hash-6',
+        dependencies: {}
+      };
+
+      const result = await shortTimeoutExecutor.execute(codeBundle);
+      
+      if (!result.success && result.error.includes('timeout')) {
+        logTest('Timeout Protection', 'pass', `Long-running code terminated`);
+      } else {
+        logTest('Timeout Protection', 'fail', `Timeout not enforced`);
+      }
+    }
+
+    async function testIsolation() {
+      const codeBundle = {
+        code: `
+          try {
+            // Attempt to access window (should fail in true isolation)
+            return typeof window;
+          } catch (e) {
+            return 'isolated';
+          }
+        `,
+        hash: 'test-hash-7',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (result.success) {
+        const isIsolated = result.value === 'undefined' || result.value === 'isolated';
+        if (isIsolated) {
+          logTest('Isolation', 'pass', `Sandbox properly isolated from global scope`);
+        } else {
+          logTest('Isolation', 'fail', `Global scope accessible: ${result.value}`);
+        }
+      } else {
+        logTest('Isolation', 'fail', result.error);
+      }
+    }
+
+    async function testCapabilities() {
+      const customExecutor = new SandboxedExecutor({
+        capabilities: {
+          customFunc: (x) => x * 2
+        }
+      });
+
+      const codeBundle = {
+        code: `
+          return globals.customFunc(21);
+        `,
+        hash: 'test-hash-8',
+        dependencies: {}
+      };
+
+      const result = await customExecutor.execute(codeBundle);
+      
+      if (result.success && result.value === 42) {
+        logTest('Capabilities', 'pass', `Custom capabilities accessible`);
+      } else {
+        logTest('Capabilities', 'fail', `Expected 42, got ${result.value}`);
+      }
+    }
+
+    async function testPerformance() {
+      const iterations = 100;
+      const times = [];
+
+      const codeBundle = {
+        code: 'return Math.random() * 100;',
+        hash: 'test-hash-perf',
+        dependencies: {}
+      };
+
+      for (let i = 0; i < iterations; i++) {
+        const result = await executor.execute(codeBundle);
+        times.push(result.executionTime);
+      }
+
+      const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
+      const maxTime = Math.max(...times);
+      const minTime = Math.min(...times);
+
+      document.getElementById('performance').innerHTML = `
+        <pre>Performance Metrics (${iterations} iterations):
+  Average: ${avgTime.toFixed(3)}ms
+  Min: ${minTime.toFixed(3)}ms
+  Max: ${maxTime.toFixed(3)}ms
+  Target: <2ms per execution
+  Status: ${avgTime < 2 ? '✓ PASS' : '⚠ WARN'}</pre>
+      `;
+
+      if (avgTime < 2) {
+        logTest('Performance', 'pass', `Average execution time: ${avgTime.toFixed(3)}ms`);
+      } else {
+        logTest('Performance', 'fail', `Average execution time ${avgTime.toFixed(3)}ms exceeds 2ms target`);
+      }
+    }
+
+    async function testMemoryTracking() {
+      const codeBundle = {
+        code: `
+          const arr = new Array(1000).fill(0).map((_, i) => ({ id: i, data: 'x'.repeat(100) }));
+          return arr.length;
+        `,
+        hash: 'test-hash-mem',
+        dependencies: {}
+      };
+
+      const result = await executor.execute(codeBundle);
+      
+      if (result.success) {
+        logTest('Memory Tracking', 'pass', `Memory used: ${(result.memoryUsed / 1024).toFixed(2)}KB`);
+      } else {
+        logTest('Memory Tracking', 'fail', result.error);
+      }
+    }
+
+    async function testInvalidCodeBundle() {
+      const invalidBundle = {
+        code: 'return 42;'
+        // Missing required fields
+      };
+
+      const result = await executor.execute(invalidBundle);
+      
+      if (!result.success && result.error.includes('Invalid')) {
+        logTest('Invalid Bundle Validation', 'pass', `Invalid bundles rejected`);
+      } else {
+        logTest('Invalid Bundle Validation', 'fail', `Invalid bundle not caught`);
+      }
+    }
+
+    window.runAllTests = async function() {
+      document.getElementById('test-results').innerHTML = '';
+      results.length = 0;
+      
+      executor = createDefaultExecutor();
+      updateStats();
+
+      const tests = [
+        testBasicExecution,
+        testContextPassing,
+        testMathOperations,
+        testArrayOperations,
+        testErrorHandling,
+        testTimeout,
+        testIsolation,
+        testCapabilities,
+        testMemoryTracking,
+        testInvalidCodeBundle,
+        testPerformance
+      ];
+
+      for (const test of tests) {
+        try {
+          await test();
+        } catch (error) {
+          logTest(test.name, 'fail', error.message);
+        }
+        updateStats();
+      }
+
+      const passed = results.filter(r => r.status === 'pass').length;
+      const failed = results.filter(r => r.status === 'fail').length;
+      
+      const summary = document.createElement('div');
+      summary.className = 'test-case';
+      summary.style.marginTop = '1rem';
+      summary.style.fontWeight = 'bold';
+      summary.innerHTML = `
+        Summary: ${passed} passed, ${failed} failed out of ${results.length} tests
+      `;
+      document.getElementById('test-results').appendChild(summary);
+    };
+
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      setTimeout(runAllTests, 100);
+    });
+  </script>
+</body>
+</html>
