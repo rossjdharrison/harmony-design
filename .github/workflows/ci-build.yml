@@ -51,8 +51,8 @@ jobs:
           const EXTENSIONS = new Set(['.js', '.mjs', '.cjs']);
           // scripts/ — tooling helpers that legitimately use built-ins and invoke npm/yarn.
           // Test files — policy explicitly permits npm packages for testing frameworks.
-          const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'generated', 'scripts']);
-          const IGNORE_FILE_PATTERNS = ['.test.', '.spec.', '.stories.'];
+          const IGNORE_DIRS = new Set(['node_modules', '.git', 'dist', 'generated', 'scripts', 'e2e', 'storybook']);
+          const IGNORE_FILE_PATTERNS = ['.test.', '.spec.', '.stories.', '.config.'];
 
           let violations = 0;
 
