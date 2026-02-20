@@ -189,11 +189,15 @@ jobs:
               continue;
             }
             try {
-              execSync(`node "${t}"`, { stdio: 'inherit', timeout: TEST_TIMEOUT_MS });
+              execSync(`node "${t}"`, { stdio: ['inherit', 'inherit', 'pipe'], timeout: TEST_TIMEOUT_MS });
               console.log('PASS', t);
               passed++;
             } catch (err) {
-              const stderr = (err.stderr || err.message || '');
+              // With stdio stderr:'pipe', err.stderr is a Buffer (not a string).
+              // Write it so the failure reason still appears in CI logs.
+              const stderrBuf = err.stderr || Buffer.alloc(0);
+              if (stderrBuf.length) process.stderr.write(stderrBuf);
+              const stderr = stderrBuf.toString() || err.message || '';
               if (err.killed || err.signal) {
                 console.error(`TIMEOUT (>${TEST_TIMEOUT_MS / 1000}s)`, t);
                 failed++;
