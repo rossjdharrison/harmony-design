@@ -1,0 +1,343 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harmonydesign.systems/schemas/bounded-contexts/graph.json",
+  "title": "Graph Bounded Context Schema",
+  "description": "Schema definition for the Graph bounded context, defining events, commands, and domain types for the graph engine",
+  "version": "1.0.0",
+  "type": "object",
+  "definitions": {
+    "NodeId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Unique identifier for a graph node"
+    },
+    "EdgeId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Unique identifier for a graph edge"
+    },
+    "GraphId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "description": "Unique identifier for a graph instance"
+    },
+    "NodeType": {
+      "type": "string",
+      "enum": ["audio", "effect", "mixer", "output", "input", "control", "signal"],
+      "description": "Type of graph node"
+    },
+    "EdgeType": {
+      "type": "string",
+      "enum": ["audio", "control", "dependency"],
+      "description": "Type of graph edge connection"
+    },
+    "Node": {
+      "type": "object",
+      "required": ["id", "type", "position"],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/NodeId"
+        },
+        "type": {
+          "$ref": "#/definitions/NodeType"
+        },
+        "position": {
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" }
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "Edge": {
+      "type": "object",
+      "required": ["id", "source", "target", "type"],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/EdgeId"
+        },
+        "source": {
+          "$ref": "#/definitions/NodeId"
+        },
+        "target": {
+          "$ref": "#/definitions/NodeId"
+        },
+        "type": {
+          "$ref": "#/definitions/EdgeType"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "GraphState": {
+      "type": "object",
+      "required": ["id", "nodes", "edges"],
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/GraphId"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Node"
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Edge"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    }
+  },
+  "events": {
+    "commands": {
+      "AddNode": {
+        "type": "object",
+        "required": ["graphId", "node"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "node": {
+            "$ref": "#/definitions/Node"
+          }
+        }
+      },
+      "RemoveNode": {
+        "type": "object",
+        "required": ["graphId", "nodeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "nodeId": {
+            "$ref": "#/definitions/NodeId"
+          }
+        }
+      },
+      "AddEdge": {
+        "type": "object",
+        "required": ["graphId", "edge"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "edge": {
+            "$ref": "#/definitions/Edge"
+          }
+        }
+      },
+      "RemoveEdge": {
+        "type": "object",
+        "required": ["graphId", "edgeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "edgeId": {
+            "$ref": "#/definitions/EdgeId"
+          }
+        }
+      },
+      "UpdateNodePosition": {
+        "type": "object",
+        "required": ["graphId", "nodeId", "position"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "nodeId": {
+            "$ref": "#/definitions/NodeId"
+          },
+          "position": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          }
+        }
+      },
+      "CreateGraph": {
+        "type": "object",
+        "required": ["graphId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DeleteGraph": {
+        "type": "object",
+        "required": ["graphId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          }
+        }
+      }
+    },
+    "results": {
+      "NodeAdded": {
+        "type": "object",
+        "required": ["graphId", "node"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "node": {
+            "$ref": "#/definitions/Node"
+          }
+        }
+      },
+      "NodeRemoved": {
+        "type": "object",
+        "required": ["graphId", "nodeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "nodeId": {
+            "$ref": "#/definitions/NodeId"
+          }
+        }
+      },
+      "EdgeAdded": {
+        "type": "object",
+        "required": ["graphId", "edge"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "edge": {
+            "$ref": "#/definitions/Edge"
+          }
+        }
+      },
+      "EdgeRemoved": {
+        "type": "object",
+        "required": ["graphId", "edgeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "edgeId": {
+            "$ref": "#/definitions/EdgeId"
+          }
+        }
+      },
+      "NodePositionUpdated": {
+        "type": "object",
+        "required": ["graphId", "nodeId", "position"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "nodeId": {
+            "$ref": "#/definitions/NodeId"
+          },
+          "position": {
+            "type": "object",
+            "required": ["x", "y"],
+            "properties": {
+              "x": { "type": "number" },
+              "y": { "type": "number" }
+            }
+          }
+        }
+      },
+      "GraphCreated": {
+        "type": "object",
+        "required": ["graphId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "GraphDeleted": {
+        "type": "object",
+        "required": ["graphId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          }
+        }
+      },
+      "GraphError": {
+        "type": "object",
+        "required": ["graphId", "error"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "error": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "queries": {
+      "GetGraphState": {
+        "type": "object",
+        "required": ["graphId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          }
+        }
+      },
+      "GetNode": {
+        "type": "object",
+        "required": ["graphId", "nodeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "nodeId": {
+            "$ref": "#/definitions/NodeId"
+          }
+        }
+      },
+      "GetEdge": {
+        "type": "object",
+        "required": ["graphId", "edgeId"],
+        "properties": {
+          "graphId": {
+            "$ref": "#/definitions/GraphId"
+          },
+          "edgeId": {
+            "$ref": "#/definitions/EdgeId"
+          }
+        }
+      }
+    }
+  }
+}
