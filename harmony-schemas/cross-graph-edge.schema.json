@@ -1,124 +1,199 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harmonydesign.io/schemas/cross-graph-edge.schema.json",
-  "title": "Cross-Graph Edge",
-  "description": "Schema for edges connecting nodes across different graph types (Component, Intent, Domain)",
+  "title": "Cross-Graph Edge Definition",
+  "description": "Schema for defining edges that connect nodes across different graph contexts (e.g., UI graph to Audio graph)",
   "type": "object",
-  "required": ["id", "sourceGraph", "sourceNodeId", "targetGraph", "targetNodeId", "edgeType", "metadata"],
+  "required": ["id", "sourceGraph", "sourceNode", "targetGraph", "targetNode", "edgeType"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier for the cross-graph edge",
-      "pattern": "^edge-[a-z0-9-]+$"
+      "description": "Unique identifier for this cross-graph edge",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 64
     },
     "sourceGraph": {
       "type": "string",
-      "description": "Type of the source graph",
-      "enum": ["component", "intent", "domain"]
+      "description": "Source graph context identifier",
+      "enum": ["ui", "audio", "state", "control"],
+      "examples": ["ui", "audio"]
     },
-    "sourceNodeId": {
+    "sourceNode": {
       "type": "string",
-      "description": "ID of the source node in the source graph",
-      "minLength": 1
+      "description": "Source node identifier within the source graph",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "sourcePort": {
+      "type": "string",
+      "description": "Optional output port identifier on the source node",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 32
     },
     "targetGraph": {
       "type": "string",
-      "description": "Type of the target graph",
-      "enum": ["component", "intent", "domain"]
+      "description": "Target graph context identifier",
+      "enum": ["ui", "audio", "state", "control"],
+      "examples": ["audio", "state"]
     },
-    "targetNodeId": {
+    "targetNode": {
       "type": "string",
-      "description": "ID of the target node in the target graph",
-      "minLength": 1
+      "description": "Target node identifier within the target graph",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "targetPort": {
+      "type": "string",
+      "description": "Optional input port identifier on the target node",
+      "pattern": "^[a-zA-Z0-9_-]+$",
+      "minLength": 1,
+      "maxLength": 32
     },
     "edgeType": {
       "type": "string",
-      "description": "Type of relationship between nodes",
-      "enum": [
-        "implements",
-        "triggers",
-        "satisfies",
-        "depends-on",
-        "provides",
-        "consumes",
-        "validates",
-        "transforms"
-      ]
+      "description": "Type of cross-graph connection",
+      "enum": ["data", "event", "control", "sync"],
+      "examples": ["event", "data"]
+    },
+    "dataType": {
+      "type": "string",
+      "description": "Data type being transferred across the edge",
+      "enum": ["f32", "i32", "bool", "string", "buffer", "event", "command"],
+      "examples": ["f32", "event"]
+    },
+    "bufferSize": {
+      "type": "integer",
+      "description": "Buffer size in bytes for data transfer (required for 'buffer' dataType)",
+      "minimum": 0,
+      "maximum": 1048576,
+      "examples": [128, 512, 1024]
+    },
+    "latencyBudget": {
+      "type": "number",
+      "description": "Maximum allowed latency in milliseconds for this edge",
+      "minimum": 0,
+      "maximum": 100,
+      "examples": [1, 5, 10]
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Execution priority (higher values = higher priority)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 50
+    },
+    "indexed": {
+      "type": "boolean",
+      "description": "Whether this edge should be indexed for fast lookup (required by policy)",
+      "default": true
     },
     "metadata": {
       "type": "object",
-      "description": "Additional metadata about the edge",
-      "required": ["createdAt", "indexed"],
+      "description": "Additional metadata for the edge",
       "properties": {
-        "createdAt": {
+        "description": {
           "type": "string",
-          "format": "date-time",
-          "description": "ISO 8601 timestamp of edge creation"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "ISO 8601 timestamp of last update"
-        },
-        "indexed": {
-          "type": "boolean",
-          "description": "Whether this edge is indexed for fast traversal"
-        },
-        "weight": {
-          "type": "number",
-          "description": "Optional weight for the edge relationship",
-          "minimum": 0,
-          "maximum": 1
-        },
-        "bidirectional": {
-          "type": "boolean",
-          "description": "Whether the edge can be traversed in both directions",
-          "default": false
+          "maxLength": 256
         },
         "tags": {
           "type": "array",
-          "description": "Optional tags for categorizing the edge",
           "items": {
-            "type": "string"
-          }
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "maxItems": 10
         },
-        "description": {
+        "createdAt": {
           "type": "string",
-          "description": "Human-readable description of the relationship"
-        }
-      }
-    },
-    "constraints": {
-      "type": "object",
-      "description": "Optional constraints on the edge relationship",
-      "properties": {
-        "required": {
-          "type": "boolean",
-          "description": "Whether this edge is required for the source node to be valid"
+          "format": "date-time"
         },
-        "exclusive": {
-          "type": "boolean",
-          "description": "Whether this is the only edge of this type allowed from source"
-        },
-        "conditional": {
-          "type": "object",
-          "description": "Conditions under which this edge is active",
-          "properties": {
-            "expression": {
-              "type": "string",
-              "description": "Boolean expression defining when edge is active"
-            },
-            "dependencies": {
-              "type": "array",
-              "description": "Other edges that must exist for this edge to be valid",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
         }
-      }
+      },
+      "additionalProperties": false
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "dataType": {
+            "const": "buffer"
+          }
+        }
+      },
+      "then": {
+        "required": ["bufferSize"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "sourceGraph": {
+            "const": "audio"
+          }
+        }
+      },
+      "then": {
+        "required": ["latencyBudget"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "targetGraph": {
+            "const": "audio"
+          }
+        }
+      },
+      "then": {
+        "required": ["latencyBudget"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "id": "ui-to-audio-play",
+      "sourceGraph": "ui",
+      "sourceNode": "play-button",
+      "sourcePort": "onClick",
+      "targetGraph": "audio",
+      "targetNode": "playback-engine",
+      "targetPort": "play",
+      "edgeType": "event",
+      "dataType": "event",
+      "latencyBudget": 10,
+      "priority": 90,
+      "indexed": true,
+      "metadata": {
+        "description": "Connects play button click to audio playback",
+        "tags": ["ui-control", "playback"]
+      }
+    },
+    {
+      "id": "audio-to-ui-level",
+      "sourceGraph": "audio",
+      "sourceNode": "level-meter",
+      "sourcePort": "level",
+      "targetGraph": "ui",
+      "targetNode": "level-display",
+      "targetPort": "value",
+      "edgeType": "data",
+      "dataType": "f32",
+      "latencyBudget": 16,
+      "priority": 50,
+      "indexed": true,
+      "metadata": {
+        "description": "Streams audio level to UI meter",
+        "tags": ["visualization", "feedback"]
+      }
+    }
+  ]
 }

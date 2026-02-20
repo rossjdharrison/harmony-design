@@ -1,223 +1,240 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://harmonydesign.io/schemas/cross-graph-edge.json",
-  "title": "Cross-Graph Edge",
-  "description": "Schema for edges connecting nodes across different graph types in the Harmony Design System",
+  "$id": "https://harmonydesign.dev/schemas/cross-graph-edge.json",
+  "title": "Cross-Graph Edge Definition",
+  "description": "Schema for defining edges that connect nodes across different bounded context graphs, enabling reactive data flow between autonomous subsystems.",
   "type": "object",
-  "required": ["id", "sourceGraph", "sourceNodeId", "targetGraph", "targetNodeId", "edgeType"],
+  "required": ["id", "sourceGraph", "sourceNode", "sourcePort", "targetGraph", "targetNode", "targetPort", "edgeType"],
   "properties": {
     "id": {
       "type": "string",
-      "description": "Unique identifier for the cross-graph edge",
-      "pattern": "^edge-[a-z0-9-]+$",
-      "examples": ["edge-component-to-domain", "edge-intent-to-component"]
+      "description": "Unique identifier for this cross-graph edge",
+      "pattern": "^[a-z0-9-]+$",
+      "minLength": 1,
+      "maxLength": 128
     },
     "sourceGraph": {
       "type": "string",
-      "description": "Type of the source graph",
-      "enum": ["component", "intent", "domain"],
-      "examples": ["component", "intent"]
+      "description": "Bounded context graph containing the source node",
+      "enum": ["audio-bc", "sequencer-bc", "mixer-bc", "ui-bc", "project-bc", "export-bc"],
+      "examples": ["audio-bc", "sequencer-bc"]
     },
-    "sourceNodeId": {
+    "sourceNode": {
       "type": "string",
-      "description": "ID of the source node within its graph",
-      "pattern": "^[a-z0-9-]+$",
-      "examples": ["button-primary", "play-audio"]
+      "description": "Node ID within the source graph",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "sourcePort": {
+      "type": "string",
+      "description": "Output port name on the source node",
+      "minLength": 1,
+      "maxLength": 64
     },
     "targetGraph": {
       "type": "string",
-      "description": "Type of the target graph",
-      "enum": ["component", "intent", "domain"],
-      "examples": ["domain", "component"]
+      "description": "Bounded context graph containing the target node",
+      "enum": ["audio-bc", "sequencer-bc", "mixer-bc", "ui-bc", "project-bc", "export-bc"],
+      "examples": ["ui-bc", "mixer-bc"]
     },
-    "targetNodeId": {
+    "targetNode": {
       "type": "string",
-      "description": "ID of the target node within its graph",
-      "pattern": "^[a-z0-9-]+$",
-      "examples": ["audio-playback", "waveform-display"]
+      "description": "Node ID within the target graph",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "targetPort": {
+      "type": "string",
+      "description": "Input port name on the target node",
+      "minLength": 1,
+      "maxLength": 64
     },
     "edgeType": {
       "type": "string",
-      "description": "Semantic type of the cross-graph relationship",
-      "enum": [
-        "implements",
-        "triggers",
-        "depends-on",
-        "provides-data-to",
-        "consumes-data-from",
-        "validates-against",
-        "renders-for",
-        "handles-event-from"
-      ],
-      "examples": ["implements", "triggers", "depends-on"]
+      "description": "Type of cross-graph connection",
+      "enum": ["event", "data", "control", "state-sync"],
+      "examples": ["event", "data"]
     },
-    "metadata": {
+    "dataType": {
+      "type": "string",
+      "description": "Data type flowing through this edge",
+      "enum": ["f32", "f64", "i32", "u32", "bool", "string", "buffer", "event", "json"],
+      "examples": ["f32", "event"]
+    },
+    "bufferSize": {
+      "type": "integer",
+      "description": "Buffer size in bytes for data edges (required for buffer type)",
+      "minimum": 1,
+      "maximum": 1048576,
+      "examples": [128, 512, 2048]
+    },
+    "latencyBudget": {
+      "type": "number",
+      "description": "Maximum acceptable latency in milliseconds",
+      "minimum": 0,
+      "maximum": 1000,
+      "examples": [10, 16, 33]
+    },
+    "priority": {
+      "type": "string",
+      "description": "Scheduling priority for this edge",
+      "enum": ["critical", "high", "normal", "low"],
+      "default": "normal"
+    },
+    "transform": {
       "type": "object",
-      "description": "Additional metadata about the edge relationship",
+      "description": "Optional transformation applied to data crossing this edge",
       "properties": {
-        "weight": {
-          "type": "number",
-          "description": "Numeric weight for graph traversal algorithms",
-          "minimum": 0,
-          "maximum": 1,
-          "default": 1.0,
-          "examples": [0.8, 1.0]
-        },
-        "bidirectional": {
-          "type": "boolean",
-          "description": "Whether the edge represents a bidirectional relationship",
-          "default": false,
-          "examples": [false, true]
-        },
-        "createdAt": {
+        "type": {
           "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the edge was created",
-          "examples": ["2025-02-15T10:30:00Z"]
+          "enum": ["map", "filter", "throttle", "debounce", "sample"],
+          "description": "Type of transformation"
         },
-        "createdBy": {
-          "type": "string",
-          "description": "User or system that created the edge",
-          "examples": ["system", "user-123"]
-        },
-        "tags": {
-          "type": "array",
-          "description": "Tags for categorizing and filtering edges",
-          "items": {
-            "type": "string",
-            "pattern": "^[a-z0-9-]+$"
-          },
-          "uniqueItems": true,
-          "examples": [["audio", "critical"], ["ui", "reactive"]]
-        },
-        "description": {
-          "type": "string",
-          "description": "Human-readable description of the relationship",
-          "maxLength": 500,
-          "examples": ["Button component implements the play-audio intent"]
+        "config": {
+          "type": "object",
+          "description": "Configuration specific to the transform type",
+          "additionalProperties": true
         }
       },
-      "additionalProperties": false
+      "required": ["type"]
     },
-    "constraints": {
+    "validation": {
       "type": "object",
-      "description": "Constraints and validation rules for the edge",
+      "description": "Validation rules for data crossing this edge",
       "properties": {
         "required": {
           "type": "boolean",
-          "description": "Whether this edge is required for system integrity",
-          "default": false,
-          "examples": [true, false]
+          "description": "Whether data must be present",
+          "default": true
         },
-        "cardinality": {
-          "type": "string",
-          "description": "Cardinality constraint for the relationship",
-          "enum": ["one-to-one", "one-to-many", "many-to-one", "many-to-many"],
-          "default": "many-to-many",
-          "examples": ["one-to-many", "many-to-many"]
+        "range": {
+          "type": "object",
+          "description": "Numeric range validation",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          }
         },
-        "validFrom": {
+        "pattern": {
           "type": "string",
-          "format": "date-time",
-          "description": "Timestamp from which this edge is valid",
-          "examples": ["2025-02-15T00:00:00Z"]
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp until which this edge is valid",
-          "examples": ["2026-02-15T00:00:00Z"]
+          "description": "Regex pattern for string validation"
         }
-      },
-      "additionalProperties": false
+      }
     },
-    "indexing": {
+    "metadata": {
       "type": "object",
-      "description": "Indexing configuration for query optimization",
-      "required": ["indexed"],
+      "description": "Additional metadata for tooling and debugging",
       "properties": {
-        "indexed": {
-          "type": "boolean",
-          "description": "Whether this edge is indexed for fast lookups",
-          "default": true,
-          "examples": [true]
+        "label": {
+          "type": "string",
+          "description": "Human-readable label"
         },
-        "indexKeys": {
+        "description": {
+          "type": "string",
+          "description": "Detailed description of this edge's purpose"
+        },
+        "color": {
+          "type": "string",
+          "description": "Visual color hint for graph visualization",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "tags": {
           "type": "array",
-          "description": "Keys to use for indexing this edge",
+          "description": "Tags for categorization",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "description": "Performance monitoring configuration",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "sampleRate": {
+          "type": "number",
+          "description": "Fraction of messages to monitor (0.0 to 1.0)",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metrics": {
+          "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "sourceGraph",
-              "sourceNodeId",
-              "targetGraph",
-              "targetNodeId",
-              "edgeType",
-              "composite-source",
-              "composite-target",
-              "composite-type"
-            ]
-          },
-          "uniqueItems": true,
-          "minItems": 1,
-          "default": ["composite-source", "composite-target", "edgeType"],
-          "examples": [["composite-source", "composite-target", "edgeType"]]
-        },
-        "priority": {
-          "type": "string",
-          "description": "Query priority for this edge type",
-          "enum": ["low", "medium", "high", "critical"],
-          "default": "medium",
-          "examples": ["high", "critical"]
+            "enum": ["latency", "throughput", "errors", "dropped"]
+          }
         }
-      },
-      "additionalProperties": false
+      }
     }
   },
-  "additionalProperties": false,
-  "examples": [
+  "allOf": [
     {
-      "id": "edge-button-to-playback",
-      "sourceGraph": "component",
-      "sourceNodeId": "button-primary",
-      "targetGraph": "domain",
-      "targetNodeId": "audio-playback",
-      "edgeType": "triggers",
-      "metadata": {
-        "weight": 1.0,
-        "bidirectional": false,
-        "createdAt": "2025-02-15T10:30:00Z",
-        "createdBy": "system",
-        "tags": ["audio", "ui"],
-        "description": "Primary button triggers audio playback domain logic"
+      "if": {
+        "properties": {
+          "dataType": {
+            "const": "buffer"
+          }
+        }
       },
-      "constraints": {
-        "required": true,
-        "cardinality": "many-to-one"
-      },
-      "indexing": {
-        "indexed": true,
-        "indexKeys": ["composite-source", "edgeType"],
-        "priority": "high"
+      "then": {
+        "required": ["bufferSize"]
       }
     },
     {
-      "id": "edge-intent-to-component",
-      "sourceGraph": "intent",
-      "sourceNodeId": "play-audio",
-      "targetGraph": "component",
-      "targetNodeId": "play-button",
-      "edgeType": "implements",
-      "metadata": {
-        "weight": 0.9,
-        "bidirectional": false,
-        "tags": ["implementation"],
-        "description": "Play button component implements play-audio intent"
+      "if": {
+        "properties": {
+          "edgeType": {
+            "const": "control"
+          }
+        }
       },
-      "indexing": {
-        "indexed": true,
-        "indexKeys": ["composite-target", "edgeType"],
-        "priority": "critical"
+      "then": {
+        "required": ["latencyBudget"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "id": "audio-to-ui-level-meter",
+      "sourceGraph": "audio-bc",
+      "sourceNode": "master-output",
+      "sourcePort": "level",
+      "targetGraph": "ui-bc",
+      "targetNode": "level-meter",
+      "targetPort": "value",
+      "edgeType": "data",
+      "dataType": "f32",
+      "latencyBudget": 16,
+      "priority": "high",
+      "metadata": {
+        "label": "Audio Level to UI",
+        "description": "Sends audio level from master output to UI level meter",
+        "color": "#4CAF50"
+      }
+    },
+    {
+      "id": "ui-to-sequencer-play-command",
+      "sourceGraph": "ui-bc",
+      "sourceNode": "transport-controls",
+      "sourcePort": "play-clicked",
+      "targetGraph": "sequencer-bc",
+      "targetNode": "transport",
+      "targetPort": "play",
+      "edgeType": "event",
+      "dataType": "event",
+      "latencyBudget": 10,
+      "priority": "critical",
+      "metadata": {
+        "label": "Play Button to Sequencer",
+        "description": "Triggers playback when user clicks play button"
       }
     }
   ]

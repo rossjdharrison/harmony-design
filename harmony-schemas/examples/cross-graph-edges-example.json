@@ -1,0 +1,128 @@
+[
+  {
+    "id": "audio-to-ui-level-meter",
+    "sourceGraph": "audio-bc",
+    "sourceNode": "master-output",
+    "sourcePort": "level",
+    "targetGraph": "ui-bc",
+    "targetNode": "level-meter",
+    "targetPort": "value",
+    "edgeType": "data",
+    "dataType": "f32",
+    "latencyBudget": 16,
+    "priority": "high",
+    "transform": {
+      "type": "throttle",
+      "config": {
+        "intervalMs": 16
+      }
+    },
+    "validation": {
+      "required": true,
+      "range": {
+        "min": 0.0,
+        "max": 1.0
+      }
+    },
+    "metadata": {
+      "label": "Audio Level to UI",
+      "description": "Sends audio level from master output to UI level meter for visualization",
+      "color": "#4CAF50",
+      "tags": ["audio", "ui", "monitoring"]
+    },
+    "monitoring": {
+      "enabled": true,
+      "sampleRate": 0.1,
+      "metrics": ["latency", "throughput"]
+    }
+  },
+  {
+    "id": "ui-to-sequencer-play",
+    "sourceGraph": "ui-bc",
+    "sourceNode": "transport-controls",
+    "sourcePort": "play-clicked",
+    "targetGraph": "sequencer-bc",
+    "targetNode": "transport",
+    "targetPort": "play",
+    "edgeType": "event",
+    "dataType": "event",
+    "latencyBudget": 10,
+    "priority": "critical",
+    "metadata": {
+      "label": "Play Button to Sequencer",
+      "description": "Triggers playback when user clicks play button",
+      "color": "#2196F3",
+      "tags": ["control", "transport"]
+    }
+  },
+  {
+    "id": "sequencer-to-audio-note-on",
+    "sourceGraph": "sequencer-bc",
+    "sourceNode": "pattern-player",
+    "sourcePort": "note-events",
+    "targetGraph": "audio-bc",
+    "targetNode": "synth-voice-pool",
+    "targetPort": "note-in",
+    "edgeType": "event",
+    "dataType": "json",
+    "latencyBudget": 5,
+    "priority": "critical",
+    "metadata": {
+      "label": "Sequencer Notes to Audio",
+      "description": "Routes MIDI-like note events from sequencer to audio synthesis",
+      "color": "#FF9800",
+      "tags": ["sequencer", "audio", "notes"]
+    }
+  },
+  {
+    "id": "mixer-to-ui-channel-levels",
+    "sourceGraph": "mixer-bc",
+    "sourceNode": "channel-strip-1",
+    "sourcePort": "level-out",
+    "targetGraph": "ui-bc",
+    "targetNode": "mixer-channel-1",
+    "targetPort": "level-in",
+    "edgeType": "data",
+    "dataType": "buffer",
+    "bufferSize": 512,
+    "latencyBudget": 16,
+    "priority": "normal",
+    "transform": {
+      "type": "sample",
+      "config": {
+        "rate": 60
+      }
+    },
+    "metadata": {
+      "label": "Mixer Channel Level",
+      "description": "Streams channel level data to UI for fader visualization",
+      "color": "#9C27B0",
+      "tags": ["mixer", "ui", "monitoring"]
+    }
+  },
+  {
+    "id": "project-to-ui-state-sync",
+    "sourceGraph": "project-bc",
+    "sourceNode": "project-state",
+    "sourcePort": "state-changed",
+    "targetGraph": "ui-bc",
+    "targetNode": "project-panel",
+    "targetPort": "state-update",
+    "edgeType": "state-sync",
+    "dataType": "json",
+    "latencyBudget": 33,
+    "priority": "normal",
+    "transform": {
+      "type": "debounce",
+      "config": {
+        "delayMs": 100
+      }
+    },
+    "metadata": {
+      "label": "Project State Sync",
+      "description": "Synchronizes project state changes to UI",
+      "color": "#795548",
+      "tags": ["project", "ui", "state"]
+    }
+  }
+]

@@ -1,110 +1,109 @@
 # Harmony Schemas
 
-JSON Schema definitions for Harmony Design System graph nodes.
+JSON schemas and validators for the Harmony Design System.
 
 ## Overview
 
-This package contains JSON Schema definitions for the three primary node types in the Harmony knowledge graph:
+This directory contains JSON Schema definitions and vanilla JavaScript validators for core system concepts. All validators use **relative paths only** (no npm dependencies) to comply with system policies.
 
-- **Domain** - Bounded context definitions with ubiquitous language
-- **Intent** - User goals and workflow triggers
-- **Component** - UI component specifications
+## Schemas
 
-## Structure
+### Cross-Graph Edge Schema
 
-```
-harmony-schemas/
-├── schemas/           # JSON Schema definitions
-│   ├── component.schema.json
-│   ├── domain.schema.json
-│   └── intent.schema.json
-├── examples/          # Validation examples
-│   ├── validate-component.js
-│   ├── validate-domain.js
-│   └── validate-intent.js
-└── utils/             # Validation utilities
-    └── schema-validator.js
-```
+**File**: `cross-graph-edge.schema.json`
+
+Defines the structure for edges that connect nodes across different graph contexts (UI, Audio, State, Control).
+
+**Key Features**:
+- Validates graph context identifiers
+- Enforces latency budgets for audio edges (≤10ms policy)
+- Requires edges to be indexed (policy #22)
+- Validates data types and buffer sizes
+- Supports metadata and tagging
+
+**Validator**: `validate-cross-graph-edge.js`
+
+**Tests**: `validate-cross-graph-edge.test.js`
 
 ## Usage
 
-### Importing Schemas
+### Validating a Single Edge
 
 ```javascript
-import componentSchema from './schemas/component.schema.json' assert { type: 'json' };
-import domainSchema from './schemas/domain.schema.json' assert { type: 'json' };
-import intentSchema from './schemas/intent.schema.json' assert { type: 'json' };
-```
+import { validateCrossGraphEdge } from './harmony-schemas/validate-cross-graph-edge.js';
 
-### Validating Data
-
-```javascript
-import { validateSchema } from './utils/schema-validator.js';
-import domainSchema from './schemas/domain.schema.json' assert { type: 'json' };
-
-const domainNode = {
-  id: 'domain-audio',
-  type: 'Domain',
-  name: 'Audio Engine',
-  description: 'Core audio processing',
-  ubiquitousLanguage: { Track: 'Audio file in workspace' },
-  aggregateRoots: ['Project'],
-  entities: ['AudioClip'],
-  valueObjects: ['TimePosition'],
-  domainEvents: ['TrackLoaded']
+const edge = {
+  id: 'ui-to-audio-play',
+  sourceGraph: 'ui',
+  sourceNode: 'play-button',
+  targetGraph: 'audio',
+  targetNode: 'playback-engine',
+  edgeType: 'event',
+  dataType: 'event',
+  latencyBudget: 5,
+  indexed: true
 };
 
-const result = validateSchema(domainSchema, domainNode);
+const result = validateCrossGraphEdge(edge);
 if (!result.valid) {
   console.error('Validation errors:', result.errors);
 }
 ```
 
-### Running Examples
+### Validating Multiple Edges
 
-```bash
-node harmony-schemas/examples/validate-domain.js
-node harmony-schemas/examples/validate-component.js
-node harmony-schemas/examples/validate-intent.js
+```javascript
+import { validateCrossGraphEdges } from './harmony-schemas/validate-cross-graph-edge.js';
+
+const edges = [/* array of edge definitions */];
+const result = validateCrossGraphEdges(edges);
+
+console.log(`Valid: ${result.validEdges}/${result.totalEdges}`);
 ```
 
-## Schema Definitions
+### Creating Default Edges
 
-### Domain Schema
+```javascript
+import { createDefaultEdge } from './harmony-schemas/validate-cross-graph-edge.js';
 
-Defines bounded contexts with:
-- Ubiquitous language dictionary
-- Aggregate roots, entities, value objects
-- Domain events
-- Metadata (version, tags, timestamps)
+const edge = createDefaultEdge(
+  'my-edge',
+  'ui',
+  'source-node',
+  'audio',
+  'target-node'
+);
+```
 
-### Component Schema
+## Policy Compliance
 
-Defines UI components with:
-- Component type (primitive, molecule, organism, template)
-- Props, events, slots
-- Dependencies
-- Metadata
+All validators in this directory comply with:
 
-### Intent Schema
+- **No npm imports**: Uses relative paths only
+- **Policy #22**: Cross-graph edges must be indexed
+- **Audio latency**: Maximum 10ms for audio edges
+- **Vanilla JavaScript**: No frameworks or build tools required
 
-Defines user intentions with:
-- Trigger type (user-action, system-event, scheduled)
-- Priority (low, medium, high, critical)
-- Context requirements
-- Target domains
-- Expected outcomes
+## Testing
 
-## Policies
+Run tests with Node.js:
 
-- **No npm dependencies** - Uses vanilla JavaScript with relative imports
-- **JSON Schema Draft 7** - All schemas conform to JSON Schema specification
-- **Validation utilities** - Local validator implementation without external deps
+```bash
+node harmony-schemas/validate-cross-graph-edge.test.js
+```
 
-## Documentation
+## Related Documentation
 
-See [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) for:
-- Graph node architecture
-- Schema design patterns
-- Integration with TypeNavigator
-- Code generation pipeline
+- [DESIGN_SYSTEM.md](../DESIGN_SYSTEM.md) - Main system documentation
+- [Cross-Graph Reactivity Flow](../docs/Cross-Graph-Reactivity-Flow.md) - How edges enable reactivity
+- [Graph Code Storage Format](../docs/Graph-Code-Storage-Format.md) - Storage specification
+
+## Schema Development
+
+When adding new schemas:
+
+1. Create JSON Schema file with `.schema.json` extension
+2. Create validator with relative imports only
+3. Create test file with `.test.js` extension
+4. Update this README
+5. Update DESIGN_SYSTEM.md with new schema documentation
